@@ -6,5 +6,5 @@ CyberCortex.AI.inference
 <!-- markdownlint-disable no-duplicate-header -->
 
 <div align="center">
-  <img src="https://github.com/cybercortex-robotics/inference/figures/cyc_logo.svg?raw=true" width="60%" alt="CyberCortex.AI.inference" />
+  <img src="https://github.com/cybercortex-robotics/inference/blob/main/figures/cyc_logo.png?raw=true" width="60%" alt="CyberCortex.AI.inference" />
 </div>
