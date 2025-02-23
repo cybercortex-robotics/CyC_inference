@@ -12,6 +12,6 @@
   <a href="https://www.cybercortex.ai/" target="_blank"><img alt="Homepage"
     src="https://github.com/cybercortex-robotics/inference/blob/main/figures/cyc_logo_badge.svg?raw=true"/>
   </a>
-    <a href="https://arxiv.org/abs/2409.01241"><b>Paper Link</b>👁️
-  </a>
+  <br>
+  <a href="https://arxiv.org/abs/2409.01241"><b>Paper Link</b>👁️</a>
 </div>
