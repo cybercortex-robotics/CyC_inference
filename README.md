@@ -15,3 +15,18 @@
   <br>
   <a href="https://arxiv.org/abs/2409.01241"><b>Paper Link</b>👁️</a>
 </div>
+
+## 1. Introduction
+
+## 2. How to Run Locally
+
+## 3. How to Compile Locally
+
+## 4. Usage via Droids
+
+## 5. License
+
+## 6. Citation
+
+## 7. Contact
+If you have any questions, please raise an issue or contact us at [contact@cybercortex.ai](contact@cybercortex.ai).
