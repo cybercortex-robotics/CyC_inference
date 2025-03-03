@@ -1,24 +1,19 @@
 # Copyright (c) 2025 CyberCortex Robotics SRL. All rights reserved
 # Author: Sorin Mihai Grigorescu
 
-######## USER DEFINED VARIABLES ########
-# Define the OpenCV version
-set(CCR_OPENCV_VERSION "4.9.0")
+set(CMAKE_POSITION_INDEPENDENT_CODE ON PARENT_SCOPE)
 
-# Define the CUDA Toolkit SDK version
-set(CCR_CUDA_VERSION "11.8")
-
-# Define the libtorch and torchvision versions
-set(CCR_TORCH_VERSION "2.1.2")
-set(CCR_ONNXRUNTIME_VERSION "1.16.3")
-
-# Define the Ceres version
-set(CCR_CERES_VERSION "2.1.0")
-######## !USER DEFINED VARIABLES ########
-
+# Check if the 3rdParty folder is set
+if (NOT EXISTS ${CCR_THIRD_PARTY})
+    set(CCR_THIRD_PARTY ${CMAKE_SOURCE_DIR}/3rdParty)
+    set(CCR_THIRD_PARTY ${CCR_THIRD_PARTY} PARENT_SCOPE)
+endif ()
 
 set(CCR_OPENCV_WORLD "opencv_world")
+set(CCR_OPENCV_WORLD ${CCR_OPENCV_WORLD} PARENT_SCOPE)
+
 set(CCR_LIBCONFIG "config++")
+set(CCR_LIBCONFIG ${CCR_LIBCONFIG} PARENT_SCOPE)
 
 # Check if CUDA version is given
 if (CCR_CUDA_VERSION STREQUAL "")
@@ -49,22 +44,21 @@ elseif (CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "armv7l")   # ARM x86 chipset (Raspb
     set(RASPBERRY_PI TRUE)
 	add_definitions(-DRASPBERRY_PI)
 endif ()
+set(CCR_CHIPSET_VERSION ${CCR_CHIPSET_VERSION} PARENT_SCOPE)
 
 # Define target operating system
 if (WIN32)
     set(CCR_OS_VERSION "win")
-    set(CCR_OS_VERSION ${CCR_OS_VERSION} PARENT_SCOPE)
-	set(CCR_OPENCV_WORLD "opencv_world${CCR_OPENCV_VERSION_ID}")
+    set(CCR_OPENCV_WORLD "opencv_world${CCR_OPENCV_VERSION_ID}")
     set(CCR_OPENCV_WORLD ${CCR_OPENCV_WORLD} PARENT_SCOPE)
-	set(CCR_LIBCONFIG "libconfig++")
+    set(CCR_LIBCONFIG "libconfig++")
     set(CCR_LIBCONFIG ${CCR_LIBCONFIG} PARENT_SCOPE)
 elseif (UNIX)
     set(CCR_OS_VERSION "linux")
-    set(CCR_OS_VERSION ${CCR_OS_VERSION} PARENT_SCOPE)
 elseif (ANDROID)
-	set(CCR_OS_VERSION "android")
-    set(CCR_OS_VERSION ${CCR_OS_VERSION} PARENT_SCOPE)
+    set(CCR_OS_VERSION "android")
 endif ()
+set(CCR_OS_VERSION ${CCR_OS_VERSION} PARENT_SCOPE)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Android")
 	set(ANDROID ON)
@@ -81,6 +75,7 @@ endif ()
 
 # Define libraries binary key
 set(CCR_LIBS_BINARY_KEY ${CCR_OS_VERSION}-${CCR_COMPILER_VERSION}-${CCR_CHIPSET_VERSION})
+set(CCR_LIBS_BINARY_KEY ${CCR_LIBS_BINARY_KEY} PARENT_SCOPE)
 
 # Check if 3rdParty libraries exist for the chosen chipset, OS, compiler and CUDA Toolkit versions
 # OpenCV
@@ -116,19 +111,19 @@ if (NOT ANDROID)
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib PARENT_SCOPE)
 endif (NOT ANDROID)
 
+# Set OpenSSL root directory
 if (ANDROID)
-	set(OPENSSL_ROOT_DIR "${CMAKE_SOURCE_DIR}/3rdParty/android/${ANDROID_ABI}/openssl")
+	set(OPENSSL_ROOT_DIR "${CCR_THIRD_PARTY}/android/${ANDROID_ABI}/openssl" PARENT_SCOPE)
 elseif (MSVC)
-	set(OPENSSL_ROOT_DIR "${CMAKE_SOURCE_DIR}/3rdParty/datachannel/openssl/win-x64")
+	set(OPENSSL_ROOT_DIR "${CCR_THIRD_PARTY}/openssl/win-x64" PARENT_SCOPE)
 elseif (RASPBERRY_PI)
-	set(OPENSSL_ROOT_DIR "${CMAKE_SOURCE_DIR}/3rdParty/datachannel/openssl/linux-arm-x86")
+	set(OPENSSL_ROOT_DIR "${CCR_THIRD_PARTY}/openssl/linux-arm-x86" PARENT_SCOPE)
 elseif (GENIUS_BOARD)
-	set(OPENSSL_ROOT_DIR "${CMAKE_SOURCE_DIR}/3rdParty/datachannel/openssl/linux-aarch64")
+	set(OPENSSL_ROOT_DIR "${CCR_THIRD_PARTY}/openssl/linux-aarch64" PARENT_SCOPE)
 elseif (UNIX)
-    set(OPENSSL_ROOT_DIR "${CMAKE_SOURCE_DIR}/3rdParty/datachannel/openssl/linux-x64")
+    set(OPENSSL_ROOT_DIR "${CCR_THIRD_PARTY}/openssl/linux-x64" PARENT_SCOPE)
 endif ()
-
-list(APPEND CMAKE_FIND_ROOT_PATH "${OPENSSL_ROOT_DIR}")
+list(APPEND CMAKE_FIND_ROOT_PATH "${OPENSSL_ROOT_DIR}" PARENT_SCOPE)
 
 # 3rdParty includes
 set(CCR_THIRD_PARTY_INCLUDE_DIRECTORIES 
@@ -149,25 +144,18 @@ set(CCR_THIRD_PARTY_INCLUDE_DIRECTORIES
     ${CCR_THIRD_PARTY}/nlohmann-json/include
     ${CCR_THIRD_PARTY}/aruco-3.1.4/src
     ${CCR_THIRD_PARTY}/cvplot-0.0.3/include
-    ${CCR_THIRD_PARTY}/datachannel/websocketpp
-    ${CCR_THIRD_PARTY}/datachannel/msgpack/include
-    ${CCR_THIRD_PARTY}/datachannel/libdatachannel/include
-    ${CCR_THIRD_PARTY}/datachannel/libdatachannel/deps/usrsctp/usrsctplib
+    ${CCR_THIRD_PARTY}/msgpack/include
     ${CCR_THIRD_PARTY}/libcurl/include
     ${CCR_THIRD_PARTY}/libzip/include
     ${CCR_THIRD_PARTY}/unitree/include
-    ${CCR_THIRD_PARTY}/realsense-2.50.0/include
-    ${CCR_THIRD_PARTY}/datachannel/asio/include
     ${CCR_THIRD_PARTY}/boost-1.78.0/include
-    ${CCR_THIRD_PARTY}/gtsam/include
-    ${CCR_THIRD_PARTY}/Sophus/include
-    ${CCR_THIRD_PARTY}/DBoW2/include
-    ${CCR_THIRD_PARTY}/g2o/include
-    if (WIN32)
-        ${CCR_THIRD_PARTY}/pthreads/include
-        ${CCR_THIRD_PARTY}/qt-5.12.2/win-msvc141-x64/include
-    endif (WIN32)
+    ${CCR_THIRD_PARTY}/glut-2.0.0.29/include
     ${CCR_THIRD_PARTY}/libceres/${CCR_CERES_VERSION}/include)
+if (WIN32)
+    set(CCR_THIRD_PARTY_INCLUDE_DIRECTORIES ${CCR_THIRD_PARTY_INCLUDE_DIRECTORIES}
+        ${CCR_THIRD_PARTY}/pthreads/include
+        ${CCR_THIRD_PARTY}/qt-5.12.2/win-msvc141-x64/include)
+endif (WIN32)
 set(CCR_THIRD_PARTY_INCLUDE_DIRECTORIES ${CCR_THIRD_PARTY_INCLUDE_DIRECTORIES} PARENT_SCOPE)
 
 # 3rdParty library includes
@@ -181,10 +169,6 @@ set(CCR_THIRD_PARTY_LIBRARY_DIRECTORIES
     ${CCR_THIRD_PARTY}/ffmpeg/${CCR_LIBS_BINARY_KEY}/lib
     ${CCR_THIRD_PARTY}/glut-2.0.0.29/${CCR_LIBS_BINARY_KEY}/lib
     ${CCR_THIRD_PARTY}/boost-1.78.0/${CCR_LIBS_BINARY_KEY}/lib
-    ${CCR_THIRD_PARTY}/gtsam/${CCR_LIBS_BINARY_KEY}/lib
-    ${CCR_THIRD_PARTY}/DBoW2/${CCR_LIBS_BINARY_KEY}/lib
-    ${CCR_THIRD_PARTY}/g2o/${CCR_LIBS_BINARY_KEY}/lib
-    ${CCR_THIRD_PARTY}/realsense-2.50.0/${CCR_LIBS_BINARY_KEY}/lib
     ${CCR_THIRD_PARTY}/torchvision/${CCR_LIBS_BINARY_KEY}-${CCR_CUDA_VERSION_ID}/lib
     if (ANDROID)
         # armeabi-v7a, arm64-v8a, x86, x86_64
@@ -220,7 +204,7 @@ macro(add_ccr_filter name filter_path)
 		add_subdirectory(${filter_path})
 		get_directory_property(FN DIRECTORY ${filter_path} DEFINITION FILTER_NAME)
 		#target_include_directories(${FN} PUBLIC ${CMAKE_SOURCE_DIR}/${filter_path}/include)
-		target_include_directories(${FN} PUBLIC ${filter_path}/include)
+		#target_include_directories(${FN} PUBLIC ${filter_path}/include)
 		#target_compile_definitions(CcrCore PUBLIC ${name})
         #target_link_libraries(${FN} PUBLIC ${CCR_OPENCV_WORLD})
 		message(STATUS "Filter '${FN}' enabled.")

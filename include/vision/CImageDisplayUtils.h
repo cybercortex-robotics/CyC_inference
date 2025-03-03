@@ -6,7 +6,7 @@
 
 #include "CCR_TYPES.h"
 #include "env/CQuaternion.h"
-#include "core/CBaseCcrFilter.h"
+#include "CBaseCcrFilter.h"
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>

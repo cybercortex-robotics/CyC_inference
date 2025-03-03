@@ -6,10 +6,12 @@
 #include <atomic>
 #include <mutex>
 #include <future>
+#include "os/CSingletonBase.h"
+#include "os/CSingletonRegistry.h"
 
 #ifndef WIN32
-#include <QEvent>
-#include <QApplication>
+#include <QtCore/QEvent>
+#include <QtWidgets/QApplication>
 #endif
 
 #define QTPLOT_HAS_SKELETON
@@ -19,6 +21,7 @@ class QWidget;
 class QEvent;
 
 class CCcrQTPlotApp;
+class CCcrQTSkeleton;
 struct RegisteredImageDisplayApp;
 
 struct CCcrQTPlotSegmentTemp
@@ -29,15 +32,13 @@ struct CCcrQTPlotSegmentTemp
 
     CCcrQTPlotSegmentTemp(const std::string& name, const std::vector<std::string>& sigsl, const std::string& unit):
         name(name), sigs(sigs), unit(unit)
-    {
-        
-    }
+    {}
 };
 
 class CCcrQTPlot
 {
 public:
-    CCcrQTPlot(const std::string& title);
+    CCcrQTPlot(const std::string& _title, CCcrQTSkeleton* _qt_skeleton);
     ~CCcrQTPlot();
 
     int run();
@@ -54,11 +55,16 @@ private:
     std::vector<CCcrQTPlotSegmentTemp> m_temp_segments;
 
     CCcrQTPlotApp* m_plotapp = nullptr;
+
+    std::shared_ptr<CCcrQTSkeleton> m_CcrQTSkeleton = nullptr;
+    //CCcrQTSkeleton* m_QtSkeleton = nullptr;
 };
 
-class CCcrQTSkeleton
+class CCcrQTSkeleton : public CSingletonBase
 {
 public:
+    friend class CSingletonRegistry;
+
     using CCcrQTPlotAppPtr = std::unique_ptr<CCcrQTPlotApp>;
     using RegisteredImageDisplayAppPtr = std::unique_ptr<RegisteredImageDisplayApp>;
 
@@ -68,7 +74,19 @@ public:
     CCcrQTSkeleton& operator=(CCcrQTSkeleton&&) = delete;
     ~CCcrQTSkeleton();
 
-    static CCcrQTSkeleton& instance();
+    //static CCcrQTSkeleton& instance();
+
+    // Singleton type
+    static const char* getType()
+    {
+        return "CCR_QT_SINGLETON_TYPE";
+    }
+
+    // Singleton registry function
+    static std::unique_ptr<CCcrQTSkeleton> create_instance(CSingletonRegistry* _singleton_registry)
+    {
+        return std::unique_ptr<CCcrQTSkeleton>{new CCcrQTSkeleton(_singleton_registry)};
+    }
 
     void init();
     void destroy();
@@ -83,7 +101,7 @@ public:
     RegisteredImageDisplayApp* allocate_display_app(const std::string& title);
 
 private:
-    CCcrQTSkeleton();
+    CCcrQTSkeleton(CSingletonRegistry* _singleton_registry);
 
     CCcrQTPlotAppPtr createPlotApp();
     RegisteredImageDisplayAppPtr createDisplayApp();
@@ -126,9 +144,10 @@ private:
 };
 
 template <typename T>
-std::unique_ptr<T> createQtObject()
+std::unique_ptr<T> createQtObject(CCcrQTSkeleton* _qt_skeleton)
 {
-    if (!CCcrQTSkeleton::instance().is_running())
+    //if (!CCcrQTSkeleton::instance().is_running())
+    if (!_qt_skeleton->is_running())
         return nullptr;
 
     using CreatorType = GenericQtCreator<T>;

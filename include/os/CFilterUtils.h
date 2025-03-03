@@ -5,7 +5,7 @@
 #define CFilterUtils_H_
 
 #include "CCR_TYPES.h"
-#include "core/CBaseCcrFilter.h"
+#include "CBaseCcrFilter.h"
 
 class CFilterUtils
 {

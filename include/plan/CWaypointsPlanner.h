@@ -15,13 +15,15 @@ public:
     CWaypointsPlanner(std::string _waypoints_file);
     ~CWaypointsPlanner();
 
-    bool        loadWaypoints(std::string _waypoints_file);
+    bool        loadWaypoints(const std::string& _waypoints_file);
     bool        loadWaypoints(const CcrLandmarks& refs);
+    static bool saveWaypoints(CcrLandmarks& _landmarks, const std::string& _waypoints_file);
+
     bool        getMarker(const CCR_INT _marker_id, CcrLandmark& _landmark);
     void        getMap(std::unordered_map<CCR_INT, CcrLandmark>& _map);
     bool        getLandmark(const CCR_INT _marker_id, CcrLandmark& _waypoints);
     bool        getWaypoints(const CCR_INT _marker_id, std::vector<Eigen::Vector4f>& _waypoints);
-    CCR_UINT    getNoWaypoints();
+    CCR_UINT    getNumLandmarks();
 
 private:
     void str2waypoints(std::string _str_waypoints, std::vector<Eigen::Vector4f>& _waypoints);

@@ -27,5 +27,7 @@ public:
 	static bool is_positive_int(const std::string& _s);
 
 	static bool is_float(const std::string& _s);
+    
+    static size_t CyC_HashFunc(const std::string& str);
 };
 #endif /* CSTRINGUTILS_H_ */
