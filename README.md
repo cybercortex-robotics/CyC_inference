@@ -31,6 +31,29 @@ At its core, CyberCortex.AI Inference structures computations into modular units
 CyberCortex.AI Inference is built to power next-generation autonomous systems, providing the intelligence needed for robotic control, AI-driven automation, and real-time decision-making in dynamic environments. 🚀
 
 ## 2. How to Run Locally
+CyberCortex.AI.inference can be deployed locally on linux, windows and android machines, using the following hardware and open-source community software:
+- **Android**: Android development tools
+- **Eigen**: Eigen C++ Template Library for Linear Algebra
+- **ENet**: ENet Networking Library
+- **FFmpeg**: Multimedia Framework for Video and Audio Processing
+- **GLUT**: OpenGL Utility Toolkit
+- **libconfig**: C/C++ Configuration File Processing Library
+- **libcsv**: CSV File Parsing Library for C
+- **cURL**: libcurl - Data Transfer Library
+- **LibTorch**: PyTorch C++ API - Deep Learning Framework
+- **libzip**: C Library for Handling ZIP Archives
+- **MessagePack**: Efficient Binary Serialization Library
+- **nlohmann/json**: JSON for Modern C++ Library
+- **OctoMap**: 3D Mapping Library for Robotics
+- **ONNX Runtime**: Accelerated Machine Learning Inference Engine
+- **OpenCV**: Open Source Computer Vision Library
+- **OpenH264**: H.264 Codec by Cisco
+- **OpenSSL**: Cryptography and Secure Communication Library
+- **POSIX Threads (pthreads)**: Multithreading Library for C/C++
+- **Qt**: Qt Framework for GUI and Application Development (version 5.12)
+- **spdlog**: Fast C++ Logging Library
+- **TorchVision**: PyTorch Computer Vision Library
+- **Zstandard (zstd)**: Fast Lossless Compression Algorithm - Development version
 
 ## 3. How to Compile Locally
 
