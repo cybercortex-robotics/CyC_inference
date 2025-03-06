@@ -55,16 +55,14 @@ CyberCortex.AI.inference can be deployed locally on linux, windows and android m
 - **TorchVision**: PyTorch Computer Vision Library
 - **Zstandard (zstd)**: Fast Lossless Compression Algorithm - Development version
 
-## 3. How to Compile Locally
+## 3. Usage via Droids
 
-## 4. Usage via Droids
-
-## 5. License
+## 4. License
 This repository and its contents are proprietary and subject to a commercial license. Unauthorized copying, distribution, or modification of any part of this codebase is strictly prohibited without explicit written permission from the owner.
 
 By accessing or using this repository, you agree to comply with the terms of the commercial license. For licensing inquiries, please contact [contact@cybercortex.ai](contact@cybercortex.ai).
 
-## 6. Citation
+## 5. Citation
 ```
 @article{https://doi.org/10.1002/rob.22426,
   author = {Grigorescu, Sorin and Zaha, Mihai},
@@ -81,5 +79,5 @@ By accessing or using this repository, you agree to comply with the terms of the
 }
 ```
 
-## 7. Contact
+## 6. Contact
 If you have any questions, please raise an issue or contact us at [contact@cybercortex.ai](contact@cybercortex.ai).
