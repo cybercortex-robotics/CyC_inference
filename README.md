@@ -39,6 +39,21 @@ CyberCortex.AI Inference is built to power next-generation autonomous systems, p
 ## 5. License
 
 ## 6. Citation
+'''
+@article{https://doi.org/10.1002/rob.22426,
+  author = {Grigorescu, Sorin and Zaha, Mihai},
+  title = {CyberCortex.AI: An AI-based operating system for autonomous robotics and complex automation},
+  journal = {Journal of Field Robotics},
+  volume = {42},
+  number = {2},
+  pages = {474-492},
+  keywords = {artificial intelligence, autonomous navigation, autonomous robots, distributed computing, embedded artificial intelligence, embedded systems, heterogeneous robots, multi-robot systems, robot autonomy, robotics operating systems},
+  doi = {https://doi.org/10.1002/rob.22426},
+  url = {https://onlinelibrary.wiley.com/doi/abs/10.1002/rob.22426},
+  eprint = {https://onlinelibrary.wiley.com/doi/pdf/10.1002/rob.22426}
+  year = {2025}
+}
+'''
 
 ## 7. Contact
 If you have any questions, please raise an issue or contact us at [contact@cybercortex.ai](contact@cybercortex.ai).
