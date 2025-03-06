@@ -37,6 +37,9 @@ CyberCortex.AI Inference is built to power next-generation autonomous systems, p
 ## 4. Usage via Droids
 
 ## 5. License
+This repository and its contents are proprietary and subject to a commercial license. Unauthorized copying, distribution, or modification of any part of this codebase is strictly prohibited without explicit written permission from the owner.
+
+By accessing or using this repository, you agree to comply with the terms of the commercial license. For licensing inquiries, please contact [contact@cybercortex.ai](contact@cybercortex.ai).
 
 ## 6. Citation
 ```
