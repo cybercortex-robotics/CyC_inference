@@ -26,7 +26,8 @@ At its core, CyberCortex.AI Inference structures computations into modular units
 - Real-Time Processing: Executes AI models and sensor fusion algorithms with minimal latency.
 - Modular Design: Uses Filters to manage various tasks like perception, motion planning, and control.
 - Distributed Execution: Can run locally on embedded devices or communicate with cloud-based AI (CyberCortex.AI Dojo).
-Temporal Addressable Memory (TAM): Optimizes data flow between Filters, ensuring efficient handling of sensory inputs and outputs.
+- Temporal Addressable Memory (TAM): Optimizes data flow between Filters, ensuring efficient handling of sensory inputs and outputs.
+
 CyberCortex.AI Inference is built to power next-generation autonomous systems, providing the intelligence needed for robotic control, AI-driven automation, and real-time decision-making in dynamic environments. 🚀
 
 ## 2. How to Run Locally
