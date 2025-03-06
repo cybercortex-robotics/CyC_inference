@@ -56,7 +56,7 @@ CyberCortex.AI.inference can be deployed locally on linux, windows and android m
 - **Zstandard (zstd)**: Fast Lossless Compression Algorithm - Development version
 
 ## 3. Usage via Droids
-
+Once a DataBlock has been compiled locally, it can be access through our Droids web interface at [https://cybercortex.ai/](https://cybercortex.ai/).
 <div align="center">
   <img src="https://github.com/cybercortex-robotics/inference/blob/main/figures/cyc_droids_sig.jpg?raw=true" width="60%" alt="CyberCortex.AI.inference" />
 </div>
