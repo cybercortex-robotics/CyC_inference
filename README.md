@@ -56,6 +56,9 @@ CyberCortex.AI.inference can be deployed locally on linux, windows and android m
 - **Zstandard (zstd)**: Fast Lossless Compression Algorithm - Development version
 
 ## 3. Usage via Droids
+<div align="center">
+  <img src="https://github.com/cybercortex-robotics/inference/blob/main/figures/cyc_droids.jpg?raw=true" width="60%" alt="CyberCortex.AI.inference" />
+</div>
 
 ## 4. License
 This repository and its contents are proprietary and subject to a commercial license. Unauthorized copying, distribution, or modification of any part of this codebase is strictly prohibited without explicit written permission from the owner.
