@@ -1,8 +1,8 @@
 // Copyright (c) 2025 CyberCortex Robotics SRL. All rights reserved
 // Author: Sorin Mihai Grigorescu
 
-#ifndef CCR_FILESYSTEM_H
-#define CCR_FILESYSTEM_H
+#ifndef CyC_FILESYSTEM_H
+#define CyC_FILESYSTEM_H
 
 #if defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include) && !defined(__ANDROID__)  && !defined(RASPBERRY_PI)
 #if __has_include(<filesystem>)
@@ -26,4 +26,4 @@ using fstream = ghc::filesystem::fstream;
 } 
 #endif // GHC_USE_STD_FS
 
-#endif // CCR_FILESYSTEM_H
+#endif // CyC_FILESYSTEM_H
