@@ -4,7 +4,7 @@
 #ifndef CModelLegged_H_
 #define CModelLegged_H_
 
-#include <CCR_TYPES.h>
+#include <CyC_TYPES.h>
 #include <iostream>
 #include "CDenavitHartenberg.h"
 #include "CBaseStateSpaceModel.h"
@@ -66,7 +66,7 @@ struct ModelLeggedInput
     };
 
     ModelLeggedInput() = default;
-    explicit ModelLeggedInput(const CcrControlInput& input);
+    explicit ModelLeggedInput(const CycControlInput& input);
     ModelLeggedInput(const ModelLeggedInput&) = default;
     ModelLeggedInput(ModelLeggedInput&&) = default;
     ModelLeggedInput& operator=(const ModelLeggedInput&) = default;
@@ -91,8 +91,8 @@ struct ModelLeggedInput
     bool setDesiredTorque(const Eigen::VectorXf& tau);
     Eigen::Ref<const Eigen::VectorXf> getDesiredTorque() const;
 
-    CcrControlInput toControlInput() const;
-    bool fromControlInput(const CcrControlInput& input);
+    CycControlInput toControlInput() const;
+    bool fromControlInput(const CycControlInput& input);
 
 private:
     Eigen::VectorXf u = Eigen::VectorXf::Zero((size_t)Index::SIZE);

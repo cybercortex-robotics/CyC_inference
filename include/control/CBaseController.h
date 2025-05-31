@@ -4,7 +4,7 @@
 #ifndef CBaseController_H_
 #define CBaseController_H_
 
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 #include "CBaseStateSpaceModel.h"
 
 class CBaseController

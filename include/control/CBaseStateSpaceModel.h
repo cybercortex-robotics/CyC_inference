@@ -17,12 +17,12 @@
 #ifndef CBaseStateSpaceModel_H_
 #define CBaseStateSpaceModel_H_
 
-#include <CCR_TYPES.h>
+#include <CyC_TYPES.h>
 
 class CBaseStateSpaceModel
 {
 public:
-    CBaseStateSpaceModel(const CCR_INT& _num_states, const CCR_INT& _num_inputs, const CCR_INT& _num_outputs);
+    CBaseStateSpaceModel(const CyC_INT& _num_states, const CyC_INT& _num_inputs, const CyC_INT& _num_outputs);
     CBaseStateSpaceModel(const CBaseStateSpaceModel&) = default;
     CBaseStateSpaceModel(CBaseStateSpaceModel&&) = default;
     CBaseStateSpaceModel& operator=(const CBaseStateSpaceModel&) = default;
@@ -31,9 +31,9 @@ public:
 
     // Getter functions
     const bool isInitialized() const { return m_bInitialized; };
-    const CCR_INT getNumStates() const { return m_nNumStates; };
-    const CCR_INT getNumInputs() const { return m_nNumInputs; };
-    const CCR_INT getNumOutputs() const { return m_nNumOutputs; };
+    const CyC_INT getNumStates() const { return m_nNumStates; };
+    const CyC_INT getNumInputs() const { return m_nNumInputs; };
+    const CyC_INT getNumOutputs() const { return m_nNumOutputs; };
 
     const Eigen::VectorXf& x() const { return m_x; };
     const Eigen::VectorXf& y() const { return m_y; };
@@ -52,8 +52,8 @@ public:
     // Returns a vector of observations
     virtual bool step(const float& _dt, const Eigen::VectorXf& _u);
 
-    bool str2state(const std::string& _str_state, CcrState& _state);
-    static bool str2state(const std::string& _str_state, const CCR_INT& _num_states, CcrState& _state);
+    bool str2state(const std::string& _str_state, CycState& _state);
+    static bool str2state(const std::string& _str_state, const CyC_INT& _num_states, CycState& _state);
 
 protected:
     // Setup system matrices
@@ -67,9 +67,9 @@ protected:
     Eigen::VectorXf m_y;    // Observations
 
     bool    m_bInitialized = false;
-    CCR_INT m_nNumStates = 0;
-    CCR_INT m_nNumInputs = 0;
-    CCR_INT m_nNumOutputs = 0;
+    CyC_INT m_nNumStates = 0;
+    CyC_INT m_nNumInputs = 0;
+    CyC_INT m_nNumOutputs = 0;
 
     Eigen::MatrixXf m_A;    // System matrix
     Eigen::MatrixXf m_B;    // Input matrix

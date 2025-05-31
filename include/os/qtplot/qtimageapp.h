@@ -32,13 +32,13 @@ private:
     std::queue<int> m_keypress_queue;
 };
 
-class CCcrQTImageApp : public QWidget
+class CCycQTImageApp : public QWidget
 {
     Q_OBJECT
 
 public:
-    CCcrQTImageApp();
-    ~CCcrQTImageApp();
+    CCycQTImageApp();
+    ~CCycQTImageApp();
 
     int get_last_key();
     bool is_running();

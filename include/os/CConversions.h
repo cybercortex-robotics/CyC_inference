@@ -4,7 +4,7 @@
 #ifndef CCONVERSIONS_H_
 #define CCONVERSIONS_H_
 
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 
 class CConversions
 {
@@ -12,8 +12,8 @@ public:
 	CConversions();
 	virtual ~CConversions();
 
-    static std::string DataType2String(CCR_DATA_TYPE nDataType);
-	static CCR_DATA_TYPE String2DataType(const std::string& sDataType);
+    static std::string DataType2String(CyC_DATA_TYPE nDataType);
+	static CyC_DATA_TYPE String2DataType(const std::string& sDataType);
 };
 
 #endif /* CCONVERSIONS_H_ */

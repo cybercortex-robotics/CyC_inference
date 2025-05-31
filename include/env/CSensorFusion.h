@@ -4,7 +4,7 @@
 #ifndef CSensorFusion_H_
 #define CSensorFusion_H_
 
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 #include <octomap/octomap.h>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>

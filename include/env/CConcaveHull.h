@@ -1,10 +1,10 @@
 // Copyright (c) 2025 CyberCortex Robotics SRL. All rights reserved
 // Author: Sorin Mihai Grigorescu
 
-#ifndef CCR_CONCAVEHULL_H_
-#define CCR_CONCAVEHULL_H_
+#ifndef CyC_CONCAVEHULL_H_
+#define CyC_CONCAVEHULL_H_
 
-#include <CCR_TYPES.h>
+#include <CyC_TYPES.h>
 
 class CConcaveHull
 {

@@ -7,7 +7,7 @@
 #define CDNNCONFIGPARAMETERS_H_
 
 #include <map>
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 #pragma warning(disable : 4275)
 #include <libconfig.h++>
 #pragma warning(default : 4275)
@@ -16,9 +16,9 @@ struct NeuralNetworkConfiguration
 {
     std::string                 sNeuralNetworkPath;
     std::vector<std::string>    InputLayerNames;
-    std::vector<CCR_INT>        InputLayerIndices;
+    std::vector<CyC_INT>        InputLayerIndices;
     std::vector<std::string>    OutputLayerNames;
-    std::vector<CCR_INT>        OutputLayerIndices;
+    std::vector<CyC_INT>        OutputLayerIndices;
 };
 
 class CDnnConfigParameters

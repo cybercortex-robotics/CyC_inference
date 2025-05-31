@@ -4,7 +4,7 @@
 #ifndef CSTATESPACEMODELDRONE_H_
 #define CSTATESPACEMODELDRONE_H_
 
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 #include <iostream>
 #include "CStateSpaceModel.h"
 #pragma warning(disable : 4275)

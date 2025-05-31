@@ -4,11 +4,11 @@
 #ifndef CSTATESPACESIMULATION_H_
 #define CSTATESPACESIMULATION_H_
 
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 #include "CStateSpaceModel.h"
 
 
-template<CCR_INT X, CCR_INT U, CCR_INT Y = X> class Simulation
+template<CyC_INT X, CyC_INT U, CyC_INT Y = X> class Simulation
 {
 public:
     Eigen::VectorXf x = Eigen::VectorXf(X);

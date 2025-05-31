@@ -4,7 +4,7 @@
 #ifndef CPoseSolver_H_
 #define CPoseSolver_H_
 
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 #include <cmath>
 #include <math.h>
 #include "CProjectiveGeometry.h"
@@ -67,8 +67,8 @@ public:
      **/
     static bool solveT(const CPinholeCameraSensorModel * _pSensorModel, 
         const Eigen::Matrix3f& _E,
-        const CcrPoints&_pts1,
-        const CcrPoints&_pts2,
+        const CycPoints&_pts1,
+        const CycPoints&_pts2,
         const float _pos_depth_th,
         Eigen::Matrix4f& _out_T);
 
@@ -86,16 +86,16 @@ public:
      **/
     static bool solveT(const CPinholeCameraSensorModel* _pSensorModel,
         const std::vector<Eigen::Matrix3f>& _Es,
-        const CcrPoints& _pts1,
-        const CcrPoints& _pts2,
+        const CycPoints& _pts1,
+        const CycPoints& _pts2,
         const float _pos_depth_th,
         Eigen::Matrix4f& _out_T,
         Eigen::Matrix3f& _out_E);
 
     static void cam_pose_candidates(const CPinholeCameraSensorModel* _pSensorModel,
         const std::vector<Eigen::Matrix3f>& _E_candidates,
-        const CcrPoints& _pts1,
-        const CcrPoints& _pts2,
+        const CycPoints& _pts1,
+        const CycPoints& _pts2,
         const float _min_pos_depth_freq,
         std::vector<Eigen::Matrix4f>& _out_pose_candidates);
 };

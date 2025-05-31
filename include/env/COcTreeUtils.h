@@ -4,7 +4,7 @@
 #ifndef COcTreeUtils_H_
 #define COcTreeUtils_H_
 
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 #include <octomap/octomap.h>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
@@ -42,23 +42,23 @@ public:
         const cv::Mat& _img_depth_meters,
         const CPose& _pose,
         CcrOcTree* _poctree,
-        const CCR_UINT& _step = 1,
+        const CyC_UINT& _step = 1,
         const float _octree_depth_th = 30.f,
         const float _ground_th = 0.2f,
         const float _sealing_th = 2.f,
-        const CCR_INT _cls = -1,
+        const CyC_INT _cls = -1,
         const Eigen::Vector3i _color = Eigen::Vector3i::Zero(),
         const float _value = 1.f);
 
     static bool depth2octree(const CPinholeCameraSensorModel* _psensor_model,
-        const CcrImage_& _rimg,
+        const CycImage_& _rimg,
         const CPose& _pose,
         CcrOcTree* _poctree,
-        const CCR_UINT& _step = 1,
+        const CyC_UINT& _step = 1,
         float _octree_depth_th = 30.f,
         const float _ground_th = 0.2f,
         const float _sealing_th = 2.f,
-        const CCR_INT _cls = -1,
+        const CyC_INT _cls = -1,
         const Eigen::Vector3i _color = Eigen::Vector3i::Zero(),
         const float _value = 1.f);
 
@@ -71,7 +71,7 @@ public:
      * \param color                 Obstacle color
      **/
     static void ultrasonics2octree(
-        const CcrUltrasonics& _ultrasonics,
+        const CycUltrasonics& _ultrasonics,
         const CPose& pose,
         CcrOcTree& _octree, 
 		float _octree_depth_range,
@@ -85,14 +85,14 @@ public:
      * \param _octree_depth_range   Input octree depth range
      **/
     static void bboxes3d2octree(
-        const CcrBBoxes3D& _objects,
+        const CycBBoxes3D& _objects,
         CcrOcTree& _octree,
         const Eigen::Vector3f& origin,
         float origin_yaw);
 
     static void trajectory2octree(
-        const CcrBBoxes3D& _objects,
-        const std::vector<CcrTrajectory>& _trajectories,
+        const CycBBoxes3D& _objects,
+        const std::vector<CycTrajectory>& _trajectories,
         CcrOcTree& _octree,
         const Eigen::Vector3f& origin,
         float origin_yaw);
@@ -106,16 +106,16 @@ public:
      * \param _value        Input octree nodes value
      * \param _rgb_color    Input octree nodes color
      **/
-    static void voxels2octree(const CcrVoxels& _voxels,
+    static void voxels2octree(const CycVoxels& _voxels,
         CcrOcTree* _octree,
         const Eigen::Vector3i _rgb_color = Eigen::Vector3i(0, 0, 0),
-        const CCR_INT _cls = -1,
+        const CyC_INT _cls = -1,
         const float _value = 0);
 
-    static void voxels2octree(const CcrVoxels& _voxels,
+    static void voxels2octree(const CycVoxels& _voxels,
         CcrOcTree* _octree,
         const std::vector<Eigen::Vector3i> _rgb_colors,
-        const CCR_INT _cls = -1,
+        const CyC_INT _cls = -1,
         const float _value = 0);
 
     /**
@@ -128,8 +128,8 @@ public:
      * \param _octree           Output 3D octree
      **/
     static void semseg_ground2octree(const CPinholeCameraSensorModel* _psensor_model, 
-        const CcrImage_& _inference_image,
-        const std::vector<CCR_INT> _ground_class_ids,
+        const CycImage_& _inference_image,
+        const std::vector<CyC_INT> _ground_class_ids,
         const float _depth_range,
         CcrOcTree& _octree);
     

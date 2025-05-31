@@ -1,7 +1,7 @@
 // Copyright (c) 2025 CyberCortex Robotics SRL. All rights reserved
 // Author: Sorin Mihai Grigorescu
 
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 #include <csv_reader.h>
 #include "os/CFileUtils.h"
 
@@ -16,20 +16,20 @@ public:
     ~CWaypointsPlanner();
 
     bool        loadWaypoints(const std::string& _waypoints_file);
-    bool        loadWaypoints(const CcrLandmarks& refs);
-    static bool saveWaypoints(CcrLandmarks& _landmarks, const std::string& _waypoints_file);
+    bool        loadWaypoints(const CycLandmarks& refs);
+    static bool saveWaypoints(CycLandmarks& _landmarks, const std::string& _waypoints_file);
 
-    bool        getMarker(const CCR_INT _marker_id, CcrLandmark& _landmark);
-    void        getMap(std::unordered_map<CCR_INT, CcrLandmark>& _map);
-    bool        getLandmark(const CCR_INT _marker_id, CcrLandmark& _waypoints);
-    bool        getWaypoints(const CCR_INT _marker_id, std::vector<Eigen::Vector4f>& _waypoints);
-    CCR_UINT    getNumLandmarks();
+    const std::unordered_map<CyC_INT, CycLandmark>& getLandmarks() const { return m_Landmarks; };
+    bool        getLandmark(const CyC_INT _marker_id, CycLandmark& _waypoints);
+    bool        getMarker(const CyC_INT _marker_id, CycLandmark& _landmark);
+    bool        getWaypoints(const CyC_INT _marker_id, std::vector<Eigen::Vector4f>& _waypoints);
+    CyC_UINT    getNumLandmarks();
 
 private:
     void str2waypoints(std::string _str_waypoints, std::vector<Eigen::Vector4f>& _waypoints);
 
 private:
-    CcrLandmarks m_Landmarks;
+    CycLandmarks m_Landmarks;
 };
 
 #endif /* CWaypointsPlanner_H_ */

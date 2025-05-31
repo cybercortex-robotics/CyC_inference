@@ -4,7 +4,7 @@
 #ifndef CPinholeCameraSensorModel_H_
 #define CPinholeCameraSensorModel_H_
 
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 #include <Eigen/Eigen>
 #include <opencv2/opencv.hpp>
 #include "CBaseSensorModel.h"
@@ -36,9 +36,9 @@ public:
     virtual float                   errorMultiplier2() const    { return fabs(fx_px_); }
     virtual float                   errorMultiplier() const     { return fabs(4.F*fx_px_*fy_px_); }
     inline const bool               isRightCam() const          { return bIsRightCamera_; }
-    inline CCR_INT                  width() const               { return width_; }
-    inline CCR_INT                  height() const              { return height_; }
-    inline CCR_INT                  channels() const            { return channels_; }
+    inline CyC_INT                  width() const               { return width_; }
+    inline CyC_INT                  height() const              { return height_; }
+    inline CyC_INT                  channels() const            { return channels_; }
     inline float                    min_range() const           { return min_range_; }
     inline float                    max_range() const           { return max_range_; }
     inline const bool               distortion() const          { return distortion_; } //!< is it pure pinhole model or it has radial distortion?
@@ -63,11 +63,15 @@ public:
 
     void            undistortImage(const cv::Mat& raw, cv::Mat& rectified);
     Eigen::Vector2f undistort(const Eigen::Vector2f& _pt) const;
-    CcrPoint        undistort(const CcrPoint& _pt) const;
+    CycPoint        undistort(const CycPoint& _pt) const;
     void            undistort(const std::vector<Eigen::Vector2f>& _pts_dist, std::vector<Eigen::Vector2f>& _pts_undist) const;
-    void            undistort(const CcrPoints& _pts_dist, CcrPoints& _pts_undist) const;
+    void            undistort(const CycPoints& _pts_dist, CycPoints& _pts_undist) const;
     Eigen::Vector2f distort(const Eigen::Vector2f& _pt) const;
     void            distort(const std::vector<Eigen::Vector2f>& _pts_undist, std::vector<Eigen::Vector2f>& _pts_dist) const;
+
+    Eigen::Vector3f normalize(const Eigen::Vector3f& _px) const;
+    Eigen::Vector3f normalize(const Eigen::Vector2f& _px) const;
+    Eigen::Vector3f unnormalize(const Eigen::Vector3f& _px) const;
 
     const bool                  inView(const Eigen::Vector2f& _pt) const;
     const bool                  inView(const cv::Point2f& _pt) const;
@@ -79,8 +83,8 @@ private:
 
 private:
     bool            bIsRightCamera_;
-    CCR_INT         width_, height_;
-    CCR_INT         channels_;
+    CyC_INT         width_, height_;
+    CyC_INT         channels_;
     float           min_range_;
     float           max_range_;
     float           fx_px_, fy_px_;        // focal lenght [px] = focal length [m] / pixel size [m]

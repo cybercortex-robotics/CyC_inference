@@ -4,7 +4,7 @@
 #ifndef CGeolocation_H_
 #define CGeolocation_H_
 
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 
 class CGeolocation
 {

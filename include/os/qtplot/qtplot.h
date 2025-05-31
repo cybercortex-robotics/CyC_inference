@@ -21,7 +21,7 @@ class QWidget;
 class QEvent;
 
 class CCcrQTPlotApp;
-class CCcrQTSkeleton;
+class CCycQTSkeleton;
 struct RegisteredImageDisplayApp;
 
 struct CCcrQTPlotSegmentTemp
@@ -38,7 +38,7 @@ struct CCcrQTPlotSegmentTemp
 class CCcrQTPlot
 {
 public:
-    CCcrQTPlot(const std::string& _title, CCcrQTSkeleton* _qt_skeleton);
+    CCcrQTPlot(const std::string& _title, CCycQTSkeleton* _qt_skeleton);
     ~CCcrQTPlot();
 
     int run();
@@ -56,11 +56,11 @@ private:
 
     CCcrQTPlotApp* m_plotapp = nullptr;
 
-    std::shared_ptr<CCcrQTSkeleton> m_CcrQTSkeleton = nullptr;
-    //CCcrQTSkeleton* m_QtSkeleton = nullptr;
+    std::shared_ptr<CCycQTSkeleton> m_CcrQTSkeleton = nullptr;
+    //CCycQTSkeleton* m_QtSkeleton = nullptr;
 };
 
-class CCcrQTSkeleton : public CSingletonBase
+class CCycQTSkeleton : public CSingletonBase
 {
 public:
     friend class CSingletonRegistry;
@@ -68,24 +68,24 @@ public:
     using CCcrQTPlotAppPtr = std::unique_ptr<CCcrQTPlotApp>;
     using RegisteredImageDisplayAppPtr = std::unique_ptr<RegisteredImageDisplayApp>;
 
-    CCcrQTSkeleton(const CCcrQTSkeleton&) = delete;
-    CCcrQTSkeleton(CCcrQTSkeleton&&) = delete;
-    CCcrQTSkeleton& operator=(const CCcrQTSkeleton&) = delete;
-    CCcrQTSkeleton& operator=(CCcrQTSkeleton&&) = delete;
-    ~CCcrQTSkeleton();
+    CCycQTSkeleton(const CCycQTSkeleton&) = delete;
+    CCycQTSkeleton(CCycQTSkeleton&&) = delete;
+    CCycQTSkeleton& operator=(const CCycQTSkeleton&) = delete;
+    CCycQTSkeleton& operator=(CCycQTSkeleton&&) = delete;
+    ~CCycQTSkeleton();
 
-    //static CCcrQTSkeleton& instance();
+    //static CCycQTSkeleton& instance();
 
     // Singleton type
     static const char* getType()
     {
-        return "CCR_QT_SINGLETON_TYPE";
+        return "CyC_QT_SINGLETON_TYPE";
     }
 
     // Singleton registry function
-    static std::unique_ptr<CCcrQTSkeleton> create_instance(CSingletonRegistry* _singleton_registry)
+    static std::unique_ptr<CCycQTSkeleton> create_instance(CSingletonRegistry* _singleton_registry)
     {
-        return std::unique_ptr<CCcrQTSkeleton>{new CCcrQTSkeleton(_singleton_registry)};
+        return std::unique_ptr<CCycQTSkeleton>{new CCycQTSkeleton(_singleton_registry)};
     }
 
     void init();
@@ -101,7 +101,7 @@ public:
     RegisteredImageDisplayApp* allocate_display_app(const std::string& title);
 
 private:
-    CCcrQTSkeleton(CSingletonRegistry* _singleton_registry);
+    CCycQTSkeleton(CSingletonRegistry* _singleton_registry);
 
     CCcrQTPlotAppPtr createPlotApp();
     RegisteredImageDisplayAppPtr createDisplayApp();
@@ -125,7 +125,7 @@ public:
     GenericQtCreator(std::promise<std::unique_ptr<T>>& p)
         : m_promise(p)
     {
-        //CCcrQTSkeleton::instance().init();
+        //CCycQTSkeleton::instance().init();
     }
 
     bool event(QEvent* ev) override
@@ -144,9 +144,9 @@ private:
 };
 
 template <typename T>
-std::unique_ptr<T> createQtObject(CCcrQTSkeleton* _qt_skeleton)
+std::unique_ptr<T> createQtObject(CCycQTSkeleton* _qt_skeleton)
 {
-    //if (!CCcrQTSkeleton::instance().is_running())
+    //if (!CCycQTSkeleton::instance().is_running())
     if (!_qt_skeleton->is_running())
         return nullptr;
 

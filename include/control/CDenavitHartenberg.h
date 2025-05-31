@@ -8,7 +8,7 @@
 #ifndef CDenavitHartenberg_H_
 #define CDenavitHartenberg_H_
 
-#include <CCR_TYPES.h>
+#include <CyC_TYPES.h>
 #include "CStateSpaceModel.h"
 #pragma warning(disable : 4275)
 #include <libconfig.h++>
@@ -70,7 +70,7 @@ public:
     CPose getBodyPose() const { return m_BodyPose; };
     void setBodyPose(const CPose& _pose) { m_BodyPose = _pose; };
     
-    CCR_INT getNumLinks();
+    CyC_INT getNumLinks();
     
     bool loadKinematics(const std::string& _robot_model_file);
 

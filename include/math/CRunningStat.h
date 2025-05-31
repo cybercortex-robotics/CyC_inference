@@ -1,8 +1,8 @@
 // Copyright (c) 2025 CyberCortex Robotics SRL. All rights reserved
 // Author: Sorin Mihai Grigorescu
 
-#ifndef CCR_RUNNING_STAT_H_
-#define CCR_RUNNING_STAT_H_
+#ifndef CyC_RUNNING_STAT_H_
+#define CyC_RUNNING_STAT_H_
 
 class CRunningStat
 {
@@ -63,4 +63,4 @@ private:
     float m_oldM, m_newM, m_oldS, m_newS;
 };
 
-#endif // CCR_RUNNING_STAT_H_
+#endif // CyC_RUNNING_STAT_H_

@@ -4,7 +4,7 @@
 #ifndef CGridMapUtils_H_
 #define CGridMapUtils_H_
 
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 #include <opencv2/highgui.hpp>
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/imgproc.hpp>

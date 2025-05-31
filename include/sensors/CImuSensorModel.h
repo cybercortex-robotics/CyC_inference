@@ -4,7 +4,7 @@
 #ifndef CImuSensorModel_H_
 #define CImuSensorModel_H_
 
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 #include <Eigen/Eigen>
 #include "CBaseSensorModel.h"
 #pragma warning(disable : 4275)
@@ -39,6 +39,7 @@ public:
     }
 
 public:
+    static Bias Bias_DEFAULT;
     Eigen::Vector3f m_BiasAcc = Eigen::Vector3f::Zero();
     Eigen::Vector3f m_BiasGyro = Eigen::Vector3f::Zero();
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -66,11 +67,10 @@ public:
     virtual float errorMultiplier2() const { return 0.f; };
     virtual float errorMultiplier() const { return 0.f; };
 
-    Bias getBias() const { return m_Bias; };
-    Eigen::Vector3f getBiasAcc() const { return m_Bias.m_BiasAcc; };
-    Eigen::Vector3f getBiasGyro() const { return m_Bias.m_BiasGyro; };
-    void setBias(const Bias& _bias) { m_Bias = _bias; };
-
+    float getNoiseAcc() const { return m_StddevAcc; }
+    float getNoiseGyro() const { return m_StddevGyro; }
+    float getRandwalkAcc() const { return m_RandwalkAcc; }
+    float getRandwalkGyro() const { return m_RandwalkGyro; }
     Eigen::DiagonalMatrix<float, 6> getCovNoise() const { return m_CovNoise; };
     Eigen::DiagonalMatrix<float, 6> getCovRandWalk() const { return m_CovRandWalk; };
 
@@ -82,7 +82,6 @@ private:
 
 private:
     bool m_bInitialized = false;
-    Bias m_Bias;
     
     // Noise
     float m_StddevAcc = 0.f;

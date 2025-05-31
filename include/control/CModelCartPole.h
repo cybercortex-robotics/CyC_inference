@@ -12,7 +12,7 @@
 #ifndef CModelCartPole_H_
 #define CModelCartPole_H_
 
-#include <CCR_TYPES.h>
+#include <CyC_TYPES.h>
 #include "CBaseStateSpaceModel.h"
 
 class CModelCartPole : public CBaseStateSpaceModel
@@ -32,9 +32,9 @@ public:
     const float getPoleAngularVelocity() const { return this->m_x(3); };
 
 private:
-    static const CCR_INT m_NumStates = 4;
-    static const CCR_INT m_NumInputs = 1;
-    static const CCR_INT m_NumOutputs = 2;
+    static const CyC_INT m_NumStates = 4;
+    static const CyC_INT m_NumInputs = 1;
+    static const CyC_INT m_NumOutputs = 2;
 };
 
 #endif // CModelCartPole_H_

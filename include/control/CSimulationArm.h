@@ -4,7 +4,7 @@
 #ifndef CSimulationArm_H_
 #define CSimulationArm_H_
 
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 #include "CStateSpaceModelArm.h"
 
 class CSimulationArm

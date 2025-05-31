@@ -6,7 +6,7 @@
 
 #include <Eigen/Eigen>
 #include <Eigen/Core>
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 #include "control/CModelVehicle.h"
 #include "plan/CPlanningUtils.h"
 
@@ -17,26 +17,26 @@ public:
         const std::string& _vehicle_model_file,
         const float _lookahead_distance, 
         const float& _goal_distance,
-        const std::vector<CCR_INT>& _travesable_class_ids = std::vector<CCR_INT>());
+        const std::vector<CyC_INT>& _travesable_class_ids = std::vector<CyC_INT>());
 
     bool isEnabled() { return m_bEnabled; };
 
-    void setMissionPath(const std::vector<Eigen::Vector4f>& _mission_path, const CcrState& _vehicle_state);
+    void setMissionPath(const std::vector<Eigen::Vector4f>& _mission_path, const CycState& _vehicle_state);
 
-    CcrControlInput dwaControl(
-        const CcrState& vehicle_state,
-        const CcrEnvironment& env);
+    CycControlInput dwaControl(
+        const CycState& vehicle_state,
+        const CycEnvironment& env);
 
-    CcrReferenceSetPoints dwaPlan(
-        const CcrState& vehicle_state,
-        const CcrEnvironment& env);
+    CycReferenceSetPoints dwaPlan(
+        const CycState& vehicle_state,
+        const CycEnvironment& env);
 
 private:
-    void find_goal_points(const CcrState& _vehicle_state, std::vector<Eigen::VectorXf>& _out_goal_points);
+    void find_goal_points(const CycState& _vehicle_state, std::vector<Eigen::VectorXf>& _out_goal_points);
     void parse_octree(const CcrOcTree& _octree, std::vector<Eigen::VectorXf>& _out_obstacles, std::vector<Eigen::VectorXf>& _out_traversable);
-    std::vector<Eigen::VectorXf> find_traversable_nodes(const CcrOcTree& _octree, const CCR_INT& _traversable_class_id);
-    bool goalPointReached(const std::vector<Eigen::VectorXf>& goal_points, const CcrState& _vehicle_state);
-    CcrControlInput filterSignals(const CcrControlInput& raw_control);
+    std::vector<Eigen::VectorXf> find_traversable_nodes(const CcrOcTree& _octree, const CyC_INT& _traversable_class_id);
+    bool goalPointReached(const std::vector<Eigen::VectorXf>& goal_points, const CycState& _vehicle_state);
+    CycControlInput filterSignals(const CycControlInput& raw_control);
 
     // Use the underlying vehicle model to predict the vehicle state over the dynamic window
     void predictState(float vel, float steer);
@@ -63,12 +63,12 @@ private:
     float traversableCost(const std::vector<Eigen::VectorXf>& trajectory, const std::vector<Eigen::VectorXf>& traversable);
 
     // Cost for staying in between lanes
-    float lanesCost(const std::vector<Eigen::VectorXf>& trajectory, const CcrLanesModel& lanes);
+    float lanesCost(const std::vector<Eigen::VectorXf>& trajectory, const CycLanesModel& lanes);
 
     // Cost for staying on the segmented road
-    //float roadSegmentationCost(const std::vector<Eigen::VectorXf>& trajectory, const CcrImages& semseg_imgs);
-    float roadSegmentationCost(const CcrTrajectory& trajectory, const std::vector<Eigen::VectorXf>& traversable_nodes);
-    float roadSegmentationHullCost(const CcrTrajectory& trajectory, const std::vector<Eigen::Vector4f>& hull_nodes);
+    //float roadSegmentationCost(const std::vector<Eigen::VectorXf>& trajectory, const CycImages& semseg_imgs);
+    float roadSegmentationCost(const CycTrajectory& trajectory, const std::vector<Eigen::VectorXf>& traversable_nodes);
+    float roadSegmentationHullCost(const CycTrajectory& trajectory, const std::vector<Eigen::Vector4f>& hull_nodes);
 
     // Generate trajectory with given linear velocity and agular velocity commands
     std::vector<Eigen::VectorXf> generateTrajectory(float target_speed, float steer);
@@ -112,21 +112,21 @@ private:
     std::vector<Eigen::VectorXf>    m_previous_trajectory;
 
     std::vector<Eigen::Vector4f>    m_MissionPath;
-    CCR_UINT                        m_NumGoalPoints = 1;
+    CyC_UINT                        m_NumGoalPoints = 1;
     float                           m_GoalDistance = 1.f;
     size_t                          m_PreviousTrajectoryPointIndex = 0;
-    CCR_UINT                        m_ClosestIndex = 0;
+    CyC_UINT                        m_ClosestIndex = 0;
     bool                            m_GoalPointReached = false;
 
-    std::vector<CcrControlInput>    m_PreviousControlSignals;
+    std::vector<CycControlInput>    m_PreviousControlSignals;
     std::vector<Eigen::VectorXf>    m_HistoryOfControlSignals;
-    CCR_UINT                        m_NumHistoryControlSignals = 10;
+    CyC_UINT                        m_NumHistoryControlSignals = 10;
 
     // Environment variables
-    std::vector<CCR_INT>            m_TravesableClassIDs;
+    std::vector<CyC_INT>            m_TravesableClassIDs;
 
     // Previous control input (used for successive commands cost functions)
-    CcrControlInput                 m_PreviousControl;
+    CycControlInput                 m_PreviousControl;
 };
 
 #endif //CDwa_H_

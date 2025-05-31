@@ -22,6 +22,7 @@ else()
   string(REPLACE "." "" CyC_CUDA_VERSION_ID ${CyC_CUDA_VERSION})
   set(CyC_CUDA_VERSION_ID "cuda${CyC_CUDA_VERSION_ID}")
 endif()
+set(CyC_CUDA_VERSION_ID ${CyC_CUDA_VERSION_ID} PARENT_SCOPE)
 
 string(REPLACE "." "" CyC_OPENCV_VERSION_ID ${CyC_OPENCV_VERSION})
 
@@ -129,16 +130,13 @@ list(APPEND CMAKE_FIND_ROOT_PATH "${OPENSSL_ROOT_DIR}" PARENT_SCOPE)
 set(CyC_THIRD_PARTY_INCLUDE_DIRECTORIES 
     ${CyC_OPENCV_INCLUDE_PATH}
     ${CyC_THIRD_PARTY}/Eigen
-    ${CyC_THIRD_PARTY}/Eigen
     ${CyC_THIRD_PARTY}/spdlog-1.4.2/include
     ${CyC_THIRD_PARTY}/aruco-3.1.4/include
     ${CyC_THIRD_PARTY}/libcsv/include
     ${CyC_THIRD_PARTY}/openh264/include
     ${CyC_THIRD_PARTY}/octomap/include
     ${CyC_THIRD_PARTY}/libconfig/include
-    ${CyC_THIRD_PARTY}/triclops/include
     ${CyC_THIRD_PARTY}/enet-1.3.14/include
-    ${CyC_THIRD_PARTY}/Fast/include
     ${CyC_THIRD_PARTY}/zstd-dev/lib
     ${CyC_THIRD_PARTY}/ffmpeg/include
     ${CyC_THIRD_PARTY}/nlohmann-json/include
@@ -147,10 +145,8 @@ set(CyC_THIRD_PARTY_INCLUDE_DIRECTORIES
     ${CyC_THIRD_PARTY}/msgpack/include
     ${CyC_THIRD_PARTY}/libcurl/include
     ${CyC_THIRD_PARTY}/libzip/include
-    ${CyC_THIRD_PARTY}/unitree/include
     ${CyC_THIRD_PARTY}/boost-1.78.0/include
-    ${CyC_THIRD_PARTY}/glut-2.0.0.29/include
-    ${CyC_THIRD_PARTY}/libceres/${CyC_CERES_VERSION}/include)
+    ${CyC_THIRD_PARTY}/glut-2.0.0.29/include)
 if (WIN32)
     set(CyC_THIRD_PARTY_INCLUDE_DIRECTORIES ${CyC_THIRD_PARTY_INCLUDE_DIRECTORIES}
         ${CyC_THIRD_PARTY}/pthreads/include
@@ -202,6 +198,7 @@ macro(add_cyc_filter name filter_path)
 		#target_include_directories(${FN} PUBLIC ${filter_path}/include)
 		#target_compile_definitions(CycCore PUBLIC ${name})
         #target_link_libraries(${FN} PUBLIC ${CyC_OPENCV_WORLD})
+        add_dependencies(BUILD_ALL_FILTERS ${FN})
 		message(STATUS "Filter '${FN}' enabled.")
 	endif (Build_${name})
 endmacro()

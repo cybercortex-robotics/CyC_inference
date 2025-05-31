@@ -8,7 +8,7 @@
 #ifndef CPolynomialFitting_H_
 #define CPolynomialFitting_H_
 
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 
 class CPolynomialFitting
 {
@@ -16,7 +16,7 @@ public:
     CPolynomialFitting();
     virtual ~CPolynomialFitting();
 
-    static Eigen::VectorXf polyfit(const Eigen::VectorXf& xvals, const Eigen::VectorXf& yvals, CCR_INT order);
+    static Eigen::VectorXf polyfit(const Eigen::VectorXf& xvals, const Eigen::VectorXf& yvals, CyC_INT order);
     static float polyeval(const Eigen::VectorXf& coeffs, float x);
 };
 

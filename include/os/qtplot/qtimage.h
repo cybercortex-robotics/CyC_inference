@@ -3,13 +3,13 @@
 
 #include <string>
 
-class CCcrQTSkeleton;
+class CCycQTSkeleton;
 
-class CCcrQTImage
+class CCycQTImage
 {
 public:
-    CCcrQTImage(CCcrQTSkeleton* _qt_skeleton);
-    ~CCcrQTImage();
+    CCycQTImage(CCycQTSkeleton* _qt_skeleton);
+    ~CCycQTImage();
     
     /* Meaning 32bits per pixel, unpadded. */
     int display_rgba(void* data, int width, int height, const std::string& title);
@@ -17,5 +17,5 @@ public:
     int get_last_key(const std::string& title);
 
 private:
-    std::shared_ptr<CCcrQTSkeleton> m_CcrQTSkeleton = nullptr;
+    std::shared_ptr<CCycQTSkeleton> m_CcrQTSkeleton = nullptr;
 };

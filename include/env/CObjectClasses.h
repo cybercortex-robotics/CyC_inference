@@ -4,7 +4,7 @@
 #ifndef CObjectClasses_H_
 #define CObjectClasses_H_
 
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 #include "os/CFileUtils.h"
 #pragma warning(disable : 4275)
 #include <libconfig.h++>
@@ -84,16 +84,16 @@ public:
     virtual ~CObjectClasses();
 
     bool isInitialized()                                { return m_bIsInitialized; };
-    CCR_UINT getNumClasses()                            { return m_nNumClasses; };
-    std::unordered_map<CCR_INT, std::string> getMap()   { return m_ObjectClassesMap; };
+    CyC_UINT getNumClasses()                            { return m_nNumClasses; };
+    std::unordered_map<CyC_INT, std::string> getLandmarks()   { return m_ObjectClassesMap; };
 
-    static cv::Scalar getColor(const CCR_INT& _object_class);
+    static cv::Scalar getColor(const CyC_INT& _object_class);
 
 private:
     bool m_bIsInitialized = false;
-    CCR_UINT m_nNumClasses = 0;
+    CyC_UINT m_nNumClasses = 0;
 
-    std::unordered_map<CCR_INT, std::string> m_ObjectClassesMap;
+    std::unordered_map<CyC_INT, std::string> m_ObjectClassesMap;
 };
 
 #endif /* CObjectClasses_H_ */

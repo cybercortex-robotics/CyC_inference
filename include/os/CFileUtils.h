@@ -4,11 +4,11 @@
 #ifndef CFILEUTILS_H_
 #define CFILEUTILS_H_
 
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 #include <list>
 #include <fstream>
 #include "CStringUtils.h"
-#include "os/CCR_FILESYSTEM.h"
+#include "os/CyC_FILESYSTEM.h"
 
 class CFileUtils
 {
@@ -22,11 +22,11 @@ public:
 
     static bool FolderExist(const char* folderName);
 
-	static CCR_LONG length(const std::string &filePath);
+	static CyC_LONG length(const std::string &filePath);
 
-	static CCR_INT erase(const std::string &filePath);
+	static CyC_INT erase(const std::string &filePath);
 
-	static CCR_INT rename(const std::string &oldFilePath, const std::string &newFilePath);
+	static CyC_INT rename(const std::string &oldFilePath, const std::string &newFilePath);
 
 	static std::string getFileName(const std::string& filePath);
 

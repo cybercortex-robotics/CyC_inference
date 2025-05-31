@@ -4,7 +4,7 @@
 #ifndef CDataBlockReader_H
 #define CDataBlockReader_H
 
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 #include "csv_reader.h"
 #include <iostream>
 #include <fstream>
@@ -18,19 +18,19 @@ public:
     typedef std::variant<
         float,
         std::vector<float>,
-        CcrImage_,
-        CcrPoints,
-        CcrState,
-        CcrImus
+        CycImage_,
+        CycPoints,
+        CycState,
+        CycImus
     > DataType;
 
     struct DatablockData
     {
-        CCR_INT         filter_id = -1;
-        CCR_TIME_UNIT   timestamp = -1;
+        CyC_INT         filter_id = -1;
+        CyC_TIME_UNIT   timestamp = -1;
         DataType        data;
 
-        DatablockData(const CCR_INT _filter_id) :
+        DatablockData(const CyC_INT _filter_id) :
             filter_id(_filter_id)
         {}
     };
@@ -38,16 +38,16 @@ public:
 private:
     struct Datastream
     {
-        CCR_INT         filter_id = -1;
-        CCR_INT         datatype = -1;
+        CyC_INT         filter_id = -1;
+        CyC_INT         datatype = -1;
         std::string     imgs_datastream_name;
         std::ifstream   imgs_datastream_reader;
-        CCR_INT         imgs_col = -1;
+        CyC_INT         imgs_col = -1;
     };
     typedef std::vector<Datastream> Datastreams;
 
 public:
-	CDataBlockReader(const std::string _db_path, const std::vector<CCR_INT> _filter_ids);
+	CDataBlockReader(const std::string _db_path, const std::vector<CyC_INT> _filter_ids);
     ~CDataBlockReader();
 
     bool getNextRow(std::vector<DatablockData>& _out_data);
@@ -58,7 +58,7 @@ public:
     bool readImu(const std::string& _line, const std::string& _datastream_name, DataType& _out_imu);
 
 private:
-    bool makeDatastream(const std::string& _db_path, const CCR_INT& _filter_id, const CCR_INT& _datatype, CDataBlockReader::Datastream& _out_datastream);
+    bool makeDatastream(const std::string& _db_path, const CyC_INT& _filter_id, const CyC_INT& _datatype, CDataBlockReader::Datastream& _out_datastream);
 
 private:
     bool        m_bInitialized = false;

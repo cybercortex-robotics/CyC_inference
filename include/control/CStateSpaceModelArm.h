@@ -4,7 +4,7 @@
 #ifndef ArmModel_H_
 #define ArmModel_H_
 
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 #include <iostream>
 #include "CStateSpaceModel.h"
 #pragma warning(disable : 4275)
@@ -79,7 +79,7 @@ public:
             const libconfig::Setting& rootConfig = configFile.getRoot();
             const libconfig::Setting& Links = rootConfig["Links"];
             
-            for (CCR_INT i = 0; i < Links.getLength(); ++i)
+            for (CyC_INT i = 0; i < Links.getLength(); ++i)
             {
                 LinkDH link;
                 const libconfig::Setting& LinksConfig = Links[i];
@@ -122,7 +122,7 @@ public:
         kinematic_chain.clear();
         Eigen::Matrix4f trans = Eigen::Matrix4f::Identity();
 
-        for (CCR_INT i = 0; i < (state.size() / NO_ARM_LINK_MODEL_STATES); ++i)
+        for (CyC_INT i = 0; i < (state.size() / NO_ARM_LINK_MODEL_STATES); ++i)
         {
             float theta = state[i * NO_ARM_LINK_MODEL_STATES];
             float alpha = state[i * NO_ARM_LINK_MODEL_STATES + 1];

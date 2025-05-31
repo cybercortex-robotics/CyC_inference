@@ -1,7 +1,7 @@
-#ifndef CCR_LINEARFIRSTORDERSYSTEM_H_
-#define CCR_LINEARFIRSTORDERSYSTEM_H_
+#ifndef CyC_LINEARFIRSTORDERSYSTEM_H_
+#define CyC_LINEARFIRSTORDERSYSTEM_H_
 
-#include <CCR_TYPES.h>
+#include <CyC_TYPES.h>
 
 // https://val-sagrario.github.io/Dynamics%20of%20First%20Order%20Systems%20for%20game%20devs%20-%20Jan%202020.pdf
 // Simulates an approximated 1st order system:
@@ -29,4 +29,4 @@ private:
     float m_lastY = 0.F;
 };
 
-#endif // CCR_LINEARFIRSTORDERSYSTEM_H_
+#endif // CyC_LINEARFIRSTORDERSYSTEM_H_

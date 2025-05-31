@@ -4,7 +4,7 @@
 #ifndef CDepthImageProcessing_H_
 #define CDepthImageProcessing_H_
 
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 #include "vision/CImageProcessing.h"
 #include "sensors/CPinholeCameraSensorModel.h"
 
@@ -26,25 +26,25 @@ public:
     * \param _depth             Depth value
     * \param _scale             Scale factor
     **/
-    static CcrVoxel depth2voxel(const CPinholeCameraSensorModel* _pSensorModel,
-        const CcrPoint& _pt,
+    static CycVoxel depth2voxel(const CPinholeCameraSensorModel* _pSensorModel,
+        const CycPoint& _pt,
         const float& _depth,
         const float& _scale);
 
     static bool depth2voxels(const CPinholeCameraSensorModel* _pSensorModel,
         const cv::Mat& _img_depth,
-        CcrVoxels& _out_voxels,
+        CycVoxels& _out_voxels,
         const float& _scale,
-        CCR_INT _step,
+        CyC_INT _step,
         const cv::Mat& _img_rgb,
         std::vector<Eigen::Vector3i>& _out_colors);
 
     static bool keypoints2voxels(const CPinholeCameraSensorModel* _pSensorModel, 
         const cv::Mat& _img_depth,
-        const CcrPoints& _pts,
+        const CycPoints& _pts,
         const float& _scale,
-        CcrVoxels& _out_voxels,
-        CcrPoints& _out_inliers);
+        CycVoxels& _out_voxels,
+        CycPoints& _out_inliers);
 
     /**
     * \brief Encodes a depth image into a 3 channels RGB image.
@@ -70,7 +70,7 @@ public:
     **/
     static cv::Mat asus2depth(const cv::Mat& in_depth);
 
-    static bool readVoxelsFile(const std::string& _voxels_path, CcrVoxels& _out_voxels);
+    static bool readVoxelsFile(const std::string& _voxels_path, CycVoxels& _out_voxels);
 };
 
 #endif /* CDepthImageProcessing_H_ */

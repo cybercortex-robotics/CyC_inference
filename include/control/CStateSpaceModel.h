@@ -4,7 +4,7 @@
 #ifndef CSTATESPACEMODEL_H_
 #define CSTATESPACEMODEL_H_
 
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 #include <iostream>
  
  /*
@@ -16,12 +16,12 @@
  *
  * You can define any state space model by declaring a Model<X,U,Y> and filling out the system matrics, A, B, C & D appropriately.
  */
-template<CCR_INT X, CCR_INT U, CCR_INT Y = X>
+template<CyC_INT X, CyC_INT U, CyC_INT Y = X>
 struct StateSpaceModel
 {
-    const static CCR_INT states = X;
-    const static CCR_INT inputs = U;
-    const static CCR_INT outputs = Y;
+    const static CyC_INT states = X;
+    const static CyC_INT inputs = U;
+    const static CyC_INT outputs = Y;
 
     Eigen::MatrixXf A = Eigen::MatrixXf(X, X);
     Eigen::MatrixXf B = Eigen::MatrixXf(X, U);

@@ -4,7 +4,7 @@
 #ifndef CTIMER_H
 #define CTIMER_H
 
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 
 /**
  * This class is used to time some codes (in seconds).
@@ -31,7 +31,7 @@ public:
      * the time of the system right now.
      * @return double the time in seconds.
      */
-    static CCR_TIME_UNIT now();
+    static CyC_TIME_UNIT now();
 
     /**
      * This method starts the timer.
@@ -47,13 +47,13 @@ public:
      * These 2 methods are used to get the elapsed time
      * between now and the start(). If timer is stopped, the interval time
 	 * between stop() and the start() is returned.
-     * @return CCR_TIME_UNIT the interval in milliseconds/microseconds.
+     * @return CyC_TIME_UNIT the interval in milliseconds/microseconds.
      */
-    CCR_TIME_UNIT elapsedMilliseconds() { return getElapsedTimeMilliseconds(); }
-    CCR_TIME_UNIT elapsedMicroseconds() { return getElapsedTimeMicroseconds(); }
+    CyC_TIME_UNIT elapsedMilliseconds() { return getElapsedTimeMilliseconds(); }
+    CyC_TIME_UNIT elapsedMicroseconds() { return getElapsedTimeMicroseconds(); }
 
-    CCR_TIME_UNIT getElapsedTimeMilliseconds();
-    CCR_TIME_UNIT getElapsedTimeMicroseconds();
+    CyC_TIME_UNIT getElapsedTimeMilliseconds();
+    CyC_TIME_UNIT getElapsedTimeMicroseconds();
 
     /**
      * This method is used to get the interval of
@@ -63,14 +63,14 @@ public:
      * elapsed() and start(). Method restart() does the same thing, for convenience.
      * @return double the interval in seconds.
      */
-    CCR_TIME_UNIT restart()
+    CyC_TIME_UNIT restart()
 	{
 		return ticks();
 	}
 
-    CCR_TIME_UNIT ticks();
+    CyC_TIME_UNIT ticks();
 
-    static std::string toString(CCR_TIME_UNIT ts);
+    static std::string toString(CyC_TIME_UNIT ts);
 
 private:
 	using clock_type_t = std::chrono::high_resolution_clock;

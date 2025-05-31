@@ -4,7 +4,7 @@
 #ifndef CLidarSensorModel_H_
 #define CLidarSensorModel_H_
 
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 #include <Eigen/Eigen>
 #include "CBaseSensorModel.h"
 #pragma warning(disable : 4275)
@@ -34,9 +34,18 @@ public:
 
     virtual float errorMultiplier2() const { return 0.f; };
     virtual float errorMultiplier() const { return 0.f; };
+
+    inline float min_range() const { return min_range_; }
+    inline float max_range() const { return max_range_; }
+    inline float num_points() const { return num_points_; }
     
 private:
     virtual bool loadSensorModel(const std::string& calibration_file);
+
+private:
+    float   min_range_;
+    float   max_range_;
+    int     num_points_;
 };
 
 

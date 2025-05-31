@@ -4,8 +4,8 @@
 #ifndef CFilterUtils_H_
 #define CFilterUtils_H_
 
-#include "CCR_TYPES.h"
-#include "CBaseCcrFilter.h"
+#include "CyC_TYPES.h"
+#include "CCycFilterBase.h"
 
 class CFilterUtils
 {
@@ -13,10 +13,10 @@ public:
 	CFilterUtils();
 	~CFilterUtils();
 
-	static CBaseCcrFilter* getStateFilter(const CcrInputSources& _input_filters);
-	static bool getPose(CBaseCcrFilter* _filter, CCR_TIME_UNIT& _io_timestamp, CPose& _out_pose);
-	static bool state2pose(const CcrState& _state, const CCR_FILTER_TYPE& _filter_type, CPose& _out_pose);
-	static bool str2key(const std::string& _str, CcrDatablockKey& _out_key);
+	static CCycFilterBase* getStateFilter(const CycInputSources& _input_filters);
+	static bool getPose(CCycFilterBase* _filter, CyC_TIME_UNIT& _io_timestamp, CPose& _out_pose);
+	static bool state2pose(const CycState& _state, const CyC_FILTER_TYPE& _filter_type, CPose& _out_pose);
+	static bool str2key(const std::string& _str, CycDatablockKey& _out_key);
 };
 
 #endif /* CFilterUtils_H_ */

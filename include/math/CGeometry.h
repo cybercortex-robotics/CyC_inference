@@ -4,7 +4,7 @@
 #ifndef CGeometry_H
 #define CGeometry_H
 
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 
 namespace CGeometry
 {
@@ -54,7 +54,7 @@ namespace CGeometry
      * \param _vect Input vector of voxels
      * \return      Avegare magnitude
      **/
-    float mag(const CcrVoxels& _vxs);
+    float mag(const CycVoxels& _vxs);
 
     /**
      * \brief               Calculates if a point lies on a line

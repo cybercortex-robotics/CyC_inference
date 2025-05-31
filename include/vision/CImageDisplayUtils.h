@@ -4,9 +4,9 @@
 #ifndef CIMAGEDISPLAYUTILS_H_
 #define CIMAGEDISPLAYUTILS_H_
 
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 #include "env/CQuaternion.h"
-#include "CBaseCcrFilter.h"
+#include "CCycFilterBase.h"
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
@@ -53,43 +53,43 @@ public:
 	/**
 	 * \brief Draws the detected and tracked objects
 	 **/
-    static void drawObjects(cv::Mat& dst, const CcrRois2D& objects, std::unordered_map<CCR_INT, std::string>& obj_classes_map, CcrDatablockKey key = {-1, -1});
+    static void drawObjects(cv::Mat& dst, const CycRois2D& objects, std::unordered_map<CyC_INT, std::string>& obj_classes_map, CycDatablockKey key = {-1, -1});
 
 
     /*
      * \brief Draw semantic segmentation image
      */
-    static void drawSemanticSegmentation(cv::Mat& dst, const CcrImage_& sem_obj, std::vector<CCR_UINT> classes = std::vector<CCR_UINT>({}));
+    static void drawSemanticSegmentation(cv::Mat& dst, const CycImage_& sem_obj, std::vector<CyC_UINT> classes = std::vector<CyC_UINT>({}));
 
     /*
      * \brief Draw semantic segmentation image (Panoptic) 
      */
-    static void drawPanoSemSeg(cv::Mat& dst, const CcrImage_& sem_obj);
+    static void drawPanoSemSeg(cv::Mat& dst, const CycImage_& sem_obj);
 
     /**
      * \brief Draws the lanes model
      **/
-    static void drawLanes(cv::Mat& dst, const CcrLanesModel& lanes_model);
-    static void drawLanes(cv::Mat& dst, const CcrLanesModel& lanes_model, const CPinholeCameraSensorModel& camera_model);
+    static void drawLanes(cv::Mat& dst, const CycLanesModel& lanes_model);
+    static void drawLanes(cv::Mat& dst, const CycLanesModel& lanes_model, const CPinholeCameraSensorModel& camera_model);
 
     /**
      * \brief Draws 2D points
      **/
-    static void drawPoints(cv::Mat& dst, const CcrPoints& pts, CCR_INT &last_track_id);
+    static void drawPoints(cv::Mat& dst, const CycPoints& pts, CyC_INT &last_track_id);
 
-    static void drawPoints(cv::Mat& dst, const CcrPoints& _pts, const cv::Scalar& _color);
+    static void drawPoints(cv::Mat& dst, const CycPoints& _pts, const cv::Scalar& _color);
 
-    static void drawTrackedPoints(cv::Mat& dst, const CcrPoints& pts_curr, const CcrPoints& pts_prev);
+    static void drawTrackedPoints(cv::Mat& dst, const CycPoints& pts_curr, const CycPoints& pts_prev);
 
     /**
      * \brief Draws 3D voxels
      **/
-    static void drawVoxels(cv::Mat& dst, const CcrVoxels& voxels, const CPinholeCameraSensorModel& camera_model, const cv::Scalar& _color = CV_RGB(255, 114, 118));
+    static void drawVoxels(cv::Mat& dst, const CycVoxels& voxels, const CPinholeCameraSensorModel& camera_model, const cv::Scalar& _color = CV_RGB(255, 114, 118));
 
     /**
      * \brief Draws a vehicle control input onto a given image
      **/
-    static void drawVehicleControlInput(cv::Mat& dst, const CcrControlInput& control_input, const CPinholeCameraSensorModel& camera_model);
+    static void drawVehicleControlInput(cv::Mat& dst, const CycControlInput& control_input, const CPinholeCameraSensorModel& camera_model);
 
     /**
      * \brief Compute and draw the epipolar lines in two images
@@ -120,7 +120,7 @@ public:
      * \param _vehicle_state    State of the vehicle (x, y, velocity, yaw)
      * \param _disp_ptr         display image
      **/
-    static void drawLocalEgoVehicleEnvironment(const CcrState& _vehicle_state,
+    static void drawLocalEgoVehicleEnvironment(const CycState& _vehicle_state,
         cv::Mat* _disp_ptr);
 
     /**
@@ -169,7 +169,7 @@ public:
      * \param num_us_front      Number of front US
      * \param num_us_rear       Number of rear US
      **/
-    static cv::Mat ultrasonicsToImage(const CcrState& vehicleState, const CcrUltrasonics& uss, CCR_UINT num_us_front, CCR_UINT num_us_rear);
+    static cv::Mat ultrasonicsToImage(const CycState& vehicleState, const CycUltrasonics& uss, CyC_UINT num_us_front, CyC_UINT num_us_rear);
 
     /**
     * \brief Concatenate image sequences of ultrasonic representations
@@ -178,32 +178,31 @@ public:
     **/
     static cv::Mat concatTemporalUltrasonicRepresentation(const std::vector<cv::Mat>& usImages);
     
-    static void printTimestamp(cv::Mat& _dst, 
-        const CCR_TIME_UNIT& _ts);
+    static void printTimestamp(cv::Mat& _dst, const CyC_TIME_UNIT& _ts, const cv::Scalar& _color = color::black);
     
     /*static void printDatastreamInfo(cv::Mat& _dst,
-        const CCR_TIME_UNIT& _ts,
-        CBaseCcrFilter* _filter = nullptr);*/
+        const CyC_TIME_UNIT& _ts,
+        CCycFilterBase* _filter = nullptr);*/
 
     static void draw_correspondences(const cv::Mat& _img1, 
         const cv::Mat& _img2,
         cv::Mat& _dst,
         const std::vector<Eigen::Vector2f>& _pts1,
         const std::vector<Eigen::Vector2f>& _pts2,
-        const CCR_INT& _line_thickness = 1);
+        const CyC_INT& _line_thickness = 1);
 
     static void draw_correspondences(const cv::Mat& _img1, const cv::Mat& _img2,
         cv::Mat& _dst,
-        const CcrPoints& _pts1, const CcrPoints& _pts2, 
-        const CCR_INT& _line_thickness = 1,
-        const std::vector<CCR_INT>& _matches = std::vector<CCR_INT>(NULL));
+        const CycPoints& _pts1, const CycPoints& _pts2, 
+        const CyC_INT& _line_thickness = 1,
+        const std::vector<CyC_INT>& _matches = std::vector<CyC_INT>(NULL));
 
     // _format is either euler of quaternion
     static void printT(cv::Mat& _img, std::string _text, 
-        const Eigen::Matrix4f _T, const CCR_INT _position, 
+        const Eigen::Matrix4f _T, const CyC_INT _position, 
         const cv::Scalar _color = cv::Scalar(0, 0 ,0),
         const double _font_scale = 1.,
-        const CCR_INT _thickness = 1,
+        const CyC_INT _thickness = 1,
         const std::string _format = "euler");
 
     static void drawLine(cv::Mat& _img, const Eigen::Vector3f& _line_coeffs, const cv::Scalar& _color = CV_RGB(255, 255, 0));
@@ -224,59 +223,58 @@ public:
         const CPinholeCameraSensorModel* _pSensorModel,
         const CPose& _abs_cam_pose_W,
         const CPose& _relative_cam_pose_C,
-        const CcrPoints& prev_inliers_pts,
-        const CcrPoints& curr_inliers_pts,
-        const CcrVoxels& _voxels_prev_C,
-        const CcrVoxels& _voxels_curr_C,
+        const CycPoints& prev_inliers_pts,
+        const CycPoints& curr_inliers_pts,
+        const CycVoxels& _voxels_prev_C,
+        const CycVoxels& _voxels_curr_C,
         const float& _scale_factor,
-        const std::vector<CCR_INT>& _scale_factor_samples_1,
-        const std::vector<CCR_INT>& _scale_factor_samples_2,
+        const std::vector<CyC_INT>& _scale_factor_samples_1,
+        const std::vector<CyC_INT>& _scale_factor_samples_2,
         const bool _draw_epi_projections = false,
-        const CCcrCache* _preintegrated_imu_hist = nullptr);
+        const CCycCache* _preintegrated_imu_hist = nullptr);
 
     static void drawSlam(const cv::Mat& _img,
         cv::Mat& _out_dst,
         const CPinholeCameraSensorModel* _pSensorModel,
-        const CcrSlam& _slam_data,
+        const CycSlam& _slam_data,
         const bool _draw_epi_projections = false,
-        const CCcrCache* _preintegrated_imu_hist = nullptr);
+        const CCycCache* _preintegrated_imu_hist = nullptr);
 
-    static void drawSlam(const CcrImage_& _rimg,
+    static void drawSlam(const CycImage_& _rimg,
         cv::Mat& _out_dst,
         const CPinholeCameraSensorModel* _pSensorModel,
-        const CcrSlam& _slam_data,
+        const CycSlam& _slam_data,
         const bool _draw_epi_projections = false,
-        const CCcrCache* _preintegrated_imu_hist = nullptr);
+        const CCycCache* _preintegrated_imu_hist = nullptr);
 
     static void draw_slam_frame(cv::Mat& _out_dst,
         const CPinholeCameraSensorModel* _pCamSensorModel,
-        const CcrSlam& _slam_data);
+        const CycSlam& _slam_data);
 
     static void drawScaleFactor(cv::Mat& _out_dst,
         const CPinholeCameraSensorModel* _pSensorModel,
         const CPose& _relative_pose_C,
-        const CcrVoxels& _voxels_prev_corresp,
-        const CcrVoxels& _voxels_curr_corresp,
-        const std::vector<CCR_INT>& _samples_1_ids,
-        const std::vector<CCR_INT>& _samples_2_ids);
+        const CycVoxels& _voxels_prev_corresp,
+        const CycVoxels& _voxels_curr_corresp,
+        const std::vector<CyC_INT>& _samples_1_ids,
+        const std::vector<CyC_INT>& _samples_2_ids);
 
-    static void drawPreintegratedImu(cv::Mat& _out_dst, const CCcrCache* _preintegrated_imu_hist = nullptr);
+    static void drawPreintegratedImu(cv::Mat& _out_dst, const CCycCache* _preintegrated_imu_hist = nullptr);
 
-    static void draw_slam_grid(cv::Mat& _out_dst, const CPinholeCameraSensorModel* _pCamSensorModel);
+    static void draw_slam_grid(cv::Mat& _out_dst, const cv::Size& _grid_size);
 
     static void draw_slam(cv::Mat& _out_dst,
-        const CPinholeCameraSensorModel* _pCamSensorModel,
-        const CImuSensorModel* _pImuSensorModel,
-        const CcrSlam& _slam_data,
+        const cv::Size& _grid_size,
+        const CycSlam& _slam_data,
         const float& _bew_scale,
         const bool& _absolute_coord = false,
         const bool& _draw_curr_frame = true);
 
     static void draw_pose(cv::Mat& _out_dst, const float& _x, const float& _y, const float& _yaw,
-        const float& _scale, const cv::Scalar& _color = color::white, const CCR_INT& _line_thickness = 1);
+        const float& _scale, const cv::Scalar& _color = color::white, const CyC_INT& _line_thickness = 1);
 
 private:
-    static std::unique_ptr<CCcrCache>   m_pSlamDispCache;
+    static std::unique_ptr<CCycCache>   m_pSlamDispCache;
     static std::vector<Eigen::Vector3f> m_SlamTrajectory;
 };
 

@@ -5,7 +5,7 @@
 * Link: https://github.com/MaybeShewill-CV/lanenet-lane-detection/blob/master/mnn_project/lanenet_model.cpp
 ************************************************/
 #pragma once
-#include <CCR_TYPES.h>
+#include <CyC_TYPES.h>
 //#include <omp.h>
 #include <opencv2/opencv.hpp>
 #include <vector>
@@ -29,14 +29,14 @@ public:
 	void cluster_lanes(const cv::Mat& tf_binary_seg_output, const cv::Mat& tf_instance_seg_output, 
 		std::vector<cv::Point>& coords_ret, std::vector<std::vector<uint>>& clusters);
 
-	void clusters2lanes(const std::vector<cv::Point>& coords_selected, const std::vector<std::vector<uint>>& cluster_ret, CcrLanesModel& lanes_model);
+	void clusters2lanes(const std::vector<cv::Point>& coords_selected, const std::vector<std::vector<uint>>& cluster_ret, CycLanesModel& lanes_model);
 
-	static void scale_lanes(const cv::Size& org_img_size, const cv::Size& inference_img_size, CcrLanesModel& lanes_model);
+	static void scale_lanes(const cv::Size& org_img_size, const cv::Size& inference_img_size, CycLanesModel& lanes_model);
 
-	CcrLane lane2world(const CcrLane& lane_model, const cv::Point& org_img_size, const CPinholeCameraSensorModel& camera_model);
+	CycLane lane2world(const CycLane& lane_model, const cv::Point& org_img_size, const CPinholeCameraSensorModel& camera_model);
 
 	void map_clusters_to_lanes_model(const std::vector<cv::Point>& coords_selected, 
-		const std::vector<std::vector<uint>>& cluster_ret, const cv::Size& inference_img_size, CPinholeCameraSensorModel& camera_model, CcrLanesModel& lanes_model);
+		const std::vector<std::vector<uint>>& cluster_ret, const cv::Size& inference_img_size, CPinholeCameraSensorModel& camera_model, CycLanesModel& lanes_model);
 
 	/***
 	 * Gathet embedding features via binary segmentation mask
@@ -115,12 +115,12 @@ public:
 	void simultaneously_random_select(const std::vector<DBSCANSample<float>>& src1, const std::vector<cv::Point>& src2,
 		float select_ratio, std::vector<DBSCANSample<float>>& output1, std::vector<cv::Point>& output2);
 
-	void set_cluster_parameters(CCR_UINT dbscan_core_object_min_pts,
+	void set_cluster_parameters(CyC_UINT dbscan_core_object_min_pts,
 		float dbscan_neighbor_radius, float embedding_feats_dilution_ratio);
 
 private:
-	CCR_UINT _pix_embedding_feature_dims = 4;
-	CCR_UINT _dbscan_core_object_min_pts = 75;
+	CyC_UINT _pix_embedding_feature_dims = 4;
+	CyC_UINT _dbscan_core_object_min_pts = 75;
 	float _dbscan_neighbor_radius = 0.4f;
 	float _embedding_feats_dilution_ratio = 0.1f;
 };

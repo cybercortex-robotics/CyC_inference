@@ -4,7 +4,7 @@
 #ifndef CBaseSensorModel_H_
 #define CBaseSensorModel_H_
 
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 #pragma warning(disable : 4275)
 #include <libconfig.h++>
 #pragma warning(default : 4275)
@@ -20,7 +20,11 @@ public:
     const CPose& pose() const;
     const CPose& extrinsics() const;
     const CPose& extrinsics_inv() const;
+    
     void updatePose(const CPose& _pose);
+
+    void updateExtrinsics(const Eigen::Matrix4f& _pose);
+    void updateExtrinsics(const CPose& _pose);
 
     /// Project from sensor to world coordiantes. Returns a bearing vector of unit length.
     virtual Eigen::Vector3f sensor2world(const float& x, const float& y) const = 0;

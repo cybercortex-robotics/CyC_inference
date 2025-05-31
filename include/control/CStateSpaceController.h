@@ -4,7 +4,7 @@
 #ifndef CStateSpaceController_H_
 #define CStateSpaceController_H_
 
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 #include "CBaseController.h"
 
 class CStateSpaceController : public CBaseController

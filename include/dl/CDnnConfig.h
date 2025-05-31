@@ -6,7 +6,7 @@
 
 #include <map>
 #include <vector>
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 #include "os/CConversions.h"
 #pragma warning(disable : 4275)
 #include <libconfig.h++>
@@ -39,30 +39,30 @@ public:
     {
         std::string    device;
         bool      is_training;
-        CCR_UINT      epochs;
+        CyC_UINT      epochs;
         float     learning_rate;
         float     momentum;
-        CCR_UINT      batch_size;
+        CyC_UINT      batch_size;
         bool      shuffle;
-        CCR_UINT      num_workers;
+        CyC_UINT      num_workers;
         float     train_split;
         std::string    optimizer;
         bool      tensorboard;
         bool      plot_architecture;
         bool      view_predictions;
         std::string    ckpts_dir;
-        CCR_UINT      ckpt_freq;
+        CyC_UINT      ckpt_freq;
         bool      load_last_ckpt;
         bool      onnx_export;
-        CCR_UINT      onnx_opset_version;
+        CyC_UINT      onnx_opset_version;
         std::string    onnx_model_file;
-        CCR_UINT      load_pretrained_weights;
+        CyC_UINT      load_pretrained_weights;
         std::string    pretrained_weights;
 
-        std::vector<CCR_DATA_TYPE>          input_data;
-        std::vector<std::vector<CCR_INT>>   input_shape;
-        std::vector<CCR_DATA_TYPE>          output_data;
-        std::vector<std::vector<CCR_INT>>   output_shape;
+        std::vector<CyC_DATA_TYPE>          input_data;
+        std::vector<std::vector<CyC_INT>>   input_shape;
+        std::vector<CyC_DATA_TYPE>          output_data;
+        std::vector<std::vector<CyC_INT>>   output_shape;
 
         std::vector<Transforms>             input_data_transforms;
     };

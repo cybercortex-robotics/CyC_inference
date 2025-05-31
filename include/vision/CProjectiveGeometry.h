@@ -48,7 +48,7 @@
 #ifndef CProjectiveGeometry_H_
 #define CProjectiveGeometry_H_
 
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 #include <cmath>
 #include <math.h>
 #include "math/CGeometry.h"
@@ -95,7 +95,7 @@ namespace CProjectiveGeometry
      * \param _vxs_estimated    Input corresponding estimated voxels
      * \return                  Scale factor
      **/
-    float getScaleFactor(const CcrVoxels& _vxs_real, const CcrVoxels& _vxs_estimated);
+    float getScaleFactor(const CycVoxels& _vxs_real, const CycVoxels& _vxs_estimated);
 
     /**
      * \brief           Calculates the camera projection matrix based on the camera intrinsic matrix and the camera's extrinsics
@@ -113,7 +113,7 @@ namespace CProjectiveGeometry
      * \param _voxel    Input voxel (3D point)
      * \return          Projected 2D point in image coordinates
      **/
-    CcrPoint project(const Pmatrix & _P, const CcrVoxel& _voxel);
+    CycPoint project(const Pmatrix & _P, const CycVoxel& _voxel);
 
     /**
      * \brief               Projects a 3D point (voxel) to a 2D image using a 3x4 camera projection matrix
@@ -122,8 +122,8 @@ namespace CProjectiveGeometry
      * \param _cam_pose     Input camera pose
      * \return              Projected 2D point in image coordinates
      **/
-    CcrPoint project(const CPinholeCameraSensorModel* _pSensorModel, const CPose& _cam_pose, const CcrVoxel& _voxel);
-    CcrPoint project(const CPinholeCameraSensorModel* _pSensorModel, const Eigen::Matrix4f& _cam_pose, const CcrVoxel& _voxel);
+    CycPoint project(const CPinholeCameraSensorModel* _pSensorModel, const CPose& _cam_pose, const CycVoxel& _voxel);
+    CycPoint project(const CPinholeCameraSensorModel* _pSensorModel, const Eigen::Matrix4f& _cam_pose, const CycVoxel& _voxel);
 
     /**
      * \brief               Projects a vector of 3D points (voxels) to a 2D image using the sensor model and camera pose
@@ -135,8 +135,8 @@ namespace CProjectiveGeometry
      **/
     void project(const CPinholeCameraSensorModel* _pSensorModel,
         const Eigen::Matrix4f& _cam_pose,
-        const CcrVoxels& _voxels,
-        CcrPoints& _out_pts);
+        const CycVoxels& _voxels,
+        CycPoints& _out_pts);
 
     /**
      * \brief               Projects a vector of 3D points (voxels) to a 2D image using the sensor model and camera pose
@@ -148,8 +148,8 @@ namespace CProjectiveGeometry
      **/
     void project(const CPinholeCameraSensorModel* _pSensorModel,
         const CPose& _cam_pose,
-        const CcrVoxels& _voxels,
-        CcrPoints& _out_pts);
+        const CycVoxels& _voxels,
+        CycPoints& _out_pts);
 
     /**
      * \brief       Inverts a transformation matrix T
@@ -249,7 +249,7 @@ namespace CProjectiveGeometry
      * \param _pt       Input 2D image point in the first (left) image
      * \return          Output coefficients of the line equation ax + by + c = 0, where a = [0], b = [1], c = [2]
      **/
-    Eigen::Vector3f epi_line(const Eigen::Matrix3f& _F, const CcrPoint& _pt);
+    Eigen::Vector3f epi_line(const Eigen::Matrix3f& _F, const CycPoint& _pt);
 
     /**
      * \brief                   Computes epipolar lines
@@ -258,13 +258,13 @@ namespace CProjectiveGeometry
      * \param _pts               Input 2D image points in the first (left) image
      * \param _out_epi_lines    Output coefficients of the line equation ax + by + c = 0 for each given point in _pts, where a = [0], b = [1], c = [2]
      **/
-    void epi_lines(const Eigen::Matrix3f& _F, const CcrPoints& _pts, std::vector<Eigen::Vector3f>& _out_epi_lines);
+    void epi_lines(const Eigen::Matrix3f& _F, const CycPoints& _pts, std::vector<Eigen::Vector3f>& _out_epi_lines);
 
     void epi_lines(const CPinholeCameraSensorModel* _pSensorModel, 
         const Eigen::Matrix4f& _cam_pose_1,
         const Eigen::Matrix4f& _cam_pose_2,
-        const CcrPoints& _pts1,
-        const CcrPoints& _pts2,
+        const CycPoints& _pts1,
+        const CycPoints& _pts2,
         std::vector<Eigen::Vector3f>& _out_epi_lines_1,
         std::vector<Eigen::Vector3f>& _out_epi_lines_2);
 
@@ -275,7 +275,7 @@ namespace CProjectiveGeometry
      * \param _pt           Input 2D image point in the first (left) image
      * \return              Output epipole in the image plane of the first camera
      **/
-    CcrPoint epipole(const CPinholeCameraSensorModel* _pSensorModel, const CPose& _cam_first, const CPose& _cam_second);
+    CycPoint epipole(const CPinholeCameraSensorModel* _pSensorModel, const CPose& _cam_first, const CPose& _cam_second);
 
     /**
      * \brief               Transforms a set of voxels given a transformation matrix
@@ -285,10 +285,10 @@ namespace CProjectiveGeometry
      * \param _th           Input distance threshold [m] (filters out voxels having one of the axes bigger than th)
      * \param _out_voxels   Output transformed voxels
      **/
-    void transformVoxels(const CcrVoxels& _voxels,
+    void transformVoxels(const CycVoxels& _voxels,
         const Eigen::Matrix4f& _T,
         const float& _th,
-        CcrVoxels& _out_voxels);
+        CycVoxels& _out_voxels);
 
     /**
      * \brief           Calculates the reprojection error between corresponding points in two camera frames and their respective voxel (3D point)
@@ -300,11 +300,11 @@ namespace CProjectiveGeometry
      * \param _voxel    Input voxel calculated from _pt1 and _pt2
      * \return          Reprojection error
      **/
-    float getReprojectionErr(const CcrPoint& _pt1,
-        const CcrPoint& _pt2,
+    float getReprojectionErr(const CycPoint& _pt1,
+        const CycPoint& _pt2,
         const Eigen::MatrixXf& _P1,
         const Eigen::MatrixXf& _P2,
-        const CcrVoxel& _voxel);
+        const CycVoxel& _voxel);
 
     /**
      * \brief           Calculates the reprojection error between sets of corresponding points in two camera frames and their respective voxels (3D points)
@@ -315,8 +315,8 @@ namespace CProjectiveGeometry
      * \param _P2       Input projection matrix for camera 2
      * \return          Reprojection error
      **/
-    float getReprojectionErr(const CcrPoints& _pts1,
-        const CcrPoints& _pts2,
+    float getReprojectionErr(const CycPoints& _pts1,
+        const CycPoints& _pts2,
         const Eigen::MatrixXf& _P1,
         const Eigen::MatrixXf& _P2);
 
@@ -329,8 +329,8 @@ namespace CProjectiveGeometry
      * \param _epi_line_2   Epipolar lines for camera 2 calculated from points in camera 1
      * \return              Orthogonal projection error
      **/
-    float getOrthogonalErr(const CcrPoint& _pt1,
-        const CcrPoint& _pt2,
+    float getOrthogonalErr(const CycPoint& _pt1,
+        const CycPoint& _pt2,
         const Eigen::Vector3f& _epi_line_1,
         const Eigen::Vector3f& _epi_line_2);
 
@@ -343,8 +343,8 @@ namespace CProjectiveGeometry
      * \param _epi_lines_2  Epipolar lines for camera 2 calculated from points in camera 1
      * \return              Orthogonal projection error
      **/
-    float getOrthogonalErr(const CcrPoints& _pts1,
-        const CcrPoints& _pts2,
+    float getOrthogonalErr(const CycPoints& _pts1,
+        const CycPoints& _pts2,
         const std::vector<Eigen::Vector3f>& _epi_lines_1,
         const std::vector<Eigen::Vector3f>& _epi_lines_2);
 };

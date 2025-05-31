@@ -19,7 +19,7 @@
 #ifndef CTriangulation_H_
 #define CTriangulation_H_
 
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 #include <cmath>
 #include <math.h>
 #include "CProjectiveGeometry.h"
@@ -45,9 +45,9 @@ public:
      * \param _cam_pose_2       Second camera pose matrix
      * \return                  Triangulated 3D point
      **/
-    static CcrVoxel TriangulatePoint(const CPinholeCameraSensorModel* _pSensorModel, 
-        const CcrPoint& _pt1, 
-        const CcrPoint& _pt2,
+    static CycVoxel TriangulatePoint(const CPinholeCameraSensorModel* _pSensorModel, 
+        const CycPoint& _pt1, 
+        const CycPoint& _pt2,
         const Eigen::Matrix4f& _cam_pose_1, 
         const Eigen::Matrix4f& _cam_pose_2);
 
@@ -60,8 +60,8 @@ public:
      * \param _P2               3x4 projection matrix of camera 2, composed of intrinsics * camera_pose_2
      * \return                  Triangulated 3D point
      **/
-    static CcrVoxel Triangulate(const CcrPoint& _pt1,
-        const CcrPoint& _pt2,
+    static CycVoxel Triangulate(const CycPoint& _pt1,
+        const CycPoint& _pt2,
         const Pmatrix& _P1,
         const Pmatrix& _P2);
 
@@ -75,9 +75,9 @@ public:
      * \param _cam_pose_2       Second camera pose matrix
      * \return                  Triangulated 3D point
      **/
-    static CcrVoxel Triangulate(const CPinholeCameraSensorModel* _pSensorModel,
-        const CcrPoint& _pt1,
-        const CcrPoint& _pt2,
+    static CycVoxel Triangulate(const CPinholeCameraSensorModel* _pSensorModel,
+        const CycPoint& _pt1,
+        const CycPoint& _pt2,
         const Eigen::Matrix4f& _cam_pose_1,
         const Eigen::Matrix4f& _cam_pose_2);
 
@@ -90,11 +90,11 @@ public:
     * \param _P2                3x4 projection matrix of camera 2, composed of intrinsics * camera_pose_2
     * \return _out_pts3d        Vector of triangulated 3D points
     **/
-    static void TriangulatePoints(const CcrPoints& _pts1,
-        const CcrPoints& _pts2,
+    static void TriangulatePoints(const CycPoints& _pts1,
+        const CycPoints& _pts2,
         const Pmatrix& _P1,
         const Pmatrix& _P2,
-        CcrVoxels& _out_pts3d);
+        CycVoxels& _out_pts3d);
 
     /**
    * \brief Triangulate points using projection matrices
@@ -105,11 +105,11 @@ public:
    * \param _P2                3x4 projection matrix of camera 2, composed of intrinsics * camera_pose_2
    * \return _out_pts3d        Vector of triangulated 3D points
    **/
-    /*static void TriangulatePoints(const CcrPoints& _pts1,
-        const CcrPoints& _pts2,
+    /*static void TriangulatePoints(const CycPoints& _pts1,
+        const CycPoints& _pts2,
         const Pmatrix& _P1,
         const Pmatrix& _P2,
-        CcrVoxels& _out_pts3d);*/
+        CycVoxels& _out_pts3d);*/
 
     /**
     * \brief Triangulate points using projection matrices
@@ -122,11 +122,11 @@ public:
     * \return _out_pts3d        Vector of triangulated 3D points
     **/
     static void TriangulatePoints(const CPinholeCameraSensorModel* _pSensorModel,
-        const CcrPoints& _pts1,
-        const CcrPoints& _pts2,
+        const CycPoints& _pts1,
+        const CycPoints& _pts2,
         const Eigen::Matrix4f& _cam_pose_1,
         const Eigen::Matrix4f& _cam_pose_2,
-        CcrVoxels& _out_pts3d);
+        CycVoxels& _out_pts3d);
 
     /**
     * \brief Triangulate points using projection matrices
@@ -139,29 +139,29 @@ public:
     * \return _out_pts3d        Vector of triangulated 3D points
     **/
     static void TriangulatePoints(const CPinholeCameraSensorModel* _pSensorModel,
-        const CcrPoints& _pts1,
-        const CcrPoints& _pts2,
+        const CycPoints& _pts1,
+        const CycPoints& _pts2,
         const CPose& _cam_pose_1,
         const CPose& _cam_pose_2,
-        CcrVoxels& _out_pts3d);
+        CycVoxels& _out_pts3d);
 
     // TODO: check
-    static float getDepth(const CcrVoxel& _voxel, const Pmatrix& _P);
+    static float getDepth(const CycVoxel& _voxel, const Pmatrix& _P);
     static float getPosDepthFreq(const CPinholeCameraSensorModel* _pSensorModel,
         const Eigen::Matrix4f& _cam_pose_1,
         const Eigen::Matrix4f& _cam_pose_2,
-        const CcrVoxels& _voxels);
+        const CycVoxels& _voxels);
     // !TODO: check
 
     // Calculates the positive depth frequency
     static float getPosDepthFreq(const CPinholeCameraSensorModel* _pSensorModel,
-        const CcrPoints& _pts1,
-        const CcrPoints& _pts2,
+        const CycPoints& _pts1,
+        const CycPoints& _pts2,
         const Eigen::Matrix4f& _P1,
         const Eigen::Matrix4f& _P2);
         
     static float getPosDepthFreq(const CPinholeCameraSensorModel* _pSensorModel,
-        const CcrVoxels& _voxels,
+        const CycVoxels& _voxels,
         const Eigen::Matrix4f& _P1,
         const Eigen::Matrix4f& _P2);
 };

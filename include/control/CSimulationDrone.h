@@ -4,7 +4,7 @@
 #ifndef CSTATESPACESIMULATIONDRONE_H_
 #define CSTATESPACESIMULATIONDRONE_H_
 
-#include "CCR_TYPES.h"
+#include "CyC_TYPES.h"
 #include "CStateSpaceModelDrone.h"
 
 class DroneState
@@ -141,7 +141,7 @@ private:
     pid pid_pitch_sp;
 
     // TODO: Add some(?) to the model
-    const CCR_INT m_MaxRPM = 28500;
+    const CyC_INT m_MaxRPM = 28500;
     const float m_MinThrottle = 0.5F;
     const float m_MaxThrottle = 0.85F;
     const float m_HoverThrottle = 0.66F;
