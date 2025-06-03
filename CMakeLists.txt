@@ -156,7 +156,7 @@ set(CyC_THIRD_PARTY_INCLUDE_DIRECTORIES ${CyC_THIRD_PARTY_INCLUDE_DIRECTORIES} P
 
 # 3rdParty library includes
 set(CyC_THIRD_PARTY_LIBRARY_DIRECTORIES 
-    ${CMAKE_SOURCE_DIR}/inference/lib/${CyC_LIBS_BINARY_KEY} # CyberCortex.AI library includes
+    ${CMAKE_SOURCE_DIR}/CyC_inference/lib/${CyC_LIBS_BINARY_KEY} # CyberCortex.AI library includes
     ${CyC_THIRD_PARTY}/enet-1.3.14/${CyC_LIBS_BINARY_KEY}/lib
     ${CyC_THIRD_PARTY}/libconfig/${CyC_LIBS_BINARY_KEY}/lib
     ${CyC_THIRD_PARTY}/opencv/${CyC_OPENCV_VERSION}/${CyC_LIBS_BINARY_KEY}-${CyC_CUDA_VERSION_ID}/lib
