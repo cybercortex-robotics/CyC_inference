@@ -131,20 +131,15 @@ set(CyC_THIRD_PARTY_INCLUDE_DIRECTORIES
     ${CyC_OPENCV_INCLUDE_PATH}
     ${CyC_THIRD_PARTY}/Eigen
     ${CyC_THIRD_PARTY}/spdlog-1.4.2/include
-    ${CyC_THIRD_PARTY}/aruco-3.1.4/include
     ${CyC_THIRD_PARTY}/libcsv/include
     ${CyC_THIRD_PARTY}/openh264/include
     ${CyC_THIRD_PARTY}/octomap/include
     ${CyC_THIRD_PARTY}/libconfig/include
     ${CyC_THIRD_PARTY}/enet-1.3.14/include
-    ${CyC_THIRD_PARTY}/zstd-dev/lib
     ${CyC_THIRD_PARTY}/ffmpeg/include
     ${CyC_THIRD_PARTY}/nlohmann-json/include
-    ${CyC_THIRD_PARTY}/aruco-3.1.4/src
     ${CyC_THIRD_PARTY}/cvplot-0.0.3/include
     ${CyC_THIRD_PARTY}/msgpack/include
-    ${CyC_THIRD_PARTY}/libcurl/include
-    ${CyC_THIRD_PARTY}/libzip/include
     ${CyC_THIRD_PARTY}/boost-1.78.0/include
     ${CyC_THIRD_PARTY}/glut-2.0.0.29/include)
 if (WIN32)
@@ -172,14 +167,6 @@ set(CyC_THIRD_PARTY_LIBRARY_DIRECTORIES
     ${CyC_THIRD_PARTY}/cvplot-0.0.3/${CyC_LIBS_BINARY_KEY}/lib
     ${CyC_THIRD_PARTY}/pthreads/${CyC_LIBS_BINARY_KEY}/lib
     ${CyC_THIRD_PARTY}/msgpack/${CyC_LIBS_BINARY_KEY}/lib)
-
-if (WIN32)
-    set(CyC_THIRD_PARTY_LIBRARY_DIRECTORIES ${CyC_THIRD_PARTY_LIBRARY_DIRECTORIES}
-        ${CyC_THIRD_PARTY}/aruco-3.1.4/win-msvc141-x64/lib
-        ${CyC_THIRD_PARTY}/spinnaker/lib64
-        ${CyC_THIRD_PARTY}/libcurl/win-msvc141-x64/lib
-        ${CyC_THIRD_PARTY}/libzip/win-msvc141-x64/lib)
-endif (WIN32)
 
 if (ANDROID)
     set(CyC_THIRD_PARTY_LIBRARY_DIRECTORIES ${CyC_THIRD_PARTY_LIBRARY_DIRECTORIES}
