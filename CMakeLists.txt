@@ -170,6 +170,7 @@ set(CyC_THIRD_PARTY_LIBRARY_DIRECTORIES
     ${CyC_THIRD_PARTY}/openh264/${CyC_LIBS_BINARY_KEY}/lib
     ${CyC_THIRD_PARTY}/libceres/${CyC_CERES_VERSION}/${CyC_LIBS_BINARY_KEY}/lib
     ${CyC_THIRD_PARTY}/cvplot-0.0.3/${CyC_LIBS_BINARY_KEY}/lib
+    ${CyC_THIRD_PARTY}/pthreads/${CyC_LIBS_BINARY_KEY}/lib
     ${CyC_THIRD_PARTY}/msgpack/${CyC_LIBS_BINARY_KEY}/lib)
 
 if (WIN32)
