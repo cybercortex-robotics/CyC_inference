@@ -156,7 +156,7 @@ set(CyC_THIRD_PARTY_INCLUDE_DIRECTORIES ${CyC_THIRD_PARTY_INCLUDE_DIRECTORIES} P
 
 # 3rdParty library includes
 set(CyC_THIRD_PARTY_LIBRARY_DIRECTORIES 
-    ${CMAKE_SOURCE_DIR}/CyC_inference/lib/${CyC_LIBS_BINARY_KEY} # CyberCortex.AI library includes
+    ${CMAKE_SOURCE_DIR}/inference/lib/${CyC_LIBS_BINARY_KEY} # CyberCortex.AI library includes
     ${CyC_THIRD_PARTY}/enet-1.3.14/${CyC_LIBS_BINARY_KEY}/lib
     ${CyC_THIRD_PARTY}/libconfig/${CyC_LIBS_BINARY_KEY}/lib
     ${CyC_THIRD_PARTY}/opencv/${CyC_OPENCV_VERSION}/${CyC_LIBS_BINARY_KEY}-${CyC_CUDA_VERSION_ID}/lib
@@ -169,10 +169,7 @@ set(CyC_THIRD_PARTY_LIBRARY_DIRECTORIES
     ${CyC_THIRD_PARTY}/octomap/${CyC_LIBS_BINARY_KEY}/lib
     ${CyC_THIRD_PARTY}/openh264/${CyC_LIBS_BINARY_KEY}/lib
     ${CyC_THIRD_PARTY}/libceres/${CyC_CERES_VERSION}/${CyC_LIBS_BINARY_KEY}/lib
-    ${CyC_THIRD_PARTY}/cvplot-0.0.3/${CyC_LIBS_BINARY_KEY}/lib
-    ${CyC_THIRD_PARTY}/msgpack/${CyC_LIBS_BINARY_KEY}/lib
-    ${CyC_THIRD_PARTY}/pthreads/${CyC_LIBS_BINARY_KEY}/lib
-)
+    ${CyC_THIRD_PARTY}/cvplot-0.0.3/${CyC_LIBS_BINARY_KEY}/lib)
 
 if (WIN32)
     set(CyC_THIRD_PARTY_LIBRARY_DIRECTORIES ${CyC_THIRD_PARTY_LIBRARY_DIRECTORIES}
@@ -200,9 +197,8 @@ macro(add_cyc_filter name filter_path)
 		#target_include_directories(${FN} PUBLIC ${CMAKE_SOURCE_DIR}/${filter_path}/include)
 		#target_include_directories(${FN} PUBLIC ${filter_path}/include)
 		#target_compile_definitions(CycCore PUBLIC ${name})
-        target_link_directories(${FN} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib/${CyC_LIBS_BINARY_KEY})
         #target_link_libraries(${FN} PUBLIC ${CyC_OPENCV_WORLD})
-        #add_dependencies(BUILD_ALL_FILTERS ${FN})
+        add_dependencies(BUILD_ALL_FILTERS ${FN})
 		message(STATUS "Filter '${FN}' enabled.")
 	endif (Build_${name})
 endmacro()
