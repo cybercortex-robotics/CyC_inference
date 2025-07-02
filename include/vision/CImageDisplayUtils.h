@@ -268,7 +268,8 @@ public:
         const CycSlam& _slam_data,
         const float& _bew_scale,
         const bool& _absolute_coord = false,
-        const bool& _draw_curr_frame = true);
+        const bool& _draw_curr_frame = true,
+        const bool& _show_curr_data = true);
 
     static void draw_pose(cv::Mat& _out_dst, const float& _x, const float& _y, const float& _yaw,
         const float& _scale, const cv::Scalar& _color = color::white, const CyC_INT& _line_thickness = 1);
