@@ -180,14 +180,6 @@ endif (ANDROID)
 set(CyC_THIRD_PARTY_LIBRARY_DIRECTORIES ${CyC_THIRD_PARTY_LIBRARY_DIRECTORIES} PARENT_SCOPE)
 
 
-# Apps
-if (NOT ANDROID)
-    include_directories(include)
-    include_directories(include/core)
-	add_subdirectory(src)
-endif (NOT ANDROID)
-
-
 # Build CyberCortex.AI filters
 macro(add_cyc_filter name filter_path)
 	set(Build_${name} FALSE CACHE BOOL "Build_${name}")

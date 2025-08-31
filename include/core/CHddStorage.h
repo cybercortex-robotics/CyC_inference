@@ -1,187 +1,68 @@
 // Copyright (c) 2025 CyberCortex Robotics SRL. All rights reserved
 // Author: Sorin Mihai Grigorescu
 
-#ifndef CyC_CACHE_H
-#define CyC_CACHE_H
+#ifndef CHddStorage_H_
+#define CHddStorage_H_
 
 #include "CyC_TYPES.h"
-#include <unordered_map>
-#include <set>
-#include "nonstd/any.hpp"
+#include "CCycFilterBase.h"
+#include "CCycCore.h"
+#include "os/CTimer.h"
+#include "os/ThreadPool.h"
+#include "csv_writer.h"
 
-class CCycCache
+class CHddStorage
 {
 public:
-    using key_t = CyC_TIME_UNIT;
+	CHddStorage(CCycCore* _core, const std::string& _read_path, const std::string& _save_path);
+	virtual ~CHddStorage();
 
-    CCycCache()
-        : m_size(CACHE_SIZE)
-    {}
+    bool saveDatablockAsync();
 
-    CCycCache(size_t size)
-        : m_size(size)
-    {}
+    bool readDatablockSynced();
+    bool saveDatablockSynced();
 
-    CCycCache(const CCycCache&) = default;
-    CCycCache(CCycCache&&) noexcept = default;
-    CCycCache& operator=(const CCycCache&) = default;
-    CCycCache& operator=(CCycCache&&) noexcept = default;
-    ~CCycCache() = default;
-
-    template <typename value_t>
-    typename std::enable_if<!std::is_same<CcrOcTree, value_t>::value, void>::type
-    insert(key_t key, const value_t& value, std::unordered_map<CycDatablockKey, CyC_TIME_UNIT> sync = std::unordered_map<CycDatablockKey, CyC_TIME_UNIT>())
-    {
-        while (m_cache_keys.size() >= m_size)
-        {
-            m_cache_data.erase(*m_cache_keys.begin());
-            m_cache_keys.erase(m_cache_keys.begin());
-            m_cache_inputs.erase(m_cache_inputs.begin());
-        }
-
-        m_cache_data.emplace(key, value);
-        m_cache_keys.emplace(key);
-        m_cache_inputs.emplace(key, sync);
-    }
-
-    template <typename value_t>
-    typename std::enable_if<std::is_same<CcrOcTree, value_t>::value, void>::type
-    insert(key_t key, const value_t& value, std::unordered_map<CycDatablockKey, CyC_TIME_UNIT> sync = std::unordered_map<CycDatablockKey, CyC_TIME_UNIT>())
-    {
-        while (m_cache_keys.size() >= m_size)
-        {
-            m_cache_data.erase(*m_cache_keys.begin());
-            m_cache_keys.erase(m_cache_keys.begin());
-            m_cache_inputs.erase(m_cache_inputs.begin());
-        }
-
-        // Construct empty environment
-        m_cache_data[key] = CcrOcTree(0.1);
-        
-        // Get a reference
-        // CcrOcTree& to = std::any_cast<CcrOcTree&>(m_cache_data[key]);
-        CcrOcTree& to = *(m_cache_data[key].to_ptr<CcrOcTree>());
-        
-        // Correctly copy the environment
-        to.~CcrOcTree();
-        new (&to) CcrOcTree(value.getResolution());
-
-        // Information about color is lost when the copy constructor/operator is used
-        // Maybe implement an efficient copy constructor for ColorOcTree?
-        for (auto it = value.begin_leafs(); it != value.end_leafs(); ++it)
-        {
-            auto* node = to.updateNode(it.getCoordinate().x(), it.getCoordinate().y(), it.getCoordinate().z(), true, true);
-            node->setColor(it->getColor());
-            node->setValue(it->getValue());
-            node->setObjectClass(it->getObjectClass());
-        }
-
-        m_cache_keys.emplace(key);
-        m_cache_inputs.emplace(key, sync);
-    }
-
-    size_t size() const
-    {
-        return m_cache_keys.size();
-    }
-
-    bool empty() const
-    {
-        return size() == 0;
-    }
-
-    void clear()
-    {
-        m_cache_data.clear();
-        m_cache_keys.clear();
-        m_cache_inputs.clear();
-    }
-
-    void erase(key_t key)
-    {
-        m_cache_data.erase(key);
-        m_cache_keys.erase(key);
-    }
-
-    void resize(size_t new_size)
-    {
-        while (m_cache_keys.size() > new_size)
-        {
-            m_cache_data.erase(*m_cache_keys.begin());
-            m_cache_keys.erase(m_cache_keys.begin());
-            m_cache_inputs.erase(m_cache_inputs.begin());
-        }
-
-        m_size = new_size;
-    }
-
-    size_t count(key_t key) const
-    {
-        return m_cache_data.count(key);
-    }
-
-    template <typename value_t>
-    value_t& front()
-    {
-        return at<value_t>(*m_cache_keys.begin());
-    }
-
-    template <typename value_t>
-    value_t& back()
-    {
-        return at<value_t>(*m_cache_keys.rbegin());
-    }
-
-    template <typename value_t>
-    value_t& at(key_t key)
-    {
-        return nonstd::any_cast<value_t&>(m_cache_data.at(key));
-    }
-
-    template <typename value_t>
-    const value_t& front() const
-    {
-        return at<value_t>(*m_cache_keys.begin());
-    }
-
-    template <typename value_t>
-    const value_t& back() const
-    {
-        return at<value_t>(*m_cache_keys.rbegin());
-    }
-
-    template <typename value_t>
-    const value_t& at(key_t key) const
-    {
-        return nonstd::any_cast<const value_t&>(m_cache_data.at(key));
-    }
-
-    template <typename value_t>
-    bool has_type(value_t&&) const
-    {
-        return empty()
-            ? false
-            : m_cache_data.begin()->second.type() == typeid(value_t);
-    }
-
-    const std::set<key_t>& keys() const
-    {
-        return m_cache_keys;
-    }
-
-    const std::unordered_map<CycDatablockKey, key_t>& sync(key_t key) const
-    {
-        return m_cache_inputs.at(key);
-    }
+    static void checkCcrDBIntegrity(const std::string& _db_folder);
 
 private:
-    size_t m_size = 0;
+    void generateDatablockDescriptor();
+    void generateFilterOutputStructures(CCycFilterBase* _pFilter, std::string _datastream_storage_folder);
 
-    std::unordered_map<key_t, nonstd::any> m_cache_data;
-    std::set<key_t>                        m_cache_keys;
+    void startDataSavingThreads(CCycFilterBase* _pFilter, std::string _datastream_storage_folder);
+    void saveFilter(CCycFilterBase* _pFilter, std::ofstream& _csv_writter, const std::string& _datastream_storage_folder, std::mutex& m);
+    
+    static bool saveCycImage(
+            const CycImages& _images,
+            const CyC_TIME_UNIT& _timestamp_start,
+            const CyC_TIME_UNIT& _timestamp_stop,
+            const CyC_TIME_UNIT& _sampling_time,
+            std::ofstream& _csv_writer,
+            const std::string& _full_path);
 
-    // Stores the timestamps of the input sources, which were used to compute the data
-    std::unordered_map<key_t, std::unordered_map<CycDatablockKey, key_t>> m_cache_inputs;
+private:
+    CCycCore*   m_pCycCore;
+    std::string m_sSaveDBStoragePath;
+    std::string m_sReadDBStoragePath;
+
+    bool m_bReadDBEnabled;
+    bool m_bSaveReadSamePath;
+
+    std::vector<std::thread>                            m_vSavingThreads;
+    std::unordered_map<CycDatablockKey, std::mutex*>    m_mapSavingMutexes;
+    std::unordered_map<CycDatablockKey, CyC_TIME_UNIT>  m_mapSyncSavingTimestamps;
+    std::unordered_map<CycDatablockKey, bool>           m_mapIsSaving;
+
+    std::thread     m_save_thread;
+    CyC_ATOMIC_BOOL m_save_running;
+    ThreadPool      m_save_thread_pool;
+
+    std::thread     m_read_thread;
+    CyC_ATOMIC_BOOL m_read_running;
+    ThreadPool      m_read_thread_pool;
+
+    std::unordered_map<CycDatablockKey, csv::writer>    m_extra_writers;
+    std::unordered_map<CycDatablockKey, CyC_INT>        m_frame_ids;
+    std::unordered_map<CycDatablockKey, bool>           m_setup_done;
 };
 
-#endif // CyC_CACHE_H
+#endif /* CHddStorage_H_ */

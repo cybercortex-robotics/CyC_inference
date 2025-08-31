@@ -1,187 +1,137 @@
 // Copyright (c) 2025 CyberCortex Robotics SRL. All rights reserved
 // Author: Sorin Mihai Grigorescu
 
-#ifndef CyC_CACHE_H
-#define CyC_CACHE_H
+#ifndef CCycCore_H_
+#define CCycCore_H_
 
-#include "CyC_TYPES.h"
-#include <unordered_map>
-#include <set>
-#include "nonstd/any.hpp"
+#include "CCycDatablock.h"
+#include "dynalo/dynalo.hpp"
+#include "os/CSingletonRegistry.h"
 
-class CCycCache
+class CCycCore
 {
 public:
-    using key_t = CyC_TIME_UNIT;
+	CCycCore();
+	~CCycCore();
 
-    CCycCache()
-        : m_size(CACHE_SIZE)
-    {}
+	CyC_ULONG				getVisionCoreID()		{ return m_nCoreID; };
+    std::string				getReplayDBPath()		{ return m_sReplayDBPath; };
+	std::vector<CyC_INT>	getStartupFiltersView() { return m_nStartupFiltersView; };
+	CSingletonRegistry*		getSingletonRegistry()  { return &m_SingletonRegistry; };
 
-    CCycCache(size_t size)
-        : m_size(size)
-    {}
+	/**
+	  * \brief Initialize the vision core
+	  *
+	  * \param _conf_file					Main (local) configuration file of the vision core
+	  * \param _network_cores_conf_files    Vector of configuration files for generating network filters
+	  * \param _viz_enabled					Initializes QT and stores its singleton in the singletons registers
+	  **/
+	bool init(const std::string& _conf_file, const std::vector<std::string>& _network_cores_conf_files, const bool& _viz_enabled = true);
 
-    CCycCache(const CCycCache&) = default;
-    CCycCache(CCycCache&&) noexcept = default;
-    CCycCache& operator=(const CCycCache&) = default;
-    CCycCache& operator=(CCycCache&&) noexcept = default;
-    ~CCycCache() = default;
+	/**
+	  * \brief Loads the available filter DLLs
+	  **/
+	bool loadDlls();
 
-    template <typename value_t>
-    typename std::enable_if<!std::is_same<CcrOcTree, value_t>::value, void>::type
-    insert(key_t key, const value_t& value, std::unordered_map<CycDatablockKey, CyC_TIME_UNIT> sync = std::unordered_map<CycDatablockKey, CyC_TIME_UNIT>())
-    {
-        while (m_cache_keys.size() >= m_size)
-        {
-            m_cache_data.erase(*m_cache_keys.begin());
-            m_cache_keys.erase(m_cache_keys.begin());
-            m_cache_inputs.erase(m_cache_inputs.begin());
-        }
+	/**
+	  * \brief Allocates memory for a filter
+	  *
+	  * \param pFilter		Pointer to base filter for memory allocation
+	  * \param config		Configuration parameters for the filter
+	  * \param filter_type	Type of filter to instantiate
+	  **/
+	bool mallocFilter(CCycFilterBase*& pFilter, const ConfigFilterParameters& config);
 
-        m_cache_data.emplace(key, value);
-        m_cache_keys.emplace(key);
-        m_cache_inputs.emplace(key, sync);
-    }
+	/*
+	 * Insert a new filter in the Datablock
+	 * return: True if insertion passed, False if the filter key already exists
+	 */
+	bool registerFilter(CCycFilterBase* pFilter);
 
-    template <typename value_t>
-    typename std::enable_if<std::is_same<CcrOcTree, value_t>::value, void>::type
-    insert(key_t key, const value_t& value, std::unordered_map<CycDatablockKey, CyC_TIME_UNIT> sync = std::unordered_map<CycDatablockKey, CyC_TIME_UNIT>())
-    {
-        while (m_cache_keys.size() >= m_size)
-        {
-            m_cache_data.erase(*m_cache_keys.begin());
-            m_cache_keys.erase(m_cache_keys.begin());
-            m_cache_inputs.erase(m_cache_inputs.begin());
-        }
+	/*
+	 * Connects a filter to its input sources
+	 */
+	bool connectInputSources(const CycDatablockKeys& sources, CCycFilterBase* pFilter);
 
-        // Construct empty environment
-        m_cache_data[key] = CcrOcTree(0.1);
-        
-        // Get a reference
-        // CcrOcTree& to = std::any_cast<CcrOcTree&>(m_cache_data[key]);
-        CcrOcTree& to = *(m_cache_data[key].to_ptr<CcrOcTree>());
-        
-        // Correctly copy the environment
-        to.~CcrOcTree();
-        new (&to) CcrOcTree(value.getResolution());
+	/*
+	 * Read filter from Datablock
+	 */
+	bool readFilter(CycDatablockKey key, CCycFilterBase*& pFilter);
 
-        // Information about color is lost when the copy constructor/operator is used
-        // Maybe implement an efficient copy constructor for ColorOcTree?
-        for (auto it = value.begin_leafs(); it != value.end_leafs(); ++it)
-        {
-            auto* node = to.updateNode(it.getCoordinate().x(), it.getCoordinate().y(), it.getCoordinate().z(), true, true);
-            node->setColor(it->getColor());
-            node->setValue(it->getValue());
-            node->setObjectClass(it->getObjectClass());
-        }
+	/*
+	 * Deletes a filter in the Datablock
+	 * return: True if the deletion is succesfull, False otherwise
+	 */
+	bool deleteFilter(CycDatablockKey key);
 
-        m_cache_keys.emplace(key);
-        m_cache_inputs.emplace(key, sync);
-    }
+	/*
+	 * Deletes all entries in the Datablock
+	 * return: TRUE is deletion is succesfull; FALSE otherwise
+	 */
+    bool clearDatablock() { return m_Datablock.clearDatablock(); };
 
-    size_t size() const
-    {
-        return m_cache_keys.size();
-    }
+	/*
+	 * Enables all the filters
+	 */
+    void enableAllFilters() { m_Datablock.enableAllFilters(); };
 
-    bool empty() const
-    {
-        return size() == 0;
-    }
+	/*
+	 * Disables all the filters
+	 */
+    void disableAllFilters() { m_Datablock.disableAllFilters(); };
 
-    void clear()
-    {
-        m_cache_data.clear();
-        m_cache_keys.clear();
-        m_cache_inputs.clear();
-    }
+	/*
+	 * Starts all the filters
+	 */
+    void startAllFilters() { m_Datablock.startAllFilters(); };
 
-    void erase(key_t key)
-    {
-        m_cache_data.erase(key);
-        m_cache_keys.erase(key);
-    }
+	/*
+	 * Stops all the filters
+	 */
+    void stopAllFilters() { m_Datablock.stopAllFilters(); };
 
-    void resize(size_t new_size)
-    {
-        while (m_cache_keys.size() > new_size)
-        {
-            m_cache_data.erase(*m_cache_keys.begin());
-            m_cache_keys.erase(m_cache_keys.begin());
-            m_cache_inputs.erase(m_cache_inputs.begin());
-        }
+    /*
+     * Starts / Stops plotting the sampling time of the Datablock registered filters
+     */
+#if defined(ENABLE_CVPLOT) || defined(ENABLE_QTPLOT)
+    void startDatablockPlot() { m_Datablock.startDatablockPlot(); };
+    void stopDatablockPlot() { m_Datablock.stopDatablockPlot(); };
+#else	
+    void startDatablockPlot() {};
+    void stopDatablockPlot() {};
+#endif
 
-        m_size = new_size;
-    }
+    /*
+     * Returns the Datablock status and entries
+     */
+    CycDatablockEntriesInfo getDatablock() { return m_Datablock.getDatablock(); };
 
-    size_t count(key_t key) const
-    {
-        return m_cache_data.count(key);
-    }
+    /*
+     * Prints the Datablock status and entries
+     */
+    void printDatablock();
 
-    template <typename value_t>
-    value_t& front()
-    {
-        return at<value_t>(*m_cache_keys.begin());
-    }
+    /*
+     * Visualization functions 
+     */
+    static bool getCycImage2CvMat(CCycFilterBase* pFilter, cv::Mat& dst, const CyC_TIME_UNIT& ts = -1);
 
-    template <typename value_t>
-    value_t& back()
-    {
-        return at<value_t>(*m_cache_keys.rbegin());
-    }
-
-    template <typename value_t>
-    value_t& at(key_t key)
-    {
-        return nonstd::any_cast<value_t&>(m_cache_data.at(key));
-    }
-
-    template <typename value_t>
-    const value_t& front() const
-    {
-        return at<value_t>(*m_cache_keys.begin());
-    }
-
-    template <typename value_t>
-    const value_t& back() const
-    {
-        return at<value_t>(*m_cache_keys.rbegin());
-    }
-
-    template <typename value_t>
-    const value_t& at(key_t key) const
-    {
-        return nonstd::any_cast<const value_t&>(m_cache_data.at(key));
-    }
-
-    template <typename value_t>
-    bool has_type(value_t&&) const
-    {
-        return empty()
-            ? false
-            : m_cache_data.begin()->second.type() == typeid(value_t);
-    }
-
-    const std::set<key_t>& keys() const
-    {
-        return m_cache_keys;
-    }
-
-    const std::unordered_map<CycDatablockKey, key_t>& sync(key_t key) const
-    {
-        return m_cache_inputs.at(key);
-    }
+#ifdef __ANDROID_API__
+    CCommunication* getCommunication() { return m_Communication; }
+#endif
 
 private:
-    size_t m_size = 0;
+	CycDatablockEntry* initDatablockEntry(CycDatablockKey key);
 
-    std::unordered_map<key_t, nonstd::any> m_cache_data;
-    std::set<key_t>                        m_cache_keys;
+private:
+	CyC_ULONG				m_nCoreID;
+	bool					m_bCoreRunning;
+	CCycDatablock			m_Datablock;
+	std::string				m_sReplayDBPath;
+	std::vector<CyC_INT>	m_nStartupFiltersView;
+	CSingletonRegistry		m_SingletonRegistry;
 
-    // Stores the timestamps of the input sources, which were used to compute the data
-    std::unordered_map<key_t, std::unordered_map<CycDatablockKey, key_t>> m_cache_inputs;
+	std::unordered_map<CyC_FILTER_TYPE, std::unique_ptr<dynalo::library>> m_SharedFilters;
 };
 
-#endif // CyC_CACHE_H
+#endif /* CCycCore_H_ */
