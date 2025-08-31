@@ -262,7 +262,7 @@ struct CycImu
 
     friend auto operator<<(std::ostream& _os, CycImu const& _imu) -> std::ostream&
     {
-        return _os << _imu.timestamp << ":\t" << _imu.acc.x() << "\t" << _imu.acc.y() << "\t" << _imu.acc.z() << "\t(" << _imu.gyro.x() << "\t" << _imu.gyro.y() << "\t" << _imu.gyro.z() << ")";
+        return _os << _imu.timestamp << ":\tacc: " << _imu.acc.x() << "\t" << _imu.acc.y() << "\t" << _imu.acc.z() << "\tgyro: " << _imu.gyro.x() << "\t" << _imu.gyro.y() << "\t" << _imu.gyro.z();
     }
 
     CyC_TIME_UNIT   timestamp;
