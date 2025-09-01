@@ -107,6 +107,8 @@ endif()
 
 if (${CyC_OPENCV_SYS_LEVEL})
     set(CyC_OPENCV_LIBRARY_PATH ${OpenCV_LIBRARY_DIRS})
+    set(CyC_OPENCV_WORLD ${OpenCV_LIBS})
+    set(CyC_OPENCV_WORLD ${CyC_OPENCV_WORLD} PARENT_SCOPE)
 else()
     set(CyC_OPENCV_LIBRARY_PATH ${CyC_THIRD_PARTY}/opencv/${CyC_OPENCV_VERSION}/${CyC_LIBS_BINARY_KEY}-${CyC_CUDA_VERSION_ID}/lib)
 
@@ -213,3 +215,4 @@ macro(add_cyc_filter name filter_path)
 		message(STATUS "Filter '${FN}' enabled.")
 	endif (Build_${name})
 endmacro()
+

@@ -6,6 +6,8 @@ if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "armv7l")
 	set(RASPBERRY_PI TRUE)
 endif(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "armv7l")
 
+find_package(Qt5 COMPONENTS Core Gui Widgets PrintSupport REQUIRED)
+
 add_executable(App_CycCore
 	src/main_core.cpp
 	src/CPlotFilterOutput.h
@@ -22,11 +24,16 @@ target_link_directories(App_CycCore
 target_link_libraries(App_CycCore
     CycCore
     CycToolkit
+    qtplot
     octomap
     octomath
     libconfig++
     libcsv
-    ${CyC_OPENCV_WORLD})
+    ${CyC_OPENCV_WORLD}
+    Qt5::Core
+    Qt5::Gui
+    Qt5::Widgets
+    Qt5::PrintSupport)
 
 if (MSVC)
 	file(GLOB OCTOMAP_LIBRARIES "${CMAKE_SOURCE_DIR}/3rdParty/octomap/${CyC_LIBS_BINARY_KEY}/lib/*.lib")
@@ -34,34 +41,16 @@ if (MSVC)
     #link_directories(${CMAKE_SOURCE_DIR}/3rdParty/pthreads/${CyC_LIBS_BINARY_KEY}/lib)
 	file(GLOB PTHREAD_LIBRARIES "${CMAKE_SOURCE_DIR}/3rdParty/pthreads/${CyC_LIBS_BINARY_KEY}/lib/*.lib")
     
-    find_package (OpenGL REQUIRED)
-    find_package (Qt5Core REQUIRED)
-    find_package (Qt5Gui REQUIRED)
-    find_package (Qt5OpenGL REQUIRED)
-    find_package (Qt5Widgets REQUIRED)
-    find_package (Qt5Xml REQUIRED)
-    find_package (Qt5Network REQUIRED)
-    find_package (Qt5Concurrent REQUIRED)
-    find_package (Qt5PrintSupport REQUIRED)
+    # find_package (OpenGL REQUIRED)
 
     target_link_libraries(App_CycCore
-        qtplot
         pdh
         Winmm
-        Qt5::Concurrent
-        Qt5::Core
-        Qt5::Gui
-        Qt5::Network
-        Qt5::OpenGL
-        Qt5::Widgets
-        Qt5::Xml
-        Qt5::PrintSupport
         ${PTHREAD_LIBRARIES}
         ${OCTOMAP_LIBRARIES} 
         ${GLUT_LIBRARIES})
 elseif (UNIX)
     target_link_libraries(App_CycCore
-        qtplot
         pthread
         dl)
 elseif(RASPBERRY_PI)
@@ -86,3 +75,4 @@ endif ()
 add_custom_target(BUILD_APP_WITH_FILTERS
     DEPENDS App_CycCore BUILD_ALL_FILTERS
 )
+
