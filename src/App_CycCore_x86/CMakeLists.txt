@@ -27,7 +27,6 @@ target_link_libraries(App_CycCore
     qtplot
     octomap
     octomath
-    libconfig++
     libcsv
     ${CyC_OPENCV_WORLD}
     Qt5::Core
@@ -44,6 +43,7 @@ if (MSVC)
     # find_package (OpenGL REQUIRED)
 
     target_link_libraries(App_CycCore
+    	libconfig++
         pdh
         Winmm
         ${PTHREAD_LIBRARIES}
@@ -51,10 +51,12 @@ if (MSVC)
         ${GLUT_LIBRARIES})
 elseif (UNIX)
     target_link_libraries(App_CycCore
+    	config++
         pthread
         dl)
 elseif(RASPBERRY_PI)
     target_link_libraries(App_CycCore
+        config++
         pthread
         pigpio)
 endif ()
