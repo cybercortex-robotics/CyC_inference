@@ -49,16 +49,16 @@ if (MSVC)
         ${PTHREAD_LIBRARIES}
         ${OCTOMAP_LIBRARIES} 
         ${GLUT_LIBRARIES})
-elseif (UNIX)
-    target_link_libraries(App_CycCore
-    	config++
-        pthread
-        dl)
 elseif(RASPBERRY_PI)
     target_link_libraries(App_CycCore
         config++
         pthread
         pigpio)
+else ()
+    target_link_libraries(App_CycCore
+    	config++
+        pthread
+        dl)
 endif ()
 
 # Copy App_CycCore.exe to App_CycCoreTwin.exe
