@@ -79,7 +79,7 @@ set(CyC_LIBS_BINARY_KEY ${CyC_OS_VERSION}-${CyC_COMPILER_VERSION}-${CyC_CHIPSET_
 set(CyC_LIBS_BINARY_KEY ${CyC_LIBS_BINARY_KEY} PARENT_SCOPE)
 
 # Check if 3rdParty libraries exist for the chosen chipset, OS, compiler and CUDA Toolkit versions
-# OpenCV
+### OpenCV ###
 set (CyC_OPENCV_PATH ${CyC_THIRD_PARTY}/opencv/${CyC_OPENCV_VERSION}/${CyC_LIBS_BINARY_KEY}-${CyC_CUDA_VERSION_ID})
 set (CyC_OPENCV_PATH ${CyC_OPENCV_PATH} PARENT_SCOPE)
 
@@ -118,6 +118,16 @@ else()
 endif()
 set(CyC_OPENCV_LIBRARY_PATH ${CyC_OPENCV_LIBRARY_PATH} PARENT_SCOPE)
 
+### Eigen ###
+set (CyC_Eigen_PATH ${CyC_THIRD_PARTY}/Eigen)
+if (NOT EXISTS ${CyC_Eigen_PATH})
+    message(STATUS "No valid Eigen3 library version found in the 3rdParty folder. Searching for a system level installation.")
+    find_package(Eigen3 3.3 REQUIRED)
+    set (CyC_Eigen_PATH ${EIGEN3_INCLUDE_DIR})
+endif()
+set (CyC_Eigen_PATH ${CyC_Eigen_PATH} PARENT_SCOPE)
+
+
 if (NOT ANDROID)
     #set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin PARENT_SCOPE)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $<1:${CMAKE_SOURCE_DIR}> PARENT_SCOPE)
@@ -142,7 +152,7 @@ list(APPEND CMAKE_FIND_ROOT_PATH "${OPENSSL_ROOT_DIR}" PARENT_SCOPE)
 # 3rdParty includes
 set(CyC_THIRD_PARTY_INCLUDE_DIRECTORIES 
     ${CyC_OPENCV_INCLUDE_PATH}
-    ${CyC_THIRD_PARTY}/Eigen
+    ${CyC_Eigen_PATH}
     ${CyC_THIRD_PARTY}/spdlog-1.4.2/include
     ${CyC_THIRD_PARTY}/libcsv/include
     ${CyC_THIRD_PARTY}/libcurl/include
