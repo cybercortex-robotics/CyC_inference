@@ -33,25 +33,6 @@
 #include <vector>
 #include <signal.h>
 
-int main_A(void)
-{
-    std::string exec = "/home/sorin/dev/src/CyberCortex.AI/core/bin/App_CycCoreTwin";
-    std::string conf = "../etc/pipelines/daemons/daemon.conf";
-    //if((chdir(path.c_str())) < 0)
-    {
-        
-    }
-
-    //int ret = execl("echo", "echo", "hello world from echo", (char*)NULL);
-    //int ret = std::system(exec.c_str());
-    int ret = execl(exec.c_str(), exec.c_str(), conf.c_str(), (char*) NULL);
-    //int ret = execl(exec.c_str(), exec.c_str(), "--save", "/home/sorin/dev/src/CyberCortex.AI/dump", conf.c_str(), (char*) NULL);
-
-    std::cout << ret << std::endl;
-
-    exit(EXIT_SUCCESS);
-}
-
 // For security purposes, we don't allow any arguments to be passed into the daemon
 int main(void)
 {
