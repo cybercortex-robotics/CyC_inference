@@ -207,7 +207,7 @@ set(CyC_THIRD_PARTY_LIBRARY_DIRECTORIES ${CyC_THIRD_PARTY_LIBRARY_DIRECTORIES} P
 if (NOT ANDROID)
     include_directories(include)
     include_directories(include/core)
-	add_subdirectory(src)
+    add_subdirectory(cyc_apps)
 endif (NOT ANDROID)
 
 
