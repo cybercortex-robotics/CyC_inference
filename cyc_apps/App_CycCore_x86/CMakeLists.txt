@@ -27,7 +27,6 @@ target_link_libraries(App_CycCore
     qtplot
     octomap
     octomath
-    libcsv
     ${CyC_OPENCV_WORLD}
     Qt5::Core
     Qt5::Gui
@@ -51,11 +50,13 @@ if (MSVC)
         ${GLUT_LIBRARIES})
 elseif(RASPBERRY_PI)
     target_link_libraries(App_CycCore
+        fmt
         config++
         pthread
         pigpio)
 else ()
     target_link_libraries(App_CycCore
+        fmt
     	config++
         pthread
         dl)
@@ -77,4 +78,5 @@ endif ()
 add_custom_target(BUILD_APP_WITH_FILTERS
     DEPENDS App_CycCore BUILD_ALL_FILTERS
 )
+
 

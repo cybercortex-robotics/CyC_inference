@@ -16,7 +16,7 @@
 #include "vision/CImageDisplayUtils.h"
 #include "os/console_helper.hpp"
 #include "os/CFileUtils.h"
-#include "csv_reader.h"
+#include "os/CCsvReader.h"
 #include "CPlotFilterOutput.h"
 #include "os/CComputeInspect.h"
 #include "os/qtplot/qtimage.h"
