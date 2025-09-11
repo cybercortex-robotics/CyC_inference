@@ -122,10 +122,28 @@ set(CyC_OPENCV_LIBRARY_PATH ${CyC_OPENCV_LIBRARY_PATH} PARENT_SCOPE)
 set (CyC_Eigen_PATH ${CyC_THIRD_PARTY}/Eigen)
 if (NOT EXISTS ${CyC_Eigen_PATH})
     message(STATUS "No valid Eigen3 library version found in the 3rdParty folder. Searching for a system level installation.")
-    find_package(Eigen3 3.3 REQUIRED)
+    find_package(Eigen3 REQUIRED)
     set (CyC_Eigen_PATH ${EIGEN3_INCLUDE_DIR})
 endif()
 set (CyC_Eigen_PATH ${CyC_Eigen_PATH} PARENT_SCOPE)
+
+### Spdlog ###
+set (CyC_Spdlog_PATH ${CyC_THIRD_PARTY}/spdlog-1.4.2/include)
+if (NOT EXISTS ${CyC_Spdlog_PATH})
+    message(STATUS "No valid Spdlog library version found in the 3rdParty folder. Searching for a system level installation.")
+    find_package(spdlog REQUIRED)
+endif()
+set (CyC_Spdlog_PATH ${CyC_Spdlog_PATH} PARENT_SCOPE)
+
+### LibConfig++ ###
+set (CyC_LibConfig_PATH ${CyC_THIRD_PARTY}/libconfig/include)
+if (NOT EXISTS ${CyC_LibConfig_PATH})
+    message(STATUS "No valid LibConfig library version found in the 3rdParty folder. Searching for a system level installation.")
+    find_package(PkgConfig REQUIRED)
+    set (CyC_LibConfig_PATH ${LIBCONFIG_INCLUDE_DIRS})
+endif()
+set (CyC_LibConfig_PATH ${CyC_LibConfig_PATH} PARENT_SCOPE)
+
 
 
 if (NOT ANDROID)
@@ -153,12 +171,11 @@ list(APPEND CMAKE_FIND_ROOT_PATH "${OPENSSL_ROOT_DIR}" PARENT_SCOPE)
 set(CyC_THIRD_PARTY_INCLUDE_DIRECTORIES 
     ${CyC_OPENCV_INCLUDE_PATH}
     ${CyC_Eigen_PATH}
-    ${CyC_THIRD_PARTY}/spdlog-1.4.2/include
-    ${CyC_THIRD_PARTY}/libcsv/include
+    ${CyC_Spdlog_PATH}
+    ${CyC_LibConfig_PATH}
     ${CyC_THIRD_PARTY}/libcurl/include
     ${CyC_THIRD_PARTY}/openh264/include
     ${CyC_THIRD_PARTY}/octomap/include
-    ${CyC_THIRD_PARTY}/libconfig/include
     ${CyC_THIRD_PARTY}/enet-1.3.14/include
     ${CyC_THIRD_PARTY}/ffmpeg/include
     ${CyC_THIRD_PARTY}/nlohmann-json/include
@@ -178,7 +195,6 @@ set(CyC_THIRD_PARTY_LIBRARY_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/${CyC_LIBS_BINARY_KEY} # CyberCortex.AI library includes
     ${CyC_THIRD_PARTY}/enet-1.3.14/${CyC_LIBS_BINARY_KEY}/lib
     ${CyC_THIRD_PARTY}/libconfig/${CyC_LIBS_BINARY_KEY}/lib
-    ${CyC_THIRD_PARTY}/libcsv/${CyC_LIBS_BINARY_KEY}/lib
     ${CyC_THIRD_PARTY}/libcurl/${CyC_LIBS_BINARY_KEY}/lib
     ${CyC_THIRD_PARTY}/opencv/${CyC_OPENCV_VERSION}/${CyC_LIBS_BINARY_KEY}-${CyC_CUDA_VERSION_ID}/lib
     ${CyC_THIRD_PARTY}/libtorch/${CyC_TORCH_VERSION}/${CyC_LIBS_BINARY_KEY}-${CyC_CUDA_VERSION_ID}/lib
@@ -225,4 +241,5 @@ macro(add_cyc_filter name filter_path)
 		message(STATUS "Filter '${FN}' enabled.")
 	endif (Build_${name})
 endmacro()
+
 
