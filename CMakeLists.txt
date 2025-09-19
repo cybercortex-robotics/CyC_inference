@@ -144,6 +144,14 @@ if (NOT EXISTS ${CyC_LibConfig_PATH})
 endif()
 set (CyC_LibConfig_PATH ${CyC_LibConfig_PATH} PARENT_SCOPE)
 
+### msgpack ###
+set (CyC_MsgPack_PATH ${CyC_THIRD_PARTY}/msgpack/include)
+if (NOT EXISTS ${CyC_MsgPack_PATH})
+    message(STATUS "No valid MsgPack library version found in the 3rdParty folder. Searching for a system level installation.")
+    find_package(msgpack REQUIRED)
+endif()
+set (CyC_MsgPack_PATH ${CyC_MsgPack_PATH} PARENT_SCOPE)
+
 
 
 if (NOT ANDROID)
@@ -173,6 +181,7 @@ set(CyC_THIRD_PARTY_INCLUDE_DIRECTORIES
     ${CyC_Eigen_PATH}
     ${CyC_Spdlog_PATH}
     ${CyC_LibConfig_PATH}
+    ${CyC_MsgPack_PATH}
     ${CyC_THIRD_PARTY}/libcurl/include
     ${CyC_THIRD_PARTY}/openh264/include
     ${CyC_THIRD_PARTY}/octomap/include
@@ -180,7 +189,6 @@ set(CyC_THIRD_PARTY_INCLUDE_DIRECTORIES
     ${CyC_THIRD_PARTY}/ffmpeg/include
     ${CyC_THIRD_PARTY}/nlohmann-json/include
     ${CyC_THIRD_PARTY}/cvplot-0.0.3/include
-    ${CyC_THIRD_PARTY}/msgpack/include
     ${CyC_THIRD_PARTY}/boost-1.78.0/include
     ${CyC_THIRD_PARTY}/glut-2.0.0.29/include)
 if (WIN32)
