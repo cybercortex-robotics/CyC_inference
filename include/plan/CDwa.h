@@ -33,8 +33,8 @@ public:
 
 private:
     void find_goal_points(const CycState& _vehicle_state, std::vector<Eigen::VectorXf>& _out_goal_points);
-    void parse_octree(const CcrOcTree& _octree, std::vector<Eigen::VectorXf>& _out_obstacles, std::vector<Eigen::VectorXf>& _out_traversable);
-    std::vector<Eigen::VectorXf> find_traversable_nodes(const CcrOcTree& _octree, const CyC_INT& _traversable_class_id);
+    void parse_octree(const CCycOcTree& _octree, std::vector<Eigen::VectorXf>& _out_obstacles, std::vector<Eigen::VectorXf>& _out_traversable);
+    std::vector<Eigen::VectorXf> find_traversable_nodes(const CCycOcTree& _octree, const CyC_INT& _traversable_class_id);
     bool goalPointReached(const std::vector<Eigen::VectorXf>& goal_points, const CycState& _vehicle_state);
     CycControlInput filterSignals(const CycControlInput& raw_control);
 

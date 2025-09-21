@@ -185,12 +185,12 @@ struct generic_copy
 };
 
 template <typename ToDataType_t>
-struct generic_copy<ToDataType_t, CcrOcTree>
+struct generic_copy<ToDataType_t, CCycOcTree>
 {
-    static void copy(ToDataType_t& to, const CcrOcTree& from)
+    static void copy(ToDataType_t& to, const CCycOcTree& from)
     {
-        to.~CcrOcTree();
-        new (&to) CcrOcTree(from.getResolution());
+        to.~CCycOcTree();
+        new (&to) CCycOcTree(from.getResolution());
 
         // Information about color is lost when the copy constructor/operator is used
         // Maybe implement an efficient copy constructor for ColorOcTree?

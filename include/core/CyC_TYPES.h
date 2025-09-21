@@ -23,7 +23,7 @@
 
 // Environment model types
 #include <octomap/octomap.h>
-#include <octomap/CcrOcTree.h>
+#include <CCycOcTree.h>
 
 // Coordinates transformation class
 #include "env/CPose.h"
@@ -652,16 +652,15 @@ struct CycBBox3D
 };
 typedef std::vector<CycBBox3D> CycBBoxes3D;
 
-typedef octomap::CcrOcTree CcrOcTree;
 struct CycEnvironment
 {
     CPose                       pose;
     CycBBoxes3D                 objects;
-    std::unique_ptr<CcrOcTree>  pOccupancyModel;
+    std::unique_ptr<CCycOcTree>  pOccupancyModel;
 
     CycEnvironment(float _resolution)
     {
-        pOccupancyModel = std::make_unique<CcrOcTree>(_resolution);
+        pOccupancyModel = std::make_unique<CCycOcTree>(_resolution);
     }
 
     CycEnvironment(const CycEnvironment& from)
@@ -687,7 +686,7 @@ struct CycEnvironment
     {
         dest.pose = pose;
         dest.objects = objects;
-        dest.pOccupancyModel = std::make_unique<CcrOcTree>(pOccupancyModel->getResolution());
+        dest.pOccupancyModel = std::make_unique<CCycOcTree>(pOccupancyModel->getResolution());
 
         // Information about color is lost when the copy constructor/operator is used
         // Maybe implement an efficient copy constructor for ColorOcTree?

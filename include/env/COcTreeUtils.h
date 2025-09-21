@@ -24,7 +24,7 @@ public:
      *
      * \param _octree               Output 3D octree
      **/
-    static void printOcTree(const CcrOcTree& _octree);
+    static void printOcTree(const CCycOcTree& _octree);
 
     /**
      * \brief Converts a depth image to an octree
@@ -41,7 +41,7 @@ public:
     static bool depth2octree(const CPinholeCameraSensorModel* _psensor_model,
         const cv::Mat& _img_depth_meters,
         const CPose& _pose,
-        CcrOcTree* _poctree,
+        CCycOcTree* _poctree,
         const CyC_UINT& _step = 1,
         const float _octree_depth_th = 30.f,
         const float _ground_th = 0.2f,
@@ -53,7 +53,7 @@ public:
     static bool depth2octree(const CPinholeCameraSensorModel* _psensor_model,
         const CycImage_& _rimg,
         const CPose& _pose,
-        CcrOcTree* _poctree,
+        CCycOcTree* _poctree,
         const CyC_UINT& _step = 1,
         float _octree_depth_th = 30.f,
         const float _ground_th = 0.2f,
@@ -73,7 +73,7 @@ public:
     static void ultrasonics2octree(
         const CycUltrasonics& _ultrasonics,
         const CPose& pose,
-        CcrOcTree& _octree, 
+        CCycOcTree& _octree, 
 		float _octree_depth_range,
         const cv::Scalar& color=cv::Scalar(0, 255, 0));
 
@@ -86,14 +86,14 @@ public:
      **/
     static void bboxes3d2octree(
         const CycBBoxes3D& _objects,
-        CcrOcTree& _octree,
+        CCycOcTree& _octree,
         const Eigen::Vector3f& origin,
         float origin_yaw);
 
     static void trajectory2octree(
         const CycBBoxes3D& _objects,
         const std::vector<CycTrajectory>& _trajectories,
-        CcrOcTree& _octree,
+        CCycOcTree& _octree,
         const Eigen::Vector3f& origin,
         float origin_yaw);
 
@@ -107,13 +107,13 @@ public:
      * \param _rgb_color    Input octree nodes color
      **/
     static void voxels2octree(const CycVoxels& _voxels,
-        CcrOcTree* _octree,
+        CCycOcTree* _octree,
         const Eigen::Vector3i _rgb_color = Eigen::Vector3i(0, 0, 0),
         const CyC_INT _cls = -1,
         const float _value = 0);
 
     static void voxels2octree(const CycVoxels& _voxels,
-        CcrOcTree* _octree,
+        CCycOcTree* _octree,
         const std::vector<Eigen::Vector3i> _rgb_colors,
         const CyC_INT _cls = -1,
         const float _value = 0);
@@ -131,7 +131,7 @@ public:
         const CycImage_& _inference_image,
         const std::vector<CyC_INT> _ground_class_ids,
         const float _depth_range,
-        CcrOcTree& _octree);
+        CCycOcTree& _octree);
     
     /**
      * \brief       Copies the data from an ontree into another octree (without deleting previous data)
@@ -139,7 +139,7 @@ public:
      * \param _src  Input source octree
      * \param _dst  Output destination octree
      **/
-    static void copyOctreeData(const CcrOcTree& _src, CcrOcTree& _out_dst);
+    static void copyOctreeData(const CCycOcTree& _src, CCycOcTree& _out_dst);
 
     /**
      * \brief Transforms an octree environment model based on the _pose coordinates transform
@@ -147,7 +147,7 @@ public:
      * \param _octree   Input/Output octree model
      * \param _pose     Coordinates transformation pose
      **/
-    static void transformOctree(CcrOcTree& _octree, const CPose& _pose);
+    static void transformOctree(CCycOcTree& _octree, const CPose& _pose);
 
     /**
      * \brief Converts a 3D OcTree to a 2D occupancy grid map. (version 2)
@@ -169,7 +169,7 @@ public:
      * The gridmap resolution (in pixels) will be equal to the number of cm
      * i.e. If _width is 5m and _height is 5m, the gridmap will be 500x500 px
      **/
-    static void octree2gridmap(const CcrOcTree& _octree, Eigen::MatrixXi& _gridmap, const Eigen::Vector2f _size = { 10.f, 10.f });
+    static void octree2gridmap(const CCycOcTree& _octree, Eigen::MatrixXi& _gridmap, const Eigen::Vector2f _size = { 10.f, 10.f });
 
     /**
     * \brief Projects an octree into an image according to the given sensor model
@@ -178,7 +178,7 @@ public:
     * \param _sensor_model  Input camera sensor model
     * \param _dst           Output image with projected octree
     */
-    static void octree2image(const CcrOcTree& _octree, const CBaseSensorModel* _sensor_model, cv::Mat& _dst);
+    static void octree2image(const CCycOcTree& _octree, const CBaseSensorModel* _sensor_model, cv::Mat& _dst);
 };
 
 #endif /* COcTreeUtils_H_ */

@@ -29,7 +29,7 @@ public:
     ~CCycCache() = default;
 
     template <typename value_t>
-    typename std::enable_if<!std::is_same<CcrOcTree, value_t>::value, void>::type
+    typename std::enable_if<!std::is_same<CCycOcTree, value_t>::value, void>::type
     insert(key_t key, const value_t& value, std::unordered_map<CycDatablockKey, CyC_TIME_UNIT> sync = std::unordered_map<CycDatablockKey, CyC_TIME_UNIT>())
     {
         while (m_cache_keys.size() >= m_size)
@@ -45,7 +45,7 @@ public:
     }
 
     template <typename value_t>
-    typename std::enable_if<std::is_same<CcrOcTree, value_t>::value, void>::type
+    typename std::enable_if<std::is_same<CCycOcTree, value_t>::value, void>::type
     insert(key_t key, const value_t& value, std::unordered_map<CycDatablockKey, CyC_TIME_UNIT> sync = std::unordered_map<CycDatablockKey, CyC_TIME_UNIT>())
     {
         while (m_cache_keys.size() >= m_size)
@@ -56,15 +56,15 @@ public:
         }
 
         // Construct empty environment
-        m_cache_data[key] = CcrOcTree(0.1);
+        m_cache_data[key] = CCycOcTree(0.1);
         
         // Get a reference
-        // CcrOcTree& to = std::any_cast<CcrOcTree&>(m_cache_data[key]);
-        CcrOcTree& to = *(m_cache_data[key].to_ptr<CcrOcTree>());
+        // CCycOcTree& to = std::any_cast<CCycOcTree&>(m_cache_data[key]);
+        CCycOcTree& to = *(m_cache_data[key].to_ptr<CCycOcTree>());
         
         // Correctly copy the environment
-        to.~CcrOcTree();
-        new (&to) CcrOcTree(value.getResolution());
+        to.~CCycOcTree();
+        new (&to) CCycOcTree(value.getResolution());
 
         // Information about color is lost when the copy constructor/operator is used
         // Maybe implement an efficient copy constructor for ColorOcTree?
