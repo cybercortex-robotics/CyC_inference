@@ -61,7 +61,7 @@ void showUsage()
         "  --save                       # Save the Datablock to the specified folder\n"
         "  --core                       # Add publishable filters from another core via conf file\n"
         "  --no-viz                     # Disable visualization of filters output\n"
-		"eg: App_CycCore --save c:/data ../etc/ccr_core.conf\n");
+		"eg: App_CycCore --save c:/data ../etc/cyc_core.conf\n");
 	exit(EXIT_SUCCESS);
 }
 
@@ -140,7 +140,7 @@ CyC_INT main(CyC_INT argc, char** argv)
         if (strcmp(argv[i], "--no-viz") == 0)
         {
             bVizEnabled = false;
-            std::cout << "CCR Core: Disabling QtPlot visualization" << std::endl;
+            std::cout << "CyberCortex.AI Core: Disabling QtPlot visualization" << std::endl;
             continue;
         }
 
@@ -153,7 +153,7 @@ CyC_INT main(CyC_INT argc, char** argv)
 
     if (!CFileUtils::FileExist(confFile.c_str()))
     {
-        std::cout << "CCR Core: Configuration file not found. Exiting." << std::endl;
+        std::cout << "CyberCortex.AI Core: Configuration file not found. Exiting." << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -162,7 +162,7 @@ CyC_INT main(CyC_INT argc, char** argv)
         // Check if folder exists
         if (!CFileUtils::FolderExist(strSaveFolder.c_str()))
         {
-            std::cout << "CCR Core: Storage folder not found. Exiting." << std::endl;
+            std::cout << "CyberCortex.AI Core: Storage folder not found. Exiting." << std::endl;
             exit(EXIT_FAILURE);
         }
 
@@ -170,19 +170,19 @@ CyC_INT main(CyC_INT argc, char** argv)
         /*const fs::path save_dir{ strSaveFolder.c_str() };
         if (!fs::is_empty(save_dir))
         {
-            std::cout << "CCR Core: Storage folder is not empty. Overwrite data? [y/N]." << std::endl;
+            std::cout << "CyberCortex.AI Core: Storage folder is not empty. Overwrite data? [y/N]." << std::endl;
             char input; std::cin >> input; input = std::tolower(input);
             if (input == 'y')
             {
                 // Delete folder content
                 for (const auto& entry : fs::directory_iterator(save_dir))
                     fs::remove_all(entry.path());
-                std::cout << "CCR Core: Previous storage folder content deleted." << std::endl;
+                std::cout << "CyberCortex.AI Core: Previous storage folder content deleted." << std::endl;
             }
             else
             {
                 // Exit
-                std::cout << "CCR Core: Exiting." << std::endl;
+                std::cout << "CyberCortex.AI Core: Exiting." << std::endl;
                 exit(EXIT_SUCCESS);
             }
         }*/

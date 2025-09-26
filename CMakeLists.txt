@@ -153,7 +153,7 @@ endif()
 set (CyC_MsgPack_PATH ${CyC_MsgPack_PATH} PARENT_SCOPE)
 
 ### OctoMap ###
-set (CyC_OctoMap_PATH ${CyC_THIRD_PARTY}/msgpack/include)
+set (CyC_OctoMap_PATH ${CyC_THIRD_PARTY}/octomap/include)
 if (NOT EXISTS ${CyC_OctoMap_PATH})
     message(STATUS "No valid OctoMap library version found in the 3rdParty folder. Searching for a system level installation.")
     find_package(octomap REQUIRED)
