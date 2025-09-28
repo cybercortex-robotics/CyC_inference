@@ -62,11 +62,13 @@ public:
     bool	getFiltersConfigParameters(std::vector<ConfigFilterParameters>& params);
 
     const CyC_ULONG             getCoreID()                 { return m_nCoreID; }
-    const std::vector<CyC_INT>  getStartupFiltersView()     { return m_StartupFiltersView; };
+    const std::string&          getUser() const             { return m_User; }
+    const std::string&          getToken() const            { return m_Token; }
     const std::string&          getReplayDBPath() const     { return m_sReplayDBPath; }
     const std::string&          getLogFile() const          { return m_sLogFile; }
     const std::string&          getBasePath() const         { return m_sGlobalBasePath; }
     const std::string&          getFiltersPath() const      { return m_sFiltersPath; }
+    const std::vector<CyC_INT>  getStartupFiltersView()     { return m_StartupFiltersView; };
 
     const ConfigFilterParameters& getFilterParameters(CycDatablockKey key) const
     {
@@ -114,6 +116,8 @@ private:
 
 private:
     CyC_ULONG                           m_nCoreID;
+    std::string                         m_User;
+    std::string                         m_Token;
     std::string                         m_Description;
     std::vector<CyC_INT>                m_StartupFiltersView;
     std::string                         m_sReplayDBPath;
