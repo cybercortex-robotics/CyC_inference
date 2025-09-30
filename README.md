@@ -31,7 +31,7 @@ At its core, CyberCortex.AI Inference structures computations into modular units
 CyberCortex.AI Inference is built to power next-generation autonomous systems, providing the intelligence needed for robotic control, AI-driven automation, and real-time decision-making in dynamic environments. 🚀
 
 ## 2. How to Run Locally
-CyberCortex.AI.inference can be deployed locally on linux, windows and android machines. For a quick start, please check our <a href="[https://www.cybercortex.ai/](https://github.com/cybercortex-robotics/CyC_example)" target="_blank">CyC_example</a> repository.
+CyberCortex.AI.inference can be deployed locally on linux, windows and android machines. For a quick start, please check our <a href="https://github.com/cybercortex-robotics/CyC_example" target="_blank">CyC_example</a> repository.
 
 ## 3. Usage via Droids
 Once a DataBlock has been compiled locally, it can be accessed through our Droids web interface at [https://cybercortex.ai/](https://cybercortex.ai/), given a signaling server and port.
