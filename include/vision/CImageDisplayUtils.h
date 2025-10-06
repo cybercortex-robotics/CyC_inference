@@ -195,7 +195,7 @@ public:
         cv::Mat& _dst,
         const CycPoints& _pts1, const CycPoints& _pts2, 
         const CyC_INT& _line_thickness = 1,
-        const std::vector<CyC_INT>& _matches = std::vector<CyC_INT>(NULL));
+        const std::vector<CyC_INT>& _matches = {});
 
     // _format is either euler of quaternion
     static void printT(cv::Mat& _img, std::string _text, 
