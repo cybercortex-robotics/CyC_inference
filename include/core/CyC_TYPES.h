@@ -23,7 +23,7 @@
 
 // Environment model types
 #include <octomap/octomap.h>
-#include <CCycOcTree.h>
+#include <env/CCycOcTree.h>
 
 // Coordinates transformation class
 #include "env/CPose.h"

@@ -7,11 +7,11 @@
 #include "CyC_TYPES.h"
 #include "CCycFilterBase.h"
 
-class CFilterUtils
+class CCycFilterUtils
 {
 public:
-	CFilterUtils();
-	~CFilterUtils();
+	CCycFilterUtils();
+	~CCycFilterUtils();
 
 	static CCycFilterBase* getStateFilter(const CycInputSources& _input_filters);
 	static bool getPose(CCycFilterBase* _filter, CyC_TIME_UNIT& _io_timestamp, CPose& _out_pose);

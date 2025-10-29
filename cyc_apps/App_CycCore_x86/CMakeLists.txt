@@ -22,8 +22,8 @@ target_link_directories(App_CycCore
         ${CyC_THIRD_PARTY_LIBRARY_DIRECTORIES})
 
 target_link_libraries(App_CycCore
-    CycCore
     CycToolkit
+    CycCore
     qtplot
     octomap
     octomath
