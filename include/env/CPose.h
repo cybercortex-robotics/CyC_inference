@@ -139,8 +139,7 @@ public:
         Eigen::Vector3f euler = _pose.rotation_euler() * 57.295779f;
         Eigen::Vector3f trans = _pose.translation_3x1();
 
-        return _os << _pose.m_ID << ": " << "R: [" << euler.x() << ", " << euler.y() << ", " << euler.z() <<
-            "] trans: [" << trans.x() << ", " << trans.y() << ", " << trans.z() << "]";
+        return _os << "R: [" << euler.transpose() << "]\tt:[" << trans.transpose() << "]";
     }
 
 private:

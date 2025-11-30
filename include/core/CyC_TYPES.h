@@ -738,6 +738,7 @@ struct CycSlam
     CyC_INT                 num_map_points  = 0;
     bool                    is_keyframe     = false;
     bool                    is_mapping      = true;
+    CyC_LONG                map_id          = -1;
 
     CPose                   Absolute_Cam_C;     // Camera pose in camera coordinates
     CPose                   Absolute_Imu_W;     // IMU pose in world coordinates

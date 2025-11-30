@@ -21,7 +21,7 @@ target_link_directories(App_CycCore
     PUBLIC 
         ${CyC_THIRD_PARTY_LIBRARY_DIRECTORIES})
 
-target_link_libraries(App_CycCore
+target_link_libraries(App_CycCore PUBLIC
     CycToolkit
     CycCore
     qtplot
@@ -41,7 +41,7 @@ if (MSVC)
     
     # find_package (OpenGL REQUIRED)
 
-    target_link_libraries(App_CycCore
+    target_link_libraries(App_CycCore PUBLIC
     	libconfig++
         pdh
         Winmm
@@ -49,13 +49,13 @@ if (MSVC)
         ${OCTOMAP_LIBRARIES} 
         ${GLUT_LIBRARIES})
 elseif(RASPBERRY_PI)
-    target_link_libraries(App_CycCore
+    target_link_libraries(App_CycCore PUBLIC
         fmt
         config++
         pthread
         pigpio)
 else ()
-    target_link_libraries(App_CycCore
+    target_link_libraries(App_CycCore PUBLIC
         fmt
     	config++
         pthread
