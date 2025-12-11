@@ -522,12 +522,18 @@ struct CycVoxel
     CycVoxel() :
         id(-1)
     {
-        pt3d = Eigen::Vector4f{ 0.f, 0.f, 0.f, 0.f };
+        pt3d = Eigen::Vector4f{ 0.f, 0.f, 0.f, 1.f };
     }
 
     CycVoxel(Eigen::Vector4f _pt3D, CyC_INT _id = -1, float _score = -1.f, float _angle = 0.f, float _error = 9999.f) :
         pt3d(_pt3D), id(_id), error(_error)
     {}
+    
+    CycVoxel(Eigen::Vector3f _pt3D, CyC_INT _id = -1, float _score = -1.f, float _angle = 0.f, float _error = 9999.f) :
+        id(_id), error(_error)
+    {
+        pt3d = Eigen::Vector4f{ _pt3D.x(), _pt3D.y(), _pt3D.z(), 1.f };
+    }
 
     CycVoxel(float _x, float _y, float _z, float _w = 1.f, CyC_INT _id = -1, float _error = 9999.f) :
         id(_id), error(_error)
