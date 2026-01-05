@@ -234,7 +234,6 @@ void CCycFilterBase::updateData(const DataType_t& data,
             }
             else if ((ts_start == -1) && (ts_stop == -1) && (sampling_time == -1))
             {
-                //m_tTimestampStop = CTimer::now();
                 ts_stop = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
                 m_DataCache.insert(ts_stop, data, sync);
 

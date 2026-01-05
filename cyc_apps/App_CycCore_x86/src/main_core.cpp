@@ -250,6 +250,18 @@ CyC_INT main(CyC_INT argc, char** argv)
         qt_image = std::make_unique<CCycQTImage>(qt);
     }
 
+
+
+
+
+
+    //while (true) {}
+
+
+
+
+
+
     while ((cmd_stream.tellg() > 0) || (ch != 27)) // 27 = ESC
     {
         console::cursor_guard guard;
