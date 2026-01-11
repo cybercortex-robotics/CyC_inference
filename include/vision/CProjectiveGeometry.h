@@ -107,49 +107,80 @@ namespace CProjectiveGeometry
     Pmatrix KT2P(const Eigen::Matrix3f& _K, const Eigen::Matrix4f& _T);
 
     /**
-     * \brief           Projects a 3D point (voxel) to a 2D image using a 3x4 camera projection matrix
+     * \brief           Distorts a normalized projected 2D point
      *
-     * \param _P        Input projection matrix
-     * \param _voxel    Input voxel (3D point)
+     * \param _P        Input sensor model
+     * \param _voxel    Input normalized undistorted 2D point
+     * \return          Normalized distorted 2D point
+     **/
+    Eigen::Vector2f distort(const CPinholeCameraSensorModel* _pSensorModel, const Eigen::Vector2f& _pt_norm_undist);
+
+    /**
+     * \brief           Unistorts a 2D point in pixel coordinates
+     *
+     * \param _P        Input sensor model
+     * \param _voxel    Input distorted 2D point in pixel coordinates
+     * \return          Undistorted 2D point in pixel coordinates
+     **/
+    Eigen::Vector2f undistort_px(const CPinholeCameraSensorModel* _pSensorModel, const Eigen::Vector2f& _pt_dist);
+
+    /**
+     * \brief           Unistorts a normalized 2D point
+     *
+     * \param _P        Input sensor model
+     * \param _voxel    Input normalized distorted 2D point
+     * \return          Normalized undistorted 2D point
+     **/
+    Eigen::Vector2f undistort(const CPinholeCameraSensorModel* _pSensorModel, const Eigen::Vector2f& _pt_norm_dist);
+
+    /**
+     * \brief           Projects a 3D point (voxel) to a 2D image
+     *
+     * \param _P        Input sensor model
+     * \param _voxel    Input voxel (3D point) in camera coordinates
      * \return          Projected 2D point in image coordinates
      **/
-    CycPoint project(const Pmatrix & _P, const CycVoxel& _voxel);
+    CycPoint project(const CPinholeCameraSensorModel* _pSensorModel, const CycVoxel& _voxel_C);
 
     /**
-     * \brief               Projects a 3D point (voxel) to a 2D image using a 3x4 camera projection matrix
+     * \brief               Projects a 3D point (voxel) to a 2D image
      *
      * \param _pSensorModel Input sensor model
-     * \param _cam_pose     Input camera pose
+     * \param _cam_pose     Input camera pose in world coordinates
+     * \param _voxel        Input voxel (3D point) in world coordinates
      * \return              Projected 2D point in image coordinates
      **/
-    CycPoint project(const CPinholeCameraSensorModel* _pSensorModel, const CPose& _cam_pose, const CycVoxel& _voxel);
-    CycPoint project(const CPinholeCameraSensorModel* _pSensorModel, const Eigen::Matrix4f& _cam_pose, const CycVoxel& _voxel);
+    CycPoint project(const CPinholeCameraSensorModel* _pSensorModel, const Eigen::Matrix4f& _cam_pose_W, const CycVoxel& _voxel_W);
+    CycPoint project(const CPinholeCameraSensorModel* _pSensorModel, const CPose& _cam_pose_W, const CycVoxel& _voxel_W);
+
+    /**
+     * \brief               Projects a vector of 3D points (voxels) to a 2D image
+     *
+     * \param _pSensorModel Input sensor model
+     * \param _cam_pose     Input camera pose in world coordinates
+     * \param _voxels       Input 3D points (voxels) in world coordinates
+     * \param _out_pts      Output projected 2D points in image coordinates
+     **/
+    void project(const CPinholeCameraSensorModel* _pSensorModel, const Eigen::Matrix4f& _cam_pose_W, const CycVoxels& _voxels_W, CycPoints& _out_pts);
+    
+    /**
+     * \brief               Projects a vector of 3D points (voxels) to a 2D image
+     *
+     * \param _pSensorModel Input sensor model
+     * \param _voxels       Input 3D points (voxels) in camera coordinates
+     * \param _out_pts      Output projected 2D points in image coordinates
+     **/
+    void project(const CPinholeCameraSensorModel* _pSensorModel, const CycVoxels& _voxels_C, CycPoints& _out_pts);
 
     /**
      * \brief               Projects a vector of 3D points (voxels) to a 2D image using the sensor model and camera pose
      *
      * \param _pSensorModel Input sensor model
-     * \param _cam_pose     Input camera pose
-     * \param _voxels       Input 3D points (voxels)
+     * \param _cam_pose     Input camera pose in world coordinates
+     * \param _voxels       Input 3D points (voxels) in world coordinates
      * \param _out_pts      Output projected 2D points in image coordinates
      **/
-    void project(const CPinholeCameraSensorModel* _pSensorModel,
-        const Eigen::Matrix4f& _cam_pose,
-        const CycVoxels& _voxels,
-        CycPoints& _out_pts);
-
-    /**
-     * \brief               Projects a vector of 3D points (voxels) to a 2D image using the sensor model and camera pose
-     *
-     * \param _pSensorModel Input sensor model
-     * \param _cam_pose     Input camera pose
-     * \param _voxels       Input 3D points (voxels)
-     * \param _out_pts      Output projected 2D points in image coordinates
-     **/
-    void project(const CPinholeCameraSensorModel* _pSensorModel,
-        const CPose& _cam_pose,
-        const CycVoxels& _voxels,
-        CycPoints& _out_pts);
+    void project(const CPinholeCameraSensorModel* _pSensorModel, const CPose& _cam_pose_W, const CycVoxels& _voxels_W, CycPoints& _out_pts);
 
     /**
      * \brief       Inverts a transformation matrix T
@@ -300,7 +331,8 @@ namespace CProjectiveGeometry
      * \param _voxel    Input voxel calculated from _pt1 and _pt2
      * \return          Reprojection error
      **/
-    float getReprojectionErr(const CycPoint& _pt1,
+    float getReprojectionErr(const CPinholeCameraSensorModel* _pSensorModel, 
+        const CycPoint& _pt1,
         const CycPoint& _pt2,
         const Eigen::MatrixXf& _P1,
         const Eigen::MatrixXf& _P2,
@@ -315,7 +347,8 @@ namespace CProjectiveGeometry
      * \param _P2       Input projection matrix for camera 2
      * \return          Reprojection error
      **/
-    float getReprojectionErr(const CycPoints& _pts1,
+    float getReprojectionErr(const CPinholeCameraSensorModel* _pSensorModel, 
+        const CycPoints& _pts1,
         const CycPoints& _pts2,
         const Eigen::MatrixXf& _P1,
         const Eigen::MatrixXf& _P2);

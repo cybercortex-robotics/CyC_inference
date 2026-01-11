@@ -167,7 +167,7 @@ CyC_INT main(CyC_INT argc, char** argv)
         }
 
         // Check if folder is empty
-        /*const fs::path save_dir{ strSaveFolder.c_str() };
+        const fs::path save_dir{ strSaveFolder.c_str() };
         if (!fs::is_empty(save_dir))
         {
             std::cout << "CyberCortex.AI Core: Storage folder is not empty. Overwrite data? [y/N]." << std::endl;
@@ -185,7 +185,7 @@ CyC_INT main(CyC_INT argc, char** argv)
                 std::cout << "CyberCortex.AI Core: Exiting." << std::endl;
                 exit(EXIT_SUCCESS);
             }
-        }*/
+        }
     }
 
     CCycCore CycCore;
@@ -255,7 +255,7 @@ CyC_INT main(CyC_INT argc, char** argv)
 
 
 
-    //while (true) {}
+    while (true) {}
 
 
 
