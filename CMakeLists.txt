@@ -238,15 +238,6 @@ endif (ANDROID)
 
 set(CyC_THIRD_PARTY_LIBRARY_DIRECTORIES ${CyC_THIRD_PARTY_LIBRARY_DIRECTORIES} PARENT_SCOPE)
 
-
-# Apps
-if (NOT ANDROID)
-    include_directories(include)
-    include_directories(include/core)
-    add_subdirectory(cyc_apps)
-endif (NOT ANDROID)
-
-
 # Build CyberCortex.AI filters
 macro(add_cyc_filter name filter_path)
 	set(Build_${name} FALSE CACHE BOOL "Build_${name}")
@@ -262,4 +253,20 @@ macro(add_cyc_filter name filter_path)
 	endif (Build_${name})
 endmacro()
 
+if (NOT ANDROID)
+    #set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $<1:${CMAKE_SOURCE_DIR}/bin>)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
+endif (NOT ANDROID)
 
+# CycCore and CycToolkit libraries
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/cyc_toolkit/src)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/cyc_core/src)
+add_subdirectory(src/cyc_core)
+add_subdirectory(src/cyc_toolkit)
+
+# CyberCortex Apps
+if (NOT ANDROID)
+    add_subdirectory(src/cyc_apps)
+endif (NOT ANDROID)
