@@ -20,7 +20,7 @@
 
 CyberCortex.AI Inference is a real-time AI execution system designed for autonomous robots and complex automation systems. It operates directly on embedded hardware, enabling robots to process sensory data, perform decision-making, and execute actions efficiently.
 
-At its core, CyberCortex.AI Inference structures computations into modular units called "Filters", which function like lightweight AI-driven building blocks. These Filters are organized within a DataBlock, allowing seamless communication between different components of a robotic system. This architecture supports local and distributed execution, meaning robots can process data independently or collaborate with cloud-based AI for enhanced decision-making.
+At its core, CyberCortex.AI Inference structures computations into modular units called "Filters". Each filter acts as a lightweight AI-driven building block. The Filters are organized within a DataBlock, allowing seamless communication between different components of a robotic system. Our architecture supports local and distributed execution, meaning robots can process data independently or collaborate with cloud-based AI for enhanced decision-making.
 
 ### Key Features
 - **Real-Time Processing**: Executes AI models and sensor fusion algorithms with minimal latency.
