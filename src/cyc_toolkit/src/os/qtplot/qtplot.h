@@ -1,3 +1,6 @@
+// Copyright (c) 2026 CyberCortex Robotics SRL. All rights reserved
+// Author: Sorin Mihai Grigorescu
+
 #pragma once
 
 #include <vector>

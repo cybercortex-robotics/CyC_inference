@@ -1,3 +1,6 @@
+// Copyright (c) 2026 CyberCortex Robotics SRL. All rights reserved
+// Author: Sorin Mihai Grigorescu
+
 #include <os/qtplot/qtplot.h>
 #include <os/qtplot/qtimage.h>
 #include <os/qtplot/qtplotsegment.h>

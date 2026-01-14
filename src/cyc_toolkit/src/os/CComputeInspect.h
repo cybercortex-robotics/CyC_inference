@@ -1,4 +1,4 @@
-// Copyright (c) 2025 CyberCortex Robotics SRL. All rights reserved
+// Copyright (c) 2026 CyberCortex Robotics SRL. All rights reserved
 // Author: Sorin Mihai Grigorescu
 
 // https://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process

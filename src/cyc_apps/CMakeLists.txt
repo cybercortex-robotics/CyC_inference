@@ -1,4 +1,4 @@
-# Copyright (c) 2025 CyberCortex Robotics SRL. All rights reserved
+# Copyright (c) 2026 CyberCortex Robotics SRL. All rights reserved
 # Author: Sorin Mihai Grigorescu
 
 set(Build_App_CycCore TRUE CACHE BOOL "Build_App_CycCore")
