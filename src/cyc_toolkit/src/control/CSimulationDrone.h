@@ -87,13 +87,12 @@ class DroneSimulation
 public:
     constexpr static size_t INPUT_SIZE = 4;
 
-    const DroneModel& model;
-    DroneState state;
+    const DroneModel& m_Model;
+    DroneState m_DroneState;
 
     DroneSimulation(const DroneModel& _model) :
-        model(_model)
-    {
-    }
+        m_Model(_model)
+    {}
 
     virtual void step(const Eigen::VectorXf& u, float dt);
 };

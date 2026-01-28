@@ -55,34 +55,70 @@ void DroneSimulation::step(const Eigen::VectorXf& u, float dt)
         return;
     }
 
-    // Control input
-    const float thrust = u[0];
-    const float roll_torque = u[1];
-    const float pitch_torque = u[2];
-    const float yaw_torque = u[3];
+    // --- 1. INPUT INTERPRETATION ---
+    float thrust = u[0];
+    // We treat u[1..3] as desired angular rates (Body Frame)
+    Eigen::Vector3f target_rates{ u[1], u[2], u[3] };
 
-    // roll, pitch, yaw acc
+    // --- 2. ATTITUDE CONTROL (INNER LOOP) ---
+    // These gains define how quickly the drone reaches the commanded tilt
+    const float k_roll = 0.1f;
+    const float k_pitch = 0.1f;
+    const float k_yaw = 0.05f;
+
+    Eigen::Vector3f current_rates{ m_DroneState.roll_vel, m_DroneState.pitch_vel, m_DroneState.yaw_vel };
+
+    // Calculate Torques based on rate error
+    float roll_torque = k_roll * (target_rates.x() - current_rates.x());
+    float pitch_torque = k_pitch * (target_rates.y() - current_rates.y());
+    float yaw_torque = k_yaw * (target_rates.z() - current_rates.z());
+
+    // Angular Acceleration (Euler's Equations of motion for a rigid body)
     const Eigen::Vector3f att_acc{
-        (model.m_Iyy - model.m_Izz) / model.m_Ixx * state.pitch_vel * state.yaw_vel + (1 / model.m_Ixx) * roll_torque, // roll
-        (model.m_Izz - model.m_Ixx) / model.m_Iyy * state.yaw_vel * state.roll_vel + (1 / model.m_Iyy) * pitch_torque, // pitch
-        (model.m_Ixx - model.m_Iyy) / model.m_Izz * state.roll_vel * state.pitch_vel + (1 / model.m_Izz) * yaw_torque  // yaw
+        (m_Model.m_Iyy - m_Model.m_Izz) / m_Model.m_Ixx * m_DroneState.pitch_vel * m_DroneState.yaw_vel + (1 / m_Model.m_Ixx) * roll_torque,
+        (m_Model.m_Izz - m_Model.m_Ixx) / m_Model.m_Iyy * m_DroneState.yaw_vel * m_DroneState.roll_vel + (1 / m_Model.m_Iyy) * pitch_torque,
+        (m_Model.m_Ixx - m_Model.m_Iyy) / m_Model.m_Izz * m_DroneState.roll_vel * m_DroneState.pitch_vel + (1 / m_Model.m_Izz) * yaw_torque
     };
 
-    state.set_att_vel_vector(state.att_vel_vector() + att_acc * dt);
-    state.set_att_vector(state.att_vector() + state.att_vel_vector() * dt);
+    // Integrate Angular State
+    m_DroneState.set_att_vel_vector(m_DroneState.att_vel_vector() + att_acc * dt);
+    m_DroneState.set_att_vector(m_DroneState.att_vector() + m_DroneState.att_vel_vector() * dt);
 
-    // x, y, z
-    const CPose R_pr{ 0.F, 0.F, 0.F, state.roll, state.pitch, 0.F };
-    const Eigen::Vector3f mg_vector{ 0.F, 0.F, model.m_Mass * GRAVITY };
-    const Eigen::Vector3f thrust_vector{ 0.F, 0.F, thrust };
-    const Eigen::Vector3f acc_w = (1.F / model.m_Mass) * (R_pr.rotation_3x3() * thrust_vector - mg_vector);
+    // --- 3. LINEAR DYNAMICS (OUTER LOOP) ---
 
-    const CPose R_y{ 0.F, 0.F, 0.F, 0.F, 0.F, state.yaw };
-    const Eigen::Vector3f acc = R_y.rotation_3x3() * acc_w;
+    // A. Create the Full Rotation Matrix (Body -> World)
+    // This handles Roll, Pitch, AND Yaw in one transformation
+    const CPose R_body_to_world{ 0.F, 0.F, 0.F, m_DroneState.roll, m_DroneState.pitch, m_DroneState.yaw };
+    Eigen::Matrix3f R = R_body_to_world.rotation_3x3();
 
-    state.set_acc_vector(acc);
-    state.set_vel_vector(state.vel_vector() + state.acc_vector() * dt);
-    state.set_pos_vector(state.pos_vector() + state.vel_vector() * dt);
+    // B. Transform Thrust from Body Frame to World Frame
+    // In Body Frame, thrust is always +Z (up relative to the drone)
+    Eigen::Vector3f thrust_body{ 0.F, 0.F, thrust };
+    Eigen::Vector3f thrust_world = R * thrust_body;
+
+    // C. Calculate Drag Force (World Frame)
+    // Drag acts directly against the current world velocity
+    Eigen::Vector3f drag_force_world{
+        -m_Model.m_Cdx * m_DroneState.vx,
+        -m_Model.m_Cdy * m_DroneState.vy,
+        -m_Model.m_Cdz * m_DroneState.vz
+    };
+
+    // D. Gravity Force (World Frame)
+    Eigen::Vector3f gravity_world{ 0.F, 0.F, -m_Model.m_Mass * GRAVITY };
+
+    // E. Sum of Forces / Mass = Acceleration (World Frame)
+    // F_total = F_thrust + F_gravity + F_drag
+    Eigen::Vector3f acc_world = (1.F / m_Model.m_Mass) * (thrust_world + gravity_world + drag_force_world);
+
+    // --- 4. STATE UPDATE ---
+    m_DroneState.set_acc_vector(acc_world);
+
+    // Update Velocity: V_new = V_old + a * dt
+    m_DroneState.set_vel_vector(m_DroneState.vel_vector() + acc_world * dt);
+
+    // Update Position: P_new = P_old + V * dt
+    m_DroneState.set_pos_vector(m_DroneState.pos_vector() + m_DroneState.vel_vector() * dt);
 }
 
 float ARParrotDroneSim::pid::update(float sp, float y, float dt)
@@ -105,7 +141,7 @@ ARParrotDroneSim::ARParrotDroneSim(const DroneModel& _model)
     pid_pitch_sp{ 0.2F, 0.F, 0.F }
 {
     const float hover_angular_speed = m_HoverThrottle * m_MaxRPM * 2.F * PI / 60.F;
-    m_b = (GRAVITY * model.m_Mass) / (4.F * hover_angular_speed * hover_angular_speed);
+    m_b = (GRAVITY * m_Model.m_Mass) / (4.F * hover_angular_speed * hover_angular_speed);
 }
 
 void ARParrotDroneSim::step(const Eigen::VectorXf& u, float dt)
@@ -123,10 +159,10 @@ void ARParrotDroneSim::step(const Eigen::VectorXf& u, float dt)
     const float vr = u[3] * 0.41016432F;
 
     // OLD
-    const CPose R{ 0.F, 0.F, 0.F, 0.F, 0.F, -state.yaw };
+    const CPose R{ 0.F, 0.F, 0.F, 0.F, 0.F, -m_DroneState.yaw };
 
-    const Eigen::Vector3f vel_w{ state.vx, state.vy, 0.F };
-    const Eigen::Vector3f acc_w{ state.ax, state.ay, 0.F };
+    const Eigen::Vector3f vel_w{ m_DroneState.vx, m_DroneState.vy, 0.F };
+    const Eigen::Vector3f acc_w{ m_DroneState.ax, m_DroneState.ay, 0.F };
 
     const Eigen::Vector3f vel = R.rotation_3x3() * vel_w;
     const Eigen::Vector3f acc = R.rotation_3x3() * acc_w;
@@ -140,10 +176,10 @@ void ARParrotDroneSim::step(const Eigen::VectorXf& u, float dt)
     const float roll_sp = pid_roll_sp.update((vy - vel.y()) / y_acc_coeff, acc.y(), dt);
     const float pitch_sp = pid_pitch_sp.update((vx - vel.x()) / x_acc_coeff, acc.x(), dt);
 
-    const float adj_roll = pid_roll.update(roll_sp, -state.roll_vel, dt);
-    const float adj_pitch = pid_pitch.update(pitch_sp, state.pitch_vel, dt);
-    const float adj_yaw = pid_yaw.update(vr, state.yaw_vel, dt);
-    const float adj_h = pid_h.update(vz, state.vz, dt);
+    const float adj_roll = pid_roll.update(roll_sp, -m_DroneState.roll_vel, dt);
+    const float adj_pitch = pid_pitch.update(pitch_sp, m_DroneState.pitch_vel, dt);
+    const float adj_yaw = pid_yaw.update(vr, m_DroneState.yaw_vel, dt);
+    const float adj_h = pid_h.update(vz, m_DroneState.vz, dt);
 
     // NEW
     // Constants for real drone, determined experimentally
@@ -289,7 +325,7 @@ void AdvancedDroneSimulation::step(const Eigen::VectorXf& u, float dt)
     case AdvancedDroneInput::Mode::angular_accelerations:
     {
         Eigen::Matrix3f inertia = Eigen::Matrix3f::Zero();
-        inertia.diagonal() << model.m_Ixx, model.m_Iyy, model.m_Izz;
+        inertia.diagonal() << m_Model.m_Ixx, m_Model.m_Iyy, m_Model.m_Izz;
 
         Eigen::Vector4f _u = Eigen::Vector4f::Zero();
         _u[0] = input.collective_thrust;
@@ -324,7 +360,7 @@ Eigen::Vector3f AdvancedDroneSimulation::attitudeControl(const AdvancedDroneInpu
     const float roll_pitch_cont_gain = 6.f;
     const float yaw_cont_gain = 0.f;
 
-    const Eigen::VectorXf att = state.att_vector();
+    const Eigen::VectorXf att = m_DroneState.att_vector();
 
     const CQuaternion _q_att{ att.x(), att.y(), att.z() };
     const Eigen::Quaternionf q_att{ _q_att.w(), _q_att.x(), _q_att.y(), _q_att.z() };
@@ -361,9 +397,9 @@ Eigen::Vector4f AdvancedDroneSimulation::bodyRateControl(const AdvancedDroneInpu
     Eigen::VectorXf control_error = Eigen::VectorXf::Zero(6);
 
     Eigen::Matrix3f inertia = Eigen::Matrix3f::Zero();
-    inertia.diagonal() << model.m_Ixx, model.m_Iyy, model.m_Izz;
+    inertia.diagonal() << m_Model.m_Ixx, m_Model.m_Iyy, m_Model.m_Izz;
 
-    const Eigen::Vector3f body_rate_estimate = state.att_vel_vector();
+    const Eigen::Vector3f body_rate_estimate = m_DroneState.att_vel_vector();
 
     control_error.segment(0, 3) = bodyrates - body_rate_estimate;
     control_error.segment(3, 3) =
