@@ -4,6 +4,8 @@
 # CUDA dependency
 find_package(CUDAToolkit)
 
+find_package(CURL REQUIRED)
+
 # Unit Testing
 if (Build_UnitTests)
     add_subdirectory(src/tu)
@@ -155,7 +157,8 @@ target_link_libraries(CycToolkit
             ${CyC_OPENCV_WORLD}
             ${CyC_LIBCONFIG}
             octomap
-            octomath)
+            octomath
+            ${CURL_LIBRARIES})
 
 if (MSVC)
     target_link_libraries(CycToolkit
