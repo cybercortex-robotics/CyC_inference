@@ -4,6 +4,10 @@
 # CUDA dependency
 find_package(CUDAToolkit)
 
+if (NOT MSVC)
+    find_package(CURL REQUIRED)
+endif ()
+
 # Unit Testing
 if (Build_UnitTests)
     add_subdirectory(src/tu)
@@ -158,10 +162,9 @@ target_link_libraries(CycToolkit
             octomath)
 
 if (MSVC)
-    target_link_libraries(CycToolkit
-        PRIVATE
-            pdh
-            libcurl_shared)
+    target_link_libraries(CycToolkit PRIVATE pdh libcurl_shared)
+else ()
+    target_link_libraries(CycToolkit PRIVATE ${CURL_LIBRARIES})
 endif ()
 
 if(CUDA_FOUND)
