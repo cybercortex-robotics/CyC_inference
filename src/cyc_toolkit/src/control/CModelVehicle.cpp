@@ -106,7 +106,7 @@ bool CModelVehicle::step(const float& _dt, const Eigen::VectorXf& _u)
     }
     else
     {
-        spdlog::error("{}: Vehicle type '{}' unknown.", typeid(*this).name(), m_VehicleType);
+        spdlog::error("{}: Vehicle type '{}' unknown.", typeid(*this).name(), static_cast<int>(m_VehicleType));
         return false;
     }
 
