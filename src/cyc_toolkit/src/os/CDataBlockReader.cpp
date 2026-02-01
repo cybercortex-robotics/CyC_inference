@@ -231,7 +231,7 @@ bool CDataBlockReader::readKeypts(const std::string& _line, const std::string& _
     enum { TS_STOP, SAMPLING_TIME, FRAME_ID, NUM };
     if (row.size() != NUM)
     {
-        spdlog::error("{}: Keypoints reading: wrong number of columns. {} provided, but expected {}.", typeid(*this).name(), row.size(), NUM);
+        spdlog::error("{}: Keypoints reading: wrong number of columns. {} provided, but expected {}.", typeid(*this).name(), row.size(), static_cast<int>(NUM));
         return false;
     }
 
