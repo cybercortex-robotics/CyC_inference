@@ -244,7 +244,7 @@ void write_header(CCycFilterBase* pFilter, std::ofstream& writer)
     break;
     default:
     {
-        spdlog::error("Header not set for output data type {}.", pFilter->getOutputDataType());
+        spdlog::error("Header not set for output data type {}.", static_cast<int>(pFilter->getOutputDataType()));
     }
     break;
     }
@@ -1217,7 +1217,7 @@ void CHddStorage::saveFilter(CCycFilterBase* _pFilter, std::ofstream& _csv_writt
         break;
 
         default:
-            spdlog::error("CHddStorage: Cannot write data for type: {}, {}", _pFilter->getOutputDataType(), _pFilter->getFilterName());
+            spdlog::error("CHddStorage: Cannot write data for type: {}, {}", static_cast<int>(_pFilter->getOutputDataType()), _pFilter->getFilterName());
             break;
     }
 
