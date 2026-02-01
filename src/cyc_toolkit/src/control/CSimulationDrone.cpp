@@ -12,7 +12,7 @@ DroneState::DroneState(Eigen::VectorXf x)
 {
     if (state.size() != STATE_NUM)
     {
-        throw std::runtime_error{ fmt::format("DroneState state vector has wrong size: {} vs {}", state.size(), STATE_NUM) };
+        throw std::runtime_error{ fmt::format("DroneState state vector has wrong size: {} vs {}", state.size(), static_cast<int>(STATE_NUM)) };
     }
 }
 
