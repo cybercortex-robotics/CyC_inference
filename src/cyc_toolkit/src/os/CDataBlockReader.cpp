@@ -201,7 +201,7 @@ bool CDataBlockReader::readImage(const std::string& _line, const std::string& _d
     enum { TS_STOP, SAMPLING_TIME, TS_IMAGE, IMAGE_PATH_LEFT, IMAGE_PATH_RIGHT, NUM };
     if (row.size() != NUM)
     {
-        spdlog::error("{}: Images reading: wrong number of columns. {} provided, but expected {}.", typeid(*this).name(), row.size(), NUM);
+        spdlog::error("{}: Images reading: wrong number of columns. {} provided, but expected {}.", typeid(*this).name(), row.size(), static_cast<int>(NUM));
         return false;
     }
 
