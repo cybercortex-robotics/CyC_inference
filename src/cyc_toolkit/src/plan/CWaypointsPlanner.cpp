@@ -94,7 +94,7 @@ bool CWaypointsPlanner::loadWaypoints(const CycLandmarks& refs)
         m_Landmarks[l.first].pose = l.second.pose;
         m_Landmarks[l.first].travel_time = l.second.travel_time;
 
-        for (auto it = l.second.waypoints.rbegin(); it != l.second.waypoints.rend(); ++it)
+        for (auto it = l.second.waypoints.begin(); it != l.second.waypoints.end(); ++it)
             m_Landmarks[l.first].waypoints.emplace_back(*it);
     }
 
@@ -213,6 +213,6 @@ void CWaypointsPlanner::str2waypoints(std::string _str_waypoints, std::vector<Ei
             tmp_waypoints.emplace_back(pt3d);
     }
 
-    for (auto it = tmp_waypoints.rbegin(); it != tmp_waypoints.rend(); ++it)
+    for (auto it = tmp_waypoints.begin(); it != tmp_waypoints.end(); ++it)
         _waypoints.emplace_back(*it);
 }
