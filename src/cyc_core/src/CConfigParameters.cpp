@@ -99,12 +99,12 @@ bool CConfigParameters::init(const std::string& confFile, bool isNetworkConfig)
 
             fs::path path = fs::path(m_sGlobalBasePath) / fs::path(log_file);
 
-            if (!fs::exists(path))
-            {
-                std::cout << "Log file '" << log_file << "' does not exist. Exiting." << std::endl;
-                exit(EXIT_FAILURE);
-            }
-            else
+            //if (!fs::exists(path))
+            //{
+            //    std::cout << "Log file '" << log_file << "' does not exist. Exiting." << std::endl;
+            //    exit(EXIT_FAILURE);
+            //}
+            //else
             {
                 log_file = path;
             }
