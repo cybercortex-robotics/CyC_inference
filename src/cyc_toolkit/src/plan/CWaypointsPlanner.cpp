@@ -243,8 +243,13 @@ bool CWaypointsPlanner::addLandmark(const int& _id, const CPose& _pose, const st
 void CWaypointsPlanner::landmark2mission(const CycLandmark& _landmark, std::vector<Eigen::Vector4f>& _mission_pts)
 {
     std::vector<Eigen::Vector2f> waypoints;
-    for (const auto& w : _landmark.waypoints)
+    //for (const auto& w : _landmark.waypoints)
+    //    waypoints.emplace_back(w.x(), w.y());
+    for (auto it = _landmark.waypoints.rbegin(); it != _landmark.waypoints.rend(); ++it)
+    {
+        const auto& w = *it;
         waypoints.emplace_back(w.x(), w.y());
+    }
     waypoints.emplace_back(_landmark.pose.translation_3x1().x(), _landmark.pose.translation_3x1().y());
 
     waypoints2mission(waypoints, _mission_pts);
