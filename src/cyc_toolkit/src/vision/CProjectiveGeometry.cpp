@@ -387,17 +387,17 @@ namespace CProjectiveGeometry
 
     void transformVoxels(const CycVoxels& _voxels,
         const Eigen::Matrix4f& _T,
-        const float& _th,
+        const float& _th_proximity,
+        const float& _th_far,
         CycVoxels& _out_voxels)
     {
         CycVoxels result;
-        
         for (std::size_t i = 0; i < _voxels.size(); ++i)
         {
-            if (_voxels[i].pt3d.x() < _th && _voxels[i].pt3d.y() < _th && _voxels[i].pt3d.z() < _th)
+            const Eigen::Vector4f* p = &_voxels[i].pt3d;
+            if (p->x() < _th_far && p->y() < _th_far && p->z() < _th_far && fabs(p->x()) > _th_proximity && fabs(p->y()) > _th_proximity && fabs(p->z()) > _th_proximity)
                 result.emplace_back(CycVoxel{ _T * _voxels[i].pt3d, _voxels[i].id });
         }
-
         _out_voxels = result;
     }
 

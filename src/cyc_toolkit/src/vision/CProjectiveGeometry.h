@@ -313,12 +313,14 @@ namespace CProjectiveGeometry
      *
      * \param _voxels       Input voxels
      * \param _T            Input transformation matrix
-     * \param _th           Input distance threshold [m] (filters out voxels having one of the axes bigger than th)
+     * \param _th_proximity Input distance threshold [m] (filters out voxels having one of the axes smaller than _th_proximity)
+     * \param _th_far       Input distance threshold [m] (filters out voxels having one of the axes bigger than _th_far)
      * \param _out_voxels   Output transformed voxels
      **/
     void transformVoxels(const CycVoxels& _voxels,
         const Eigen::Matrix4f& _T,
-        const float& _th,
+        const float& _th_proximity,
+        const float& _th_far,
         CycVoxels& _out_voxels);
 
     /**
