@@ -38,14 +38,16 @@ public:
     inline float min_range() const { return min_range_; }
     inline float max_range() const { return max_range_; }
     inline float num_points() const { return num_points_; }
+    inline std::string config_file() const { return config_file_; }
     
 private:
     virtual bool loadSensorModel(const std::string& calibration_file);
 
 private:
-    float   min_range_;
-    float   max_range_;
-    int     num_points_;
+    float       min_range_;
+    float       max_range_;
+    int         num_points_;
+    std::string config_file_;
 };
 
 

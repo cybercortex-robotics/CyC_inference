@@ -53,6 +53,9 @@ bool CLidarSensorModel::loadSensorModel(const std::string& calibration_file)
             spdlog::error("Lidar num_points parameter has to be set in '{}'. Exiting.", calibration_file);
             exit(EXIT_FAILURE);
         }
+
+        if (rootConfig.exists("config_file"))
+            rootConfig.lookupValue("config_file", config_file_);
         
         return true;
     }
