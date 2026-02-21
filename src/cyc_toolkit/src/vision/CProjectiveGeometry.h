@@ -314,7 +314,7 @@ namespace CProjectiveGeometry
      * \param _voxels       Input voxels
      * \param _T            Input transformation matrix
      * \param _th_proximity Input distance threshold [m] (filters out voxels having one of the axes smaller than _th_proximity)
-     * \param _th_far       Input distance threshold [m] (filters out voxels having one of the axes bigger than _th_far)
+     * \param _th_far       Input distance threshold [m] (filters out voxels having one of the axes higher than _th_far)
      * \param _out_voxels   Output transformed voxels
      **/
     void transformVoxels(const CycVoxels& _voxels,
@@ -322,6 +322,19 @@ namespace CProjectiveGeometry
         const float& _th_proximity,
         const float& _th_far,
         CycVoxels& _out_voxels);
+    
+    /**
+     * \brief               Clips a set of voxels given a positive and negative boundaries
+     *
+     * \param _voxels       Input voxels
+     * \param _out_voxels   Output transformed voxels
+     * \param _neg_range    Input negative boundary [m] (filters out voxels having values smaller than _neg_range)
+     * \param _pos_range    Input positive boundary [m] (filters out voxels having values higher than _pos_range)
+     **/
+    void clipVoxels(const CycVoxels& _voxels, 
+        CycVoxels& _out_voxels, 
+        const Eigen::Vector3f& _neg_range, 
+        const Eigen::Vector3f& _pos_range);
 
     /**
      * \brief           Calculates the reprojection error between corresponding points in two camera frames and their respective voxel (3D point)

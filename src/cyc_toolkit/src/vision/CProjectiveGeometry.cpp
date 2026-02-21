@@ -400,6 +400,22 @@ namespace CProjectiveGeometry
         }
         _out_voxels = result;
     }
+    
+    void clipVoxels(const CycVoxels& _voxels, 
+        CycVoxels& _out_voxels, 
+        const Eigen::Vector3f& _neg_range, 
+        const Eigen::Vector3f& _pos_range)
+    {
+        CycVoxels result;
+        for (std::size_t i = 0; i < _voxels.size(); ++i)
+        {
+            const Eigen::Vector4f* p = &_voxels[i].pt3d;
+            if (p->x() >= _neg_range.x() && p->y() >= _neg_range.y() && p->z() >= _neg_range.z() &&
+                p->x() <= _pos_range.x() && p->y() <= _pos_range.y() && p->z() <= _pos_range.z())
+                result.emplace_back(_voxels[i]);
+        }
+        _out_voxels = result;
+    }
 
     float getReprojectionErr(const CPinholeCameraSensorModel* _pSensorModel, 
         const CycPoint& _pt1,
