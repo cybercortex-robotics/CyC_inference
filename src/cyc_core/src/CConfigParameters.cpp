@@ -85,7 +85,19 @@ bool CConfigParameters::init(const std::string& confFile, bool isNetworkConfig)
 
         // Global base path
         if (rootConfig["Core"].exists("BasePath"))
+        {
             rootConfig["Core"].lookupValue("BasePath", m_sGlobalBasePath);
+            if (!fs::exists(m_sGlobalBasePath) || !fs::is_directory(m_sGlobalBasePath))
+            {
+                std::cerr << "BasePath does not exist on HDD. Exiting." << std::endl;
+                exit(EXIT_FAILURE);
+            }
+        }
+        else
+        {
+            std::cerr << "BasePath variable undefined in config file. Exiting." << std::endl;
+            exit(EXIT_FAILURE);
+        }
 
         // Location of the filters (DLLs)
         if (rootConfig["Core"].exists("Filters"))
