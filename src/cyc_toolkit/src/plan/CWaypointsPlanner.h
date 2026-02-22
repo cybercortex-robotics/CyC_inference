@@ -21,9 +21,8 @@ public:
 
     bool        addLandmark(const int& _id, const CPose& _pose, const std::vector<Eigen::VectorXf>& _waypoints);
 
-    const std::unordered_map<CyC_INT, CycLandmark>& getLandmarks() const { return m_Landmarks; };
+    const       CycLandmarks getLandmarks() const { return m_Landmarks; };
     bool        getLandmark(const CyC_INT _marker_id, CycLandmark& _landmark);
-    bool        getMarker(const CyC_INT _marker_id, CycLandmark& _landmark);
     bool        getWaypoints(const CyC_INT _marker_id, std::vector<Eigen::Vector4f>& _waypoints);
     CyC_UINT    getNumLandmarks();
 

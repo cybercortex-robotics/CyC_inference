@@ -167,11 +167,12 @@ struct CycReferenceSetPoints
 
 struct CycLandmark
 {
+    CyC_INT                         id = -1;
     CPose                           pose;
     float                           travel_time = 0.f;
     std::vector<Eigen::Vector4f>    waypoints;
 };
-typedef std::unordered_map<CyC_INT, CycLandmark> CycLandmarks;
+typedef std::vector<CycLandmark> CycLandmarks;
 
 struct CycTerminalCommand
 {

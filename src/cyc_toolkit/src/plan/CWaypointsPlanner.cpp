@@ -50,7 +50,7 @@ bool CWaypointsPlanner::loadWaypoints(const std::string& _waypoints_file)
             CycLandmark pt_landmark;
             const csv::reader::row& row = csv_waypoints.get_row();
 
-            CyC_INT marker_id = row.get<CyC_INT>((size_t)EULER_FORMAT::LANDMARK_ID);
+            pt_landmark.id = row.get<CyC_INT>((size_t)EULER_FORMAT::LANDMARK_ID);
             pt_landmark.pose.update(row.get<float>((size_t)EULER_FORMAT::X),
                 row.get<float>((size_t)EULER_FORMAT::Y),
                 row.get<float>((size_t)EULER_FORMAT::Z),
@@ -59,8 +59,7 @@ bool CWaypointsPlanner::loadWaypoints(const std::string& _waypoints_file)
                 row.get<float>((size_t)EULER_FORMAT::YAW));
             pt_landmark.travel_time = row.get<float>((size_t)EULER_FORMAT::TRAVEL_TIME);
             str2waypoints(row.get<std::string>((size_t)EULER_FORMAT::WAYPOINTS), pt_landmark.waypoints);
-
-            m_Landmarks.emplace(marker_id, pt_landmark);
+            m_Landmarks.emplace_back(pt_landmark);
         }
     }
     else if (csv_waypoints.get_column_names().size() == (size_t)QUAT_FORMAT::NUM)
@@ -70,7 +69,7 @@ bool CWaypointsPlanner::loadWaypoints(const std::string& _waypoints_file)
             CycLandmark pt_landmark;
             const csv::reader::row& row = csv_waypoints.get_row();
 
-            CyC_INT marker_id = row.get<CyC_INT>((size_t)QUAT_FORMAT::LANDMARK_ID);
+            pt_landmark.id = row.get<CyC_INT>((size_t)QUAT_FORMAT::LANDMARK_ID);
             pt_landmark.pose.update(row.get<float>((size_t)QUAT_FORMAT::X),
                 row.get<float>((size_t)QUAT_FORMAT::Y),
                 row.get<float>((size_t)QUAT_FORMAT::Z),
@@ -80,8 +79,7 @@ bool CWaypointsPlanner::loadWaypoints(const std::string& _waypoints_file)
                 row.get<float>((size_t)QUAT_FORMAT::Qw));
             pt_landmark.travel_time = row.get<float>((size_t)QUAT_FORMAT::TRAVEL_TIME);
             str2waypoints(row.get<std::string>((size_t)QUAT_FORMAT::WAYPOINTS), pt_landmark.waypoints);
-
-            m_Landmarks.emplace(marker_id, pt_landmark);
+            m_Landmarks.emplace_back(pt_landmark);
         }
     }
     else
@@ -94,16 +92,7 @@ bool CWaypointsPlanner::loadWaypoints(const std::string& _waypoints_file)
 
 bool CWaypointsPlanner::loadWaypoints(const CycLandmarks& refs)
 {
-    m_Landmarks.clear();
-    for (const auto& l : refs)
-    {
-        m_Landmarks[l.first].pose = l.second.pose;
-        m_Landmarks[l.first].travel_time = l.second.travel_time;
-
-        for (auto it = l.second.waypoints.begin(); it != l.second.waypoints.end(); ++it)
-            m_Landmarks[l.first].waypoints.emplace_back(*it);
-    }
-
+    m_Landmarks = refs;
     return true;
 }
 
@@ -119,7 +108,7 @@ bool CWaypointsPlanner::saveWaypoints(CycLandmarks& _landmarks, const std::strin
         std::string name = "Mission " + std::to_string(i);
         Eigen::Vector3f pos = landmark.pose.translation_3x1();
         Eigen::Vector4f rot = landmark.pose.rotation_quat().to_vector();
-        CsvWritter << name << "," << i << "," << pos.x() << "," << pos.y() << "," << pos.z() << "," << rot.x() << "," << rot.y() << "," << rot.z() << "," << rot.w() << "," << landmark.travel_time << ",";
+        CsvWritter << name << "," << landmark.id << "," << pos.x() << "," << pos.y() << "," << pos.z() << "," << rot.x() << "," << rot.y() << "," << rot.z() << "," << rot.w() << "," << landmark.travel_time << ",";
 
         CsvWritter << "[";
         for (CyC_INT j = 0; j < landmark.waypoints.size(); j++)
@@ -137,38 +126,31 @@ bool CWaypointsPlanner::saveWaypoints(CycLandmarks& _landmarks, const std::strin
     return false;
 }
 
-bool CWaypointsPlanner::getMarker(const CyC_INT _marker_id, CycLandmark& _landmark)
-{
-    if (m_Landmarks.find(_marker_id) == m_Landmarks.end())
-    {
-        return false;
-    }
-    else
-    {
-        _landmark = m_Landmarks[_marker_id];
-        return true;
-    }
-}
-
 bool CWaypointsPlanner::getLandmark(const CyC_INT _marker_id, CycLandmark& _landmark)
 {
-    if (m_Landmarks.find(_marker_id) == m_Landmarks.end())
-        return false;
-
-    _landmark = m_Landmarks[_marker_id];
-
-    return true;
+    for (const auto& l : m_Landmarks)
+    {
+        if (l.id == _marker_id)
+        {
+            _landmark = m_Landmarks[_marker_id];
+            return true;
+        }
+    }
+    return false;
 }
 
 bool CWaypointsPlanner::getWaypoints(const CyC_INT _marker_id, std::vector<Eigen::Vector4f>& _waypoints)
 {
-    if (m_Landmarks.find(_marker_id) == m_Landmarks.end())
-        return false;
-
     _waypoints.clear();
-    _waypoints = m_Landmarks[_marker_id].waypoints;
-
-    return true;
+    for (const auto& l : m_Landmarks)
+    {
+        if (l.id == _marker_id)
+        {
+            _waypoints = l.waypoints;
+            return true;
+        }
+    }
+    return false;
 }
 
 CyC_UINT CWaypointsPlanner::getNumLandmarks()
@@ -225,17 +207,19 @@ void CWaypointsPlanner::str2waypoints(std::string _str_waypoints, std::vector<Ei
 
 bool CWaypointsPlanner::addLandmark(const int& _id, const CPose& _pose, const std::vector<Eigen::VectorXf>& _waypoints)
 {
-    if (m_Landmarks.count(_id))
-        return false;
+    for (const auto& l : m_Landmarks)
+        if (l.id == _id)
+            return false;
 
     CycLandmark landmark;
+    landmark.id = _id;
     for (const auto& waypt : _waypoints)
     {
         if (waypt.size() < 4)
             return false;
         landmark.waypoints.emplace_back(waypt.head<4>());
     }
-    m_Landmarks.emplace(_id, landmark);
+    m_Landmarks.emplace_back(landmark);
 
     return true;
 }
@@ -410,12 +394,12 @@ CycLandmark CWaypointsPlanner::getClosestTraj(const CycLandmarks& _landmarks, co
     Eigen::Vector2f destination = _dst.translation_3x1().head<2>();
     for (const auto& traj : _landmarks)
     {
-        Eigen::Vector2f landmark = traj.second.pose.translation_3x1().head<2>();
+        Eigen::Vector2f landmark = traj.pose.translation_3x1().head<2>();
 
         float fEd = CGeometry::euclidean_dist(destination, landmark);
         if (fEd < fMinEd)
         {
-            ref_traj = traj.second;
+            ref_traj = traj;
             fMinEd = fEd;
         }
     }
