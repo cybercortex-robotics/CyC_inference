@@ -476,13 +476,24 @@ bool CHddStorage::readDatablockSynced()
 
 void CHddStorage::generateDatablockDescriptor()
 {
+    CycDatablockEntriesInfo Datablockinfo = m_pCycCore->getDatablock();
+
+    // Check if any filter is marked for saving
+    bool bSave = false;
+    for (auto& el : Datablockinfo)
+    {
+        CCycFilterBase* pFilter = nullptr;
+        if (m_pCycCore->readFilter(el.Key, pFilter) && pFilter->isSave())
+            bSave = true;
+    }
+    if (!bSave)
+        return;
+
     std::ofstream CsvWritter(m_sSaveDBStoragePath + "/datablock_descriptor.csv");
     CsvWritter << "core_id,filter_id,name,type,output_data_type,input_sources" << std::endl;
     CsvWritter.flush();
 
     std::vector<CCycFilterBase*> filters;
-    auto Datablockinfo = m_pCycCore->getDatablock();
-
     for (auto &el : Datablockinfo)
     {
         //const CycDatablockKey filterKey{ el.coreID, el.filterID };
@@ -523,9 +534,7 @@ void CHddStorage::generateDatablockDescriptor()
     std::ofstream CsvSyncWritter(m_sSaveDBStoragePath + "/sampling_timestamps_sync.csv");
     CsvSyncWritter << "timestamp_stop";
     for (auto &filter : filters)
-    {
         CsvSyncWritter << ",datastream_" + std::to_string(filter->getFilterKey().nFilterID);
-    }
     CsvSyncWritter << std::endl;
     CsvSyncWritter.flush();
 }
