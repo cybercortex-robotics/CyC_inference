@@ -24,6 +24,7 @@ public:
     static cv::Scalar blue;
     static cv::Scalar yellow;
     static cv::Scalar pink;
+    static cv::Scalar cyc_background;
 
     static cv::Scalar x_axis;
     static cv::Scalar y_axis;

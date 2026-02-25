@@ -86,6 +86,7 @@ public:
 	bool isEnabled();
 	bool isRunning();
     bool isProcessing();
+    bool isSave();
 
 	bool getInputSourcesEnabled();
 	bool getInputSourcesRunning();
@@ -137,11 +138,12 @@ protected:
     CBaseSensorModel*   m_pSensorModel = nullptr;
 
 private:
-    CyC_FILTER_TYPE                m_FilterType;
+    CyC_FILTER_TYPE         m_FilterType;
 	CycDatablockKey         m_FilterKey;
 	std::string             m_sFilterName;
 	bool                    m_bIsPublishable;
 	bool                    m_bIsNetworkFilter;
+    bool                    m_bIsSave = false;
     CyC_INT                 m_nReplayFilter;
     CyC_TIME_UNIT           m_dt;               // Desired sampling time, given in the configuration parameters
     CyC_TIME_UNIT           m_dtSequencing;     // Sequencing sampling time, given in the configuration parameters

@@ -212,6 +212,13 @@ bool CConfigParameters::readFiltersConfiguration(const libconfig::Setting& Filte
         configParams.nFilterType = CStringUtils::CyC_HashFunc(sFilterType);
         FilterConfig.lookupValue("IsPublishable", configParams.bIsPublishable);
 
+        // Check if filter's output can be saved
+        if (FilterConfig.exists("Save"))
+        {
+            if (FilterConfig.lookup("Save").getType() == libconfig::Setting::TypeBoolean)
+                FilterConfig.lookupValue("Save", configParams.bIsSave);
+        }
+
         // Check if the filter is a replay filter
         if (FilterConfig.exists("ReplayFromDB"))
         {

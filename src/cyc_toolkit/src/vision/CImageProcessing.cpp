@@ -4,6 +4,7 @@
 #include "CImageProcessing.h"
 #include "vision/CProjectiveGeometry.h"
 #include "vision/CTriangulation.h"
+#include "env/CObjectClasses.h"
 
 CImageProcessing::CImageProcessing()
 {}
@@ -68,8 +69,10 @@ void CImageProcessing::simulateImg(const CPinholeCameraSensorModel* _pCamSensorM
     cv::Mat& _out_img_rgb,
     cv::Mat& _out_img_depth)
 {
-    _out_img_rgb = cv::Mat(_pCamSensorModel->height(), _pCamSensorModel->width(), CV_8UC3, CV_RGB(45, 200, 255));
+    _out_img_rgb = cv::Mat(_pCamSensorModel->height(), _pCamSensorModel->width(), CV_8UC3, color::cyc_background);
     _out_img_depth = cv::Mat::zeros(cv::Size(_pCamSensorModel->width(), _pCamSensorModel->height()), CV_32F);
+
+    writeCenteredText(_out_img_rgb, "CyberCortex Robotics");
 
     Pmatrix P = CProjectiveGeometry::KT2P(_pCamSensorModel->K(), CProjectiveGeometry::invertT(_pCamSensorModel->pose().transform()));
 
@@ -103,4 +106,26 @@ void CImageProcessing::simulateImg(const CPinholeCameraSensorModel* _pCamSensorM
         cv::line(_out_img_rgb, cv::Point2f{ pt.pt2d.x() - len, pt.pt2d.y() }, cv::Point2f{ pt.pt2d.x() + len, pt.pt2d.y() }, CV_RGB(0, 0, 0));
         cv::line(_out_img_rgb, cv::Point2f{ pt.pt2d.x(), pt.pt2d.y() - len }, cv::Point2f{ pt.pt2d.x(), pt.pt2d.y() + len }, CV_RGB(0, 0, 0));
     }
+}
+
+void CImageProcessing::writeCenteredText(cv::Mat& _out_img_rgb, const std::string& _str)
+{
+    int fontFace = cv::FONT_HERSHEY_DUPLEX;
+    double fontScale = 1.5;
+    int thickness = 3;
+    int baseline = 0;
+
+    cv::Size textSize = cv::getTextSize(_str, fontFace, fontScale, thickness, &baseline);
+
+    // Formula: (ImageCenter) - (Half of TextSize)
+    cv::Point textOrg((_out_img_rgb.cols - textSize.width) / 2,
+        (_out_img_rgb.rows + textSize.height) / 2);
+
+    cv::putText(_out_img_rgb,
+        _str,
+        textOrg,
+        fontFace,
+        fontScale,
+        color::white,
+        thickness);
 }

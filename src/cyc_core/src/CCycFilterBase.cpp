@@ -44,7 +44,8 @@ CCycFilterBase::CCycFilterBase(const ConfigFilterParameters& params) :
     m_tTimestampStop(-1LL),
     m_bIsEnabled(false),
     m_bIsRunning(false),
-    m_bIsProcessing(false)
+    m_bIsProcessing(false),
+    m_bIsSave(params.bIsSave)
 {
     // Use "." as decimal separator
     std::setlocale(LC_NUMERIC, "C");
@@ -191,6 +192,11 @@ bool CCycFilterBase::isRunning()
 bool CCycFilterBase::isProcessing()
 {
     return m_bIsProcessing;
+}
+
+bool CCycFilterBase::isSave()
+{
+    return m_bIsSave;
 }
 
 bool CCycFilterBase::getInputSourcesEnabled()

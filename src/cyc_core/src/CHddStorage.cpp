@@ -477,7 +477,7 @@ bool CHddStorage::readDatablockSynced()
 void CHddStorage::generateDatablockDescriptor()
 {
     std::ofstream CsvWritter(m_sSaveDBStoragePath + "/datablock_descriptor.csv");
-    CsvWritter << "vision_core_id,filter_id,name,type,output_data_type,input_sources" << std::endl;
+    CsvWritter << "core_id,filter_id,name,type,output_data_type,input_sources" << std::endl;
     CsvWritter.flush();
 
     std::vector<CCycFilterBase*> filters;
@@ -488,33 +488,35 @@ void CHddStorage::generateDatablockDescriptor()
         //const CycDatablockKey filterKey{ el.coreID, el.filterID };
         CCycFilterBase* pFilter = nullptr;
 
-        if (m_pCycCore->readFilter(el.Key, pFilter))
+        if (m_pCycCore->readFilter(el.Key, pFilter) && pFilter->isSave())
+        {
             filters.push_back(pFilter);
 
-        // Save filter configuration in the CCR Datablock csv descriptor file
-        CsvWritter << el.Key.nCoreID << "," << el.Key.nFilterID << "," <<
-            pFilter->getFilterName() << "," << pFilter->getFilterType() << "," << pFilter->getOutputDataType();
+            // Save filter configuration in the CCR Datablock csv descriptor file
+            CsvWritter << el.Key.nCoreID << "," << el.Key.nFilterID << "," <<
+                pFilter->getFilterName() << "," << pFilter->getFilterType() << "," << pFilter->getOutputDataType();
 
-        CsvWritter << ",";
+            CsvWritter << ",";
 
-        // Write the input sources for each filter
-        if (pFilter->getInputSources().size() > 0)
-        {
-            CsvWritter << "{";
-
-            for (CyC_UINT i = 0; i < pFilter->getInputSources().size(); ++i)
+            // Write the input sources for each filter
+            if (pFilter->getInputSources().size() > 0)
             {
-                CycDatablockKey key = pFilter->getInputSources()[i].SourceKey;
-                CsvWritter << key.nCoreID << "-" << key.nFilterID;
+                CsvWritter << "{";
 
-                if (i < pFilter->getInputSources().size() - 1)
-                    CsvWritter << ";";
+                for (CyC_UINT i = 0; i < pFilter->getInputSources().size(); ++i)
+                {
+                    CycDatablockKey key = pFilter->getInputSources()[i].SourceKey;
+                    CsvWritter << key.nCoreID << "-" << key.nFilterID;
+
+                    if (i < pFilter->getInputSources().size() - 1)
+                        CsvWritter << ";";
+                }
+
+                CsvWritter << "}";
             }
 
-            CsvWritter << "}";
+            CsvWritter << std::endl;
         }
-
-        CsvWritter << std::endl;
     }
 
     // Create the sampling timestamps synchronization file header
@@ -530,6 +532,9 @@ void CHddStorage::generateDatablockDescriptor()
 
 void CHddStorage::generateFilterOutputStructures(CCycFilterBase* _pFilter, std::string _datastream_storage_folder)
 {
+    if (!_pFilter->isSave())
+        return;
+
     fs::create_directories(_datastream_storage_folder);
     std::ofstream CsvWritter(_datastream_storage_folder + "/data_descriptor.csv");
     
@@ -613,10 +618,8 @@ bool CHddStorage::saveDatablockSynced()
     {
         //const CycDatablockKey filterKey{ binfo.coreID, binfo.filterID };
         CCycFilterBase* pFilter = nullptr;
-        if (m_pCycCore->readFilter(binfo.Key, pFilter))
-        {
+        if (m_pCycCore->readFilter(binfo.Key, pFilter) && pFilter->isSave())
             filters_vec.push_back(pFilter);
-        }
     }
 
     if (filters_vec.empty())

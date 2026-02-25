@@ -31,6 +31,8 @@ public:
         const CycVoxels& _voxels,
         cv::Mat& _out_img_rgb, 
         cv::Mat& _out_img_depth);
+
+    static void writeCenteredText(cv::Mat& _out_img_rgb, const std::string& _str);
 };
 
 #endif /* CImageProcessing_H_ */

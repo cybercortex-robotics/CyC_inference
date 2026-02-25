@@ -169,6 +169,7 @@ cv::Scalar color::green     = cv::Scalar{ 60, 250, 50, 0 };
 cv::Scalar color::blue      = cv::Scalar{ 255, 243, 153, 0 };
 cv::Scalar color::yellow    = cv::Scalar{ 50, 255, 255, 0 };
 cv::Scalar color::pink      = cv::Scalar{ 255, 200, 255, 0 };
+cv::Scalar color::cyc_background = cv::Scalar{ 35, 35, 35, 0 };
 
 cv::Scalar color::x_axis = color::green;
 cv::Scalar color::y_axis = color::blue;

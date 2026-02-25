@@ -23,6 +23,7 @@ struct ConfigFilterParameters
     CyC_FILTER_TYPE		    nFilterType;
     bool				    bIsPublishable;
     bool                    bIsNetworkFilter;
+    bool                    bIsSave = false;
     CyC_INT                 nReplayFromDB;
     CyC_TIME_UNIT           dt;                 // sampling time in milliseconds
     CyC_TIME_UNIT           dtSequencing;       // sequencing sampling time in milliseconds
