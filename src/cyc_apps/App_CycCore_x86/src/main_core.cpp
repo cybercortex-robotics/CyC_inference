@@ -59,6 +59,7 @@ void showUsage()
 		"App_CycCore [options] config_file\n\n"
 		"Options:\n"
         "  --save                       # Save the Datablock to the specified folder\n"
+        "  --y                          # Overwrite the save folder if not empty\n"
         "  --core                       # Add publishable filters from another core via conf file\n"
         "  --no-viz                     # Disable visualization of filters output\n"
 		"eg: App_CycCore --save c:/data ../etc/cyc_core.conf\n");
@@ -108,6 +109,8 @@ CyC_INT main(CyC_INT argc, char** argv)
     std::unique_ptr<CCycQTImage>    qt_image;
     bool                            bSaveDatablock(false);
     std::string                     strSaveFolder;
+    bool                            bSaveOverwrite(false);
+    bool                            bSaveIncremental(false);
     std::vector <std::string>       vectNetworkCoresConfFiles;
     bool                            bStartInitialView(false);
 
@@ -127,17 +130,28 @@ CyC_INT main(CyC_INT argc, char** argv)
             bSaveDatablock = true;
             strSaveFolder = argv[i + 1];
             ++i;
+            std::cout << "CyberCortex.AI Core: Saving to folder '" << strSaveFolder << "'" << std::endl;
             continue;
         }
-
-        if (strcmp(argv[i], "--core") == 0)
+        else if (strcmp(argv[i], "--y") == 0)
+        {
+            bSaveOverwrite = true;
+            std::cout << "CyberCortex.AI Core: Overwriting folder '" << strSaveFolder << "'" << std::endl;
+            continue;
+        }
+        else if (strcmp(argv[i], "--i") == 0)
+        {
+            bSaveIncremental = true;
+            std::cout << "CyberCortex.AI Core: Incremental saving in folder '" << strSaveFolder << "'" << std::endl;
+            continue;
+        }
+        else if (strcmp(argv[i], "--core") == 0)
         {
             vectNetworkCoresConfFiles.emplace_back(argv[i + 1]);
             ++i;
             continue;
         }
-
-        if (strcmp(argv[i], "--no-viz") == 0)
+        else if (strcmp(argv[i], "--no-viz") == 0)
         {
             bVizEnabled = false;
             std::cout << "CyberCortex.AI Core: Disabling QtPlot visualization" << std::endl;
@@ -168,16 +182,13 @@ CyC_INT main(CyC_INT argc, char** argv)
 
         // Check if folder is empty
         const fs::path save_dir{ strSaveFolder.c_str() };
-        if (!fs::is_empty(save_dir))
+        if (!bSaveIncremental && !fs::is_empty(save_dir) && !bSaveOverwrite)
         {
             std::cout << "CyberCortex.AI Core: Storage folder is not empty. Overwrite data? [y/N]." << std::endl;
             char input; std::cin >> input; input = std::tolower(input);
             if (input == 'y')
             {
-                // Delete folder content
-                for (const auto& entry : fs::directory_iterator(save_dir))
-                    fs::remove_all(entry.path());
-                std::cout << "CyberCortex.AI Core: Previous storage folder content deleted." << std::endl;
+                bSaveOverwrite = true;
             }
             else
             {
@@ -185,6 +196,23 @@ CyC_INT main(CyC_INT argc, char** argv)
                 std::cout << "CyberCortex.AI Core: Exiting." << std::endl;
                 exit(EXIT_SUCCESS);
             }
+        }
+
+        // Delete folder content
+        if (!bSaveIncremental && !fs::is_empty(save_dir) && bSaveOverwrite)
+        {
+            for (const auto& entry : fs::directory_iterator(save_dir))
+                fs::remove_all(entry.path());
+            std::cout << "CyberCortex.AI Core: Save folder content deleted." << std::endl;
+        }
+
+        // Incremental saving folders
+        if (bSaveIncremental)
+        {
+            const int lastFolderID = CFileUtils::getLatestFolderAsInt(save_dir);
+            const fs::path dir_path = fs::path(save_dir) / CStringUtils::padding_int2str(lastFolderID + 1, 6);
+            fs::create_directories(dir_path);
+            strSaveFolder = dir_path;
         }
     }
 
@@ -250,17 +278,8 @@ CyC_INT main(CyC_INT argc, char** argv)
         qt_image = std::make_unique<CCycQTImage>(qt);
     }
 
-
-
-
-
-
+    // Uncomment for command line debug
     //while (true) {}
-
-
-
-
-
 
     while ((cmd_stream.tellg() > 0) || (ch != 27)) // 27 = ESC
     {

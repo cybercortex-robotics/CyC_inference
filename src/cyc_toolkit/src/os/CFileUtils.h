@@ -37,5 +37,7 @@ public:
 	static void onLoaded(const char* fileName);
 
 	static void onError(const char* fileName);
+
+	static int getLatestFolderAsInt(const std::string& _root_path);
 };
 #endif /* CFILEUTILS_H_ */

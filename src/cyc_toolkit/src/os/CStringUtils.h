@@ -31,5 +31,7 @@ public:
 	static std::string bool2str(const bool& _b);
     
     static size_t CyC_HashFunc(const std::string& str);
+
+	static std::string padding_int2str(int _value, int _padding);
 };
 #endif /* CSTRINGUTILS_H_ */

@@ -96,3 +96,12 @@ size_t CStringUtils::CyC_HashFunc(const std::string& str)
     }
     return hash;
 }
+
+std::string CStringUtils::padding_int2str(int _value, int _padding)
+{
+    std::string s = std::to_string(_value);
+    int currentLen = static_cast<int>(s.length());
+    if (currentLen < _padding)
+        s.insert(0, _padding - currentLen, '0');
+    return s;
+}

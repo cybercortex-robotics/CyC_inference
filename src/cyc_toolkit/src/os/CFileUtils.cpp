@@ -124,3 +124,41 @@ void CFileUtils::onError(const char *fileName)
 {
     spdlog::info("Entered onError!");
 }
+
+int CFileUtils::getLatestFolderAsInt(const std::string& _root_path)
+{
+    fs::file_time_type latestTime;
+    std::string latestFolderName = "";
+    bool foundAny = false;
+
+    try {
+        if (!fs::exists(_root_path) || !fs::is_directory(_root_path))
+            return -1; 
+
+        for (const auto& entry : fs::directory_iterator(_root_path))
+		{
+            if (entry.is_directory())
+			{
+                fs::file_time_type currentTime = fs::last_write_time(entry);
+
+                // Check if this folder is newer than the last one we saw
+                if (!foundAny || currentTime > latestTime)
+				{
+                    latestTime = currentTime;
+                    latestFolderName = entry.path().filename().string();
+                    foundAny = true;
+                }
+            }
+        }
+
+        if (foundAny && !latestFolderName.empty())
+            return std::stoi(latestFolderName);
+
+    }
+	catch (const std::exception& e)
+	{
+        return -1; 
+    }
+
+    return -1;
+}
