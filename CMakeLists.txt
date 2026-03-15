@@ -196,7 +196,6 @@ set(CyC_THIRD_PARTY_INCLUDE_DIRECTORIES
     ${CyC_MsgPack_PATH}
     ${CyC_THIRD_PARTY}/openh264/include
     ${CyC_THIRD_PARTY}/octomap/include
-    ${CyC_THIRD_PARTY}/enet-1.3.14/include
     ${CyC_THIRD_PARTY}/ffmpeg/include
     ${CyC_THIRD_PARTY}/nlohmann-json/include
     ${CyC_THIRD_PARTY}/cvplot-0.0.3/include
@@ -212,7 +211,6 @@ set(CyC_THIRD_PARTY_INCLUDE_DIRECTORIES ${CyC_THIRD_PARTY_INCLUDE_DIRECTORIES} P
 # 3rdParty library includes
 set(CyC_THIRD_PARTY_LIBRARY_DIRECTORIES 
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/${CyC_LIBS_BINARY_KEY} # CyberCortex.AI library includes
-    ${CyC_THIRD_PARTY}/enet-1.3.14/${CyC_LIBS_BINARY_KEY}/lib
     ${CyC_THIRD_PARTY}/libconfig/${CyC_LIBS_BINARY_KEY}/lib
     ${CyC_THIRD_PARTY}/opencv/${CyC_OPENCV_VERSION}/${CyC_LIBS_BINARY_KEY}-${CyC_CUDA_VERSION_ID}/lib
     ${CyC_THIRD_PARTY}/libtorch/${CyC_TORCH_VERSION}/${CyC_LIBS_BINARY_KEY}-${CyC_CUDA_VERSION_ID}/lib
