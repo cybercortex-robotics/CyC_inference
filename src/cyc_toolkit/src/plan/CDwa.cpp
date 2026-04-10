@@ -538,7 +538,7 @@ bool CDwa::goalPointReached(const std::vector<Eigen::VectorXf>& goal_points, con
     const float threshold_goal_reached = 0.5f;
 
     // Threshold for finishing trajectory
-    const size_t tollerance = (size_t)(0.1f * m_MissionPath.size());  // the last 10% of the trajectory marks coming close to the end-point
+    const ptrdiff_t tollerance = (ptrdiff_t)(0.1f * m_MissionPath.size());  // the last 10% of the trajectory marks coming close to the end-point
 
     // If vehicle is close to the goal point and has gone through most of the trajectory points
     if (std::distance(m_MissionPath.begin() + m_PreviousTrajectoryPointIndex, m_MissionPath.end()) < tollerance)

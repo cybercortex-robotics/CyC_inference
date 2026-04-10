@@ -189,8 +189,8 @@ void CLanesPostprocessor::map_clusters_to_lanes_model(const std::vector<cv::Poin
 		{
 			// Get pixel coordinates in 2D image
 			cv::Point coord = coords_selected[cluster_ret[lane_id][index]];
-			coord.x *= scale_cam_img_x;
-			coord.y *= scale_cam_img_y;
+			coord.x = static_cast<int>(coord.x * scale_cam_img_x);
+			coord.y = static_cast<int>(coord.y * scale_cam_img_y);
 
 			// Calculate 3D coordinates in camera frame
 			if ((coord.y - camera_model.cy()) != 0)
@@ -307,7 +307,7 @@ void CLanesPostprocessor::cluster_pixem_embedding_features(std::vector<DBSCANSam
 		cluster_ret.emplace_back();
 		for (const auto& r1 : r)
 		{
-			cluster_ret[idx].emplace_back(r1);
+			cluster_ret[idx].emplace_back(static_cast<uint>(r1));
 		}
 
 		++idx;
@@ -346,12 +346,12 @@ void CLanesPostprocessor::visualize_instance_segmentation_result(const std::vect
 		for (auto index = 0; index < cluster_ret[class_id].size(); ++index)
 		{
 			auto coord = coords[cluster_ret[class_id][index]];
-			coord.x *= width;
-			coord.y *= height;
+			coord.x = static_cast<int>(coord.x * width);
+			coord.y = static_cast<int>(coord.y * height);
 			auto image_col_data = instance_seg_result.ptr<cv::Vec3b>(coord.y);
-			image_col_data[coord.x][0] = class_color[0];
-			image_col_data[coord.x][1] = class_color[1];
-			image_col_data[coord.x][2] = class_color[2];
+			image_col_data[coord.x][0] = static_cast<uchar>(class_color[0]);
+			image_col_data[coord.x][1] = static_cast<uchar>(class_color[1]);
+			image_col_data[coord.x][2] = static_cast<uchar>(class_color[2]);
 		}
 	}
 }
@@ -373,7 +373,7 @@ Feature<float> CLanesPostprocessor::calculate_mean_feature_vector(const std::vec
 	{
 		for (size_t index = 0; index < feature_dims; ++index)
 		{
-			mean_feature_vec[index] += sample[index];
+			mean_feature_vec[index] += sample[static_cast<int>(index)];
 		}
 	}
 	for (size_t index = 0; index < feature_dims; ++index)
@@ -392,8 +392,8 @@ Feature<float> CLanesPostprocessor::calculate_stddev_feature_vector(const std::v
 		return Feature<float>();
 	}
 
-	uint feature_dims = input_samples[0].get_feature_vector().size();
-	uint sample_nums = input_samples.size();
+	uint feature_dims = static_cast<uint>(input_samples[0].get_feature_vector().size());
+	uint sample_nums = static_cast<uint>(input_samples.size());
 
 	// calculate stddev feature vector
 	Feature<float> stddev_feature_vec;
@@ -405,7 +405,7 @@ Feature<float> CLanesPostprocessor::calculate_stddev_feature_vector(const std::v
 		{
 			auto sample_feature = sample.get_feature_vector();
 			auto diff = sample_feature[index] - mean_feature_vec[index];
-			diff = std::pow(diff, 2);
+			diff = static_cast<float>(std::pow(diff, 2));
 			stddev_feature_vec[index] += diff;
 		}
 	}

@@ -37,7 +37,7 @@ public:
 
     inline float min_range() const { return min_range_; }
     inline float max_range() const { return max_range_; }
-    inline float num_points() const { return num_points_; }
+    inline int num_points() const { return num_points_; }
     inline std::string config_file() const { return config_file_; }
     
 private:

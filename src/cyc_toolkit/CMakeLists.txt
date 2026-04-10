@@ -157,6 +157,11 @@ target_link_libraries(CycToolkit
 
 if (MSVC)
     target_link_libraries(CycToolkit PRIVATE pdh)
+    # Silence spdlog-1.4.2 / bundled fmt using deprecated stdext::checked_array_iterator (STL4043)
+    target_compile_definitions(CycToolkit PRIVATE
+        _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
+        _CRT_SECURE_NO_WARNINGS   # fopen, ctime, sprintf used intentionally
+    )
 endif ()
 
 if(CUDA_FOUND)

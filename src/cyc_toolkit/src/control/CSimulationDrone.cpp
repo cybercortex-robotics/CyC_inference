@@ -280,17 +280,17 @@ Eigen::VectorXf AdvancedDroneInput::to_vector() const
     if (mode == Mode::none)
     {
         u = Eigen::VectorXf::Zero(1);
-        u << static_cast<int>(mode);
+        u << static_cast<float>(mode);
     }
     else if (mode == Mode::body_torques)
     {
         u = Eigen::VectorXf::Zero(BODY_TORQUE_SIZE);
-        u << static_cast<int>(mode), body_torques, collective_thrust;
+        u << static_cast<float>(mode), body_torques, collective_thrust;
     }
     else
     {
         u = Eigen::VectorXf::Zero(SIZE);
-        u << static_cast<int>(mode), orientation.coeffs(), bodyrates, angular_accelerations, collective_thrust;
+        u << static_cast<float>(mode), orientation.coeffs(), bodyrates, angular_accelerations, collective_thrust;
     }
 
     return u;

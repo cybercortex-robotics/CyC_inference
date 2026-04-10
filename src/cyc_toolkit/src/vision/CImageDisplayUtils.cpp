@@ -765,7 +765,7 @@ cv::Mat CImageDisplayUtils::concatTemporalUltrasonicRepresentation(const std::ve
     const auto numImgCols = usImages[0].cols;
     const auto numImgRows = usImages[0].rows;
 
-    cv::Mat result = cv::Mat::zeros(numRows, numCols, CV_8UC3);
+    cv::Mat result = cv::Mat::zeros(static_cast<int>(numRows), static_cast<int>(numCols), CV_8UC3);
     auto current_height = 0;
     auto current_width = 0;
     size_t i = 0;
@@ -819,7 +819,6 @@ void CImageDisplayUtils::draw_correspondences(const cv::Mat& _img1, const cv::Ma
     assert(_pts1.size() != _pts2.size());
     assert(_img1.channels() != _img2.channels());
 
-    char str[128];
     cv::Scalar m_color_curr_pts_2d = CV_RGB(92, 255, 132);
     double font_scale = _img1.rows / 200.;
 
@@ -1259,7 +1258,7 @@ void CImageDisplayUtils::draw_slam_grid(cv::Mat& _out_dst, const cv::Size& _grid
 
     // Draw the grid's x axis
     CyC_UINT w = 20;
-    for (CyC_UINT i = 0; i < _out_dst.cols; i += 3)
+    for (CyC_UINT i = 0; i < static_cast<CyC_UINT>(_out_dst.cols); i += 3)
     {
         cv::Point pt1 = cv::Point((CyC_UINT)i * w, 0);
         cv::Point pt2 = cv::Point((CyC_UINT)i * w, _out_dst.rows - 1);
@@ -1268,7 +1267,7 @@ void CImageDisplayUtils::draw_slam_grid(cv::Mat& _out_dst, const cv::Size& _grid
 
     // Draw the grid's y axis
     CyC_UINT h = 20;
-    for (CyC_UINT i = 0; i < _out_dst.rows; i += 3)
+    for (CyC_UINT i = 0; i < static_cast<CyC_UINT>(_out_dst.rows); i += 3)
     {
         cv::Point pt1 = cv::Point(0, (CyC_UINT)i * h);
         cv::Point pt2 = cv::Point(_out_dst.cols - 1, (CyC_UINT)i * h);
@@ -1555,7 +1554,7 @@ void CImageDisplayUtils::draw_slam_frame(cv::Mat& _out_dst, const CPinholeCamera
         //cv::line(_out_dst, cv_pt_curr, cv_pt_curr_reproj, color::reprojection, 1);
     }
 
-    snprintf(str, sizeof(str) - 1, "Frame ID: %ld", _slam_data.id);
+    snprintf(str, sizeof(str) - 1, "Frame ID: %lld", static_cast<long long>(_slam_data.id));
     cv::putText(_out_dst, str, cv::Point(5, 15), cv::FONT_HERSHEY_PLAIN, disp_scale, CV_RGB(255, 255, 255), 2);
 
     double alpha = 0.85;

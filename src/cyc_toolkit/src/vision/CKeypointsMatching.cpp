@@ -55,8 +55,8 @@ void CKeypointsMatching::match_points_by_id(const std::vector<cv::KeyPoint>& _pt
         {
             if (_pts1[i].class_id > -1 && (_pts1[i].class_id == _pts2[j].class_id))
             {
-                _matched_pts_1.emplace_back(CycPoint(_pts1[i].pt.x, _pts1[i].pt.y, -1.f, _pts1[i].class_id, _pts1[i].octave, _descriptors1.row(i), _pts1[i].angle));
-                _matched_pts_2.emplace_back(CycPoint(_pts2[j].pt.x, _pts2[j].pt.y, -1.f, _pts2[j].class_id, _pts2[j].octave, _descriptors2.row(j), _pts2[j].angle));
+                _matched_pts_1.emplace_back(CycPoint(_pts1[i].pt.x, _pts1[i].pt.y, -1.f, _pts1[i].class_id, static_cast<float>(_pts1[i].octave), _descriptors1.row(static_cast<int>(i)), _pts1[i].angle));
+                _matched_pts_2.emplace_back(CycPoint(_pts2[j].pt.x, _pts2[j].pt.y, -1.f, _pts2[j].class_id, static_cast<float>(_pts2[j].octave), _descriptors2.row(static_cast<int>(j)), _pts2[j].angle));
             }
         }
     }
@@ -69,8 +69,8 @@ void CKeypointsMatching::match_points_by_id(const std::vector<cv::KeyPoint>& _pt
     {
         if (_matches[i] > -1)
         {
-            _matched_pts_1.emplace_back(CycPoint(_pts1[i].pt.x, _pts1[i].pt.y, _pts1[i].class_id, _pts1[i].octave));
-            _matched_pts_2.emplace_back(CycPoint(_pts2[_matches[i]].pt.x, _pts2[_matches[i]].pt.y, _pts2[_matches[i]].class_id, _pts2[_matches[i]].octave));
+            _matched_pts_1.emplace_back(CycPoint(_pts1[i].pt.x, _pts1[i].pt.y, static_cast<float>(_pts1[i].class_id), _pts1[i].octave));
+            _matched_pts_2.emplace_back(CycPoint(_pts2[_matches[i]].pt.x, _pts2[_matches[i]].pt.y, static_cast<float>(_pts2[_matches[i]].class_id), _pts2[_matches[i]].octave));
         }
     }
 }
@@ -152,7 +152,7 @@ void CKeypointsMatching::match_points_by_id(const std::vector<cv::KeyPoint>& _pt
         {
             if (_pts[i].class_id == _vxs[j].id)
             {
-                _matched_pts.emplace_back(CycPoint(_pts[i].pt.x, _pts[i].pt.y, _pts[i].class_id, _pts[i].octave));
+                _matched_pts.emplace_back(CycPoint(_pts[i].pt.x, _pts[i].pt.y, static_cast<float>(_pts[i].class_id), _pts[i].octave));
                 _matched_vxs.emplace_back(_vxs[j]);
             }
         }
@@ -204,20 +204,20 @@ void CKeypointsMatching::hist_2d_gradients(const std::vector<float>& _magnitudes
     int num_magnitude_bins = 100;
     int num_orientation_bins = 360;
 
-    _magnitude_bins.resize(num_magnitude_bins, 0.f);
-    _orientation_bins.resize(num_orientation_bins, 0.f);
+    _magnitude_bins.resize(num_magnitude_bins, 0);
+    _orientation_bins.resize(num_orientation_bins, 0);
 
     // Normalize magnitude values and calculate magnitude bins
     float max_magnitude_val = *std::max_element(std::begin(_magnitudes), std::end(_magnitudes));
     for (size_t i = 0; i < _magnitudes.size(); ++i)
     {
         float mag_normalized = _magnitudes[i] / max_magnitude_val;
-        _magnitude_bins[std::roundf(mag_normalized * (float)num_magnitude_bins)]++;
+        _magnitude_bins[static_cast<size_t>(std::roundf(mag_normalized * (float)num_magnitude_bins))]++;
     }
 
     // Calculate orientation bins
     for (size_t i = 0; i < _orientations.size(); ++i)
-        _orientation_bins[std::roundf(_orientations[i] * RAD2DEG) + 180.f]++;
+        _orientation_bins[static_cast<size_t>(std::roundf(_orientations[i] * RAD2DEG) + 180.f)]++;
 }
 
 void CKeypointsMatching::plot_hist_2d_gradients(cv::Mat& _disp, const std::vector<float>& _magnitudes, const std::vector<float>& _orientations, const std::vector<int>& _magnitude_bins, const std::vector<int>& _orientation_bins)
@@ -234,18 +234,18 @@ void CKeypointsMatching::plot_hist_2d_gradients(cv::Mat& _disp, const std::vecto
     float bins_draw_scaling = 180.f;
     float text_position_scaling = 2.f;
 
-    int num_magnitude_bins = _magnitude_bins.size();
-    int num_orientation_bins = _orientation_bins.size();
+    int num_magnitude_bins = static_cast<int>(_magnitude_bins.size());
+    int num_orientation_bins = static_cast<int>(_orientation_bins.size());
 
     std::vector<float> normalized_magnitude_bins, normalized_orientation_bins;
 
     // Normalize magnitude bins
-    float max_mag = *std::max_element(std::begin(_magnitude_bins), std::end(_magnitude_bins));
+    float max_mag = static_cast<float>(*std::max_element(std::begin(_magnitude_bins), std::end(_magnitude_bins)));
     for (int i = 0; i < _magnitude_bins.size(); ++i)
         normalized_magnitude_bins.emplace_back(_magnitude_bins[i] / max_mag);
 
     // Normalize orientation bins
-    float max_ori = *std::max_element(std::begin(_orientation_bins), std::end(_orientation_bins));
+    float max_ori = static_cast<float>(*std::max_element(std::begin(_orientation_bins), std::end(_orientation_bins)));
     for (int i = 0; i < _orientation_bins.size(); ++i)
         normalized_orientation_bins.emplace_back(_orientation_bins[i] / max_ori);
 
@@ -254,32 +254,32 @@ void CKeypointsMatching::plot_hist_2d_gradients(cv::Mat& _disp, const std::vecto
     for (int i = 0; i < normalized_magnitude_bins.size(); ++i)
     {
         cv::Point pt1(i, img_hist_mags.rows + 1);
-        cv::Point pt2(i, img_hist_mags.rows + 1 - (normalized_magnitude_bins[i] * bins_draw_scaling));
+        cv::Point pt2(i, static_cast<int>(img_hist_mags.rows + 1 - (normalized_magnitude_bins[i] * bins_draw_scaling)));
         cv::line(img_hist_mags, pt1, pt2, CV_RGB(255, 0, 0), 1);
     }
     cv::resize(img_hist_mags, img_hist_mags, cv::Size(360, 200));
-    cv::resize(img_hist_mags, img_hist_mags, cv::Size(img_hist_mags.cols * text_position_scaling, img_hist_mags.rows * text_position_scaling));
-    cv::putText(img_hist_mags, "0", cv::Point(4 * text_position_scaling, 12 * text_position_scaling), cv::FONT_HERSHEY_PLAIN, 1.5, m_color_info, 2);
+    cv::resize(img_hist_mags, img_hist_mags, cv::Size(static_cast<int>(img_hist_mags.cols * text_position_scaling), static_cast<int>(img_hist_mags.rows * text_position_scaling)));
+    cv::putText(img_hist_mags, "0", cv::Point(static_cast<int>(4 * text_position_scaling), static_cast<int>(12 * text_position_scaling)), cv::FONT_HERSHEY_PLAIN, 1.5, m_color_info, 2);
     float max_magnitude = *std::max_element(std::begin(_magnitudes), std::end(_magnitudes));
     snprintf(str, sizeof(str) - 1, "%f", max_magnitude);
-    cv::putText(img_hist_mags, str, cv::Point(img_hist_mags.cols - (65 * text_position_scaling), 12 * text_position_scaling), cv::FONT_HERSHEY_PLAIN, 1.5, m_color_info, 2);
-    cv::resize(img_hist_mags, img_hist_mags, cv::Size(img_hist_mags.cols / text_position_scaling, img_hist_mags.rows / text_position_scaling));
+    cv::putText(img_hist_mags, str, cv::Point(static_cast<int>(img_hist_mags.cols - (65 * text_position_scaling)), static_cast<int>(12 * text_position_scaling)), cv::FONT_HERSHEY_PLAIN, 1.5, m_color_info, 2);
+    cv::resize(img_hist_mags, img_hist_mags, cv::Size(static_cast<int>(img_hist_mags.cols / text_position_scaling), static_cast<int>(img_hist_mags.rows / text_position_scaling)));
 
     // Draw orientations
     cv::Mat img_hist_orient = cv::Mat::zeros(cv::Size(num_orientation_bins, 200), CV_8UC3);
     for (int i = 0; i < normalized_orientation_bins.size(); ++i)
     {
         cv::Point pt1(i, img_hist_orient.rows + 1);
-        cv::Point pt2(i, img_hist_orient.rows + 1 - (normalized_orientation_bins[i] * bins_draw_scaling));
+        cv::Point pt2(i, static_cast<int>(img_hist_orient.rows + 1 - (normalized_orientation_bins[i] * bins_draw_scaling)));
         cv::line(img_hist_orient, pt1, pt2, CV_RGB(255, 255, 0), 1);
     }
 
 
     cv::resize(img_hist_orient, img_hist_orient, cv::Size(360, 200));
-    cv::resize(img_hist_orient, img_hist_orient, cv::Size(img_hist_orient.cols * text_position_scaling, img_hist_orient.rows * text_position_scaling));
-    cv::putText(img_hist_orient, "-179 [deg]", cv::Point(4 * text_position_scaling, 12 * text_position_scaling), cv::FONT_HERSHEY_PLAIN, 1.5, m_color_info, 2);
-    cv::putText(img_hist_orient, "179 [deg]", cv::Point(img_hist_orient.cols - (65 * text_position_scaling), 12 * text_position_scaling), cv::FONT_HERSHEY_PLAIN, 1.5, m_color_info, 2);
-    cv::resize(img_hist_orient, img_hist_orient, cv::Size(img_hist_orient.cols / text_position_scaling, img_hist_orient.rows / text_position_scaling));
+    cv::resize(img_hist_orient, img_hist_orient, cv::Size(static_cast<int>(img_hist_orient.cols * text_position_scaling), static_cast<int>(img_hist_orient.rows * text_position_scaling)));
+    cv::putText(img_hist_orient, "-179 [deg]", cv::Point(static_cast<int>(4 * text_position_scaling), static_cast<int>(12 * text_position_scaling)), cv::FONT_HERSHEY_PLAIN, 1.5, m_color_info, 2);
+    cv::putText(img_hist_orient, "179 [deg]", cv::Point(static_cast<int>(img_hist_orient.cols - (65 * text_position_scaling)), static_cast<int>(12 * text_position_scaling)), cv::FONT_HERSHEY_PLAIN, 1.5, m_color_info, 2);
+    cv::resize(img_hist_orient, img_hist_orient, cv::Size(static_cast<int>(img_hist_orient.cols / text_position_scaling), static_cast<int>(img_hist_orient.rows / text_position_scaling)));
 
     cv::hconcat(img_hist_mags, img_hist_orient, _disp);
 }
