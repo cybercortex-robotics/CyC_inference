@@ -8,7 +8,9 @@
 #include <vector>
 #include <algorithm>
 #include <iterator>
+#pragma warning(disable : 4275)
 #include <libconfig.h++>
+#pragma warning(default : 4275)
 #include <typeinfo>
 #include <map>
 #include "os/CyC_FILESYSTEM.h"
