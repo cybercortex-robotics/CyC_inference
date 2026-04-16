@@ -728,35 +728,15 @@ struct CycLane
 typedef std::vector<CycLane> CycLanesModel;
 
 /*
- * SLAM types
+ * Navigation types
  */
-struct CycSlam
+struct CycStateNavigation
 {
-    CyC_TIME_UNIT           timestamp       = -1;
-    CyC_LONG                id              = -1;
-    CyC_LONG                ref_keyframe_id = -1;
-    CyC_INT                 num_keyframes   = 0;
-    CyC_INT                 num_map_points  = 0;
-    bool                    is_keyframe     = false;
-    bool                    is_mapping      = true;
-    CyC_LONG                map_id          = -1;
-
-    CPose                   Absolute_Cam_C;     // Camera pose in camera coordinates
-    CPose                   Absolute_Imu_W;     // IMU pose in world coordinates
-    CPose                   Absolute_Body_W;    // Body pose of the robot/vehicle in world coordinates
-    Eigen::Vector3f         Bias_Acc_I = Eigen::Vector3f::Zero();
-    Eigen::Vector3f         Bias_Gyro_I = Eigen::Vector3f::Zero();
-    Eigen::Vector3f         Velocity_W = Eigen::Vector3f::Zero();
-
-    std::vector<CyC_LONG>   local_frames;       // Frames that share map points with the current frame
-    std::vector<CyC_LONG>   neighboring_frames; // Frames that share map points with local frames, but not with the current frame
-    std::vector<CyC_INT>    latest_map_points;  // Latest map points added
-    std::vector<CycImu>     imu_cache;          // Cached inertial data between the previous and the current frames
-
-    std::vector<std::pair<CycVoxel, CycPoint>>  rel_map_points_W;   // Map points (and their observations) visible in the current
-                                                                    // frame in world coordinates, relative to the camera pose
-    std::vector<std::pair<CyC_LONG, CPose>>     prev_poses_Body_W;  // Pairs of frame IDs and poses
-    std::vector<CyC_INT>                        prev_poses_type;    // 0: unrelated, 1: local frame, 2: neighboring frame
+    CyC_TIME_UNIT   timestamp = -1;
+    CPose           Body_W;                                 // Body pose of the robot/vehicle in world coordinates
+    Eigen::Vector3f Velocity_W = Eigen::Vector3f::Zero();   // Body velocity in world coordinates
+    Eigen::Vector3f Bias_Acc_I = Eigen::Vector3f::Zero();   // Acceleration bias in IMU coordinates
+    Eigen::Vector3f Bias_Gyro_I = Eigen::Vector3f::Zero();  // Gyroscope bias in IMU coordinates
 };
 
 /*
