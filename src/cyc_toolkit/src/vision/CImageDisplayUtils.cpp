@@ -4,6 +4,9 @@
 #include "CImageDisplayUtils.h"
 #include <iostream>
 
+std::unique_ptr<CCycCache>      CDrawer::m_pSlamDispCache = nullptr;
+std::vector<Eigen::Vector3f>    CDrawer::m_SlamTrajectory;
+
 CImageDisplayUtils::CImageDisplayUtils()
 {}
 

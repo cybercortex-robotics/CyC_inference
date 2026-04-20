@@ -274,6 +274,13 @@ public:
         const bool& _absolute_coord = false,
         const bool& _draw_curr_frame = true,
         const bool& _show_curr_data = true);
+        
+    static void show_slam_output(cv::Mat& _out_dst, const CPinholeCameraSensorModel* _cam_sensor_model,
+        const CycSlam& _slam_data, const cv::Mat* _cam_view = nullptr, const bool& _draw_curr_frame = true);
+        
+private:
+    static std::unique_ptr<CCycCache>   m_pSlamDispCache;
+    static std::vector<Eigen::Vector3f> m_SlamTrajectory;
 };
 
 #endif /* CIMAGEDISPLAYUTILS_H_ */
