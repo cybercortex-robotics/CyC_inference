@@ -220,67 +220,26 @@ public:
 
     static void draw_pose(cv::Mat& _out_dst, const float& _x, const float& _y, const float& _yaw,
         const float& _scale, const cv::Scalar& _color = color::white, const CyC_INT& _line_thickness = 1);
-        
-        
-    static void drawSlam(const cv::Mat& _img,
-        cv::Mat& _out_dst,
-        const CPinholeCameraSensorModel* _pSensorModel,
-        const CPose& _abs_cam_pose_W,
-        const CPose& _relative_cam_pose_C,
-        const CycPoints& prev_inliers_pts,
-        const CycPoints& curr_inliers_pts,
-        const CycVoxels& _voxels_prev_C,
-        const CycVoxels& _voxels_curr_C,
-        const float& _scale_factor,
-        const std::vector<CyC_INT>& _scale_factor_samples_1,
-        const std::vector<CyC_INT>& _scale_factor_samples_2,
-        const bool _draw_epi_projections = false,
-        const CCycCache* _preintegrated_imu_hist = nullptr);
 
-    static void drawSlam(const cv::Mat& _img,
-        cv::Mat& _out_dst,
-        const CPinholeCameraSensorModel* _pSensorModel,
-        const CycSlam& _slam_data,
-        const bool _draw_epi_projections = false,
-        const CCycCache* _preintegrated_imu_hist = nullptr);
+    // ***** Navigation drawing functions *****
+    static void draw_navigation_grid(cv::Mat& _out_dst, const cv::Size& _grid_size);
 
-    static void drawSlam(const CycImage_& _rimg,
-        cv::Mat& _out_dst,
-        const CPinholeCameraSensorModel* _pSensorModel,
-        const CycSlam& _slam_data,
-        const bool _draw_epi_projections = false,
-        const CCycCache* _preintegrated_imu_hist = nullptr);
-
-    static void draw_slam_frame(cv::Mat& _out_dst,
+    static void draw_navigation_frame(cv::Mat& _out_dst,
         const CPinholeCameraSensorModel* _pCamSensorModel,
-        const CycSlam& _slam_data);
-
-    static void drawScaleFactor(cv::Mat& _out_dst,
-        const CPinholeCameraSensorModel* _pSensorModel,
-        const CPose& _relative_pose_C,
-        const CycVoxels& _voxels_prev_corresp,
-        const CycVoxels& _voxels_curr_corresp,
-        const std::vector<CyC_INT>& _samples_1_ids,
-        const std::vector<CyC_INT>& _samples_2_ids);
-
-    static void drawPreintegratedImu(cv::Mat& _out_dst, const CCycCache* _preintegrated_imu_hist = nullptr);
-
-    static void draw_slam_grid(cv::Mat& _out_dst, const cv::Size& _grid_size);
-
-    static void draw_slam(cv::Mat& _out_dst,
+        const CycStateNavigation& _slam_data);
+    
+    static void draw_navigation(cv::Mat& _out_dst,
         const cv::Size& _grid_size,
-        const CycSlam& _slam_data,
+        const CycStateNavigation& _slam_data,
         const float& _bew_scale,
         const bool& _absolute_coord = false,
         const bool& _draw_curr_frame = true,
-        const bool& _show_curr_data = true);
-        
-    static void show_slam_output(cv::Mat& _out_dst, const CPinholeCameraSensorModel* _cam_sensor_model,
-        const CycSlam& _slam_data, const cv::Mat* _cam_view = nullptr, const bool& _draw_curr_frame = true);
-        
+        const bool& _show_curr_data = true,
+        const bool& _show_keyframes = false);
+
 private:
-    static std::unique_ptr<CCycCache>   m_pSlamDispCache;
-    static std::vector<Eigen::Vector3f> m_SlamTrajectory;
+    static std::unique_ptr<CCycCache>   m_pNavigationDispCache;
+    static std::vector<Eigen::Vector3f> m_NavigationTrajectory;
 };
 
 #endif /* CIMAGEDISPLAYUTILS_H_ */

@@ -21,6 +21,12 @@ CCycFilterBase* CCycFilterUtils::getStateFilter(const CycInputSources& _input_fi
             _input_filters[i].pCycFilter->getFilterType() == CStringUtils::CyC_HashFunc("CyC_DRONE_SIMULATION_FILTER_TYPE"))
         {
             pStateFilter = _input_filters[i].pCycFilter;
+            break;
+        }
+        else if (_input_filters[i].pCycFilter->getOutputDataType() == CyC_NAV)
+        {
+            pStateFilter = _input_filters[i].pCycFilter;
+            break;
         }
 
     }
@@ -42,10 +48,20 @@ bool CCycFilterUtils::getPose(CCycFilterBase* _filter, CyC_TIME_UNIT& _io_timest
     {
         _io_timestamp = readTsPose;
 
-        CycState state;
-        if (_filter->getData(state))
+        if (_filter->getOutputDataType() == CyC_NAV)
         {
-            bReturn = CCycFilterUtils::state2pose(state, _filter->getFilterType(), _out_pose);
+            CycStateNavigation state;
+            if (_filter->getData(state))
+            {
+                _out_pose = state.Body_W;
+                bReturn = true;
+            }
+        }
+        else
+        {
+            CycState state;
+            if (_filter->getData(state))
+                bReturn = CCycFilterUtils::state2pose(state, _filter->getFilterType(), _out_pose);
         }
     }
 

@@ -4,8 +4,8 @@
 #include "CImageDisplayUtils.h"
 #include <iostream>
 
-std::unique_ptr<CCycCache>      CImageDisplayUtils::m_pSlamDispCache = nullptr;
-std::vector<Eigen::Vector3f>    CImageDisplayUtils::m_SlamTrajectory;
+std::unique_ptr<CCycCache>      CImageDisplayUtils::m_pNavigationDispCache = nullptr;
+std::vector<Eigen::Vector3f>    CImageDisplayUtils::m_NavigationTrajectory;
 
 CImageDisplayUtils::CImageDisplayUtils()
 {}
@@ -982,322 +982,7 @@ void CImageDisplayUtils::draw_pose(cv::Mat& _out_dst, const float& _x, const flo
         _color, _line_thickness);
 }
 
-void CImageDisplayUtils::show_slam_output(cv::Mat& _out_dst, const CPinholeCameraSensorModel* _cam_sensor_model, const CycSlam& _slam_data, const cv::Mat* _cam_view, const bool& _draw_curr_frame)
-{
-    cv::Mat disp_birds_view;
-    float bew_scale = 25.0f; // 150.f; // 50.f; // 3.5f;
-    cv::Size grid_size(_cam_sensor_model->width(), _cam_sensor_model->height());
-    CImageDisplayUtils::draw_slam(disp_birds_view, grid_size, _slam_data, bew_scale, true, _draw_curr_frame, true);
-    _out_dst = disp_birds_view;
-
-    if (_cam_view != nullptr)
-    {
-        cv::Mat disp_cam_view;
-        if (_cam_view->empty())
-            disp_cam_view = cv::Mat::zeros(_cam_sensor_model->height(), _cam_sensor_model->width(), CV_8UC3);
-        else
-            disp_cam_view = *_cam_view;
-
-        CImageDisplayUtils::draw_slam_frame(disp_cam_view, _cam_sensor_model, _slam_data);
-        cv::resize(disp_birds_view, disp_birds_view, disp_cam_view.size());
-        cv::hconcat(disp_cam_view, disp_birds_view, _out_dst);
-    }
-}
-
-void CImageDisplayUtils::drawSlam(const cv::Mat& _img,
-    cv::Mat& _out_dst,
-    const CPinholeCameraSensorModel* _pSensorModel,
-    const CPose& _abs_body_pose_W,
-    const CPose& _abs_cam_pose_C,
-    const CycPoints& prev_inliers_pts,
-    const CycPoints& curr_inliers_pts,
-    const CycVoxels& _voxels_prev_W,
-    const CycVoxels& _voxels_curr_W,
-    const float& _scale_factor,
-    const std::vector<CyC_INT>& _scale_factor_samples_1,
-    const std::vector<CyC_INT>& _scale_factor_samples_2,
-    const bool _draw_epi_projections,
-    const CCycCache* _preintegrated_imu_hist)
-{
-    //assert(prev_inliers_pts.size() != curr_inliers_pts.size());
-
-    char str[128];
-    CyC_INT nTextOffsetY = _img.rows / 20;
-    double alpha = 0.85;
-    double beta = 0.28;
-    double gamma = 0.;
-    double font_scale = 1.;
-    CyC_INT font_thickness = 1;
-
-    if (!_img.empty())
-    {
-        if (_img.channels() > 1)
-        {
-            cv::cvtColor(_img, _out_dst, cv::COLOR_RGB2GRAY);
-            cv::cvtColor(_out_dst, _out_dst, cv::COLOR_GRAY2RGB);
-        }
-        else
-        {
-            _out_dst = _img;
-        }
-    }
-    else
-    {
-        _out_dst = cv::Mat::zeros(cv::Size(_pSensorModel->width(), _pSensorModel->height()), CV_8UC3);
-    }
-
-    // Calculate the epipolar lines
-    std::vector<Eigen::Vector3f> epi_lines_curr, epi_lines_prev;
-    CProjectiveGeometry::epi_lines(_pSensorModel, CPose().transform(), _abs_cam_pose_C.transform(), prev_inliers_pts, curr_inliers_pts, epi_lines_prev, epi_lines_curr);
-
-    // Draw keypoints
-    CImageDisplayUtils::drawPoints(_out_dst, curr_inliers_pts, color::orthogonal_projection);
-
-    // Calculate and draw the epipoles
-    CycPoint epipole_curr = CProjectiveGeometry::epipole(_pSensorModel, _abs_cam_pose_C.transform(), CPose().transform());
-    cv::Point2f cv_epipole_curr(epipole_curr.pt2d.x(), epipole_curr.pt2d.y());
-    cv::circle(_out_dst, cv_epipole_curr, 4, CV_RGB(20, 255, 28), 2);
-
-    // Draw epipolar lines
-    CImageDisplayUtils::drawLines(_out_dst, epi_lines_curr, color::epi_lines);
-
-    // Draw the orthogonal projections of each keypoint onto its epipolar line
-    if (_draw_epi_projections)
-    {
-        for (size_t k = 0; k < prev_inliers_pts.size(); ++k)
-        {
-            Eigen::Vector2f orth_proj_curr = CGeometry::orthogonal_projection(epi_lines_curr[k], curr_inliers_pts[k].pt2d);
-            cv::line(_out_dst, cv::Point(curr_inliers_pts[k].pt2d.x(), curr_inliers_pts[k].pt2d.y()), cv::Point(orth_proj_curr.x(), orth_proj_curr.y()), color::orthogonal_projection);
-        }
-    }
-
-    // Reproject to 2D
-    CycPoints pts_curr_reproj;
-    //CycVoxels voxels_curr_C;
-    //// TODO: previous voxels in camera coordinates should be calculated
-    //CycVoxels voxels_prev_C = _voxels_prev_W;
-    //Eigen::Matrix4f T_curr = _pSensorModel->extrinsics().transform() *_abs_body_pose_W.transform()* _pSensorModel->extrinsics().transform();
-    //for (const auto& vx : _voxels_curr_W)
-    //    voxels_curr_C.emplace_back(CycVoxel(T_curr * vx.pt3d, vx.id));
-
-    //CProjectiveGeometry::project(_pSensorModel, _abs_cam_pose_C.transform(), _voxels_curr_W, pts_curr_reproj);
-
-    // Compute projection matrices (required for computing the depth)
-    Pmatrix P_cam_curr = CProjectiveGeometry::KT2P(_pSensorModel->K(), CProjectiveGeometry::invertT(_abs_cam_pose_C.transform()));
-
-    // Reproject to 2D for visualization
-    for (size_t k = 0; k < pts_curr_reproj.size(); ++k)
-    {
-        CycPoint pt = pts_curr_reproj[k];
-        pt.pt2d.x() /= _pSensorModel->width();
-        pt.pt2d.y() /= _pSensorModel->height();
-        pt.pt2d.x() *= _out_dst.rows;
-        pt.pt2d.y() *= _out_dst.cols;
-
-        cv::Point2f cv_pt_curr(pt.pt2d.x(), pt.pt2d.y());
-        cv::circle(_out_dst, cv_pt_curr, 10, color::blue, 2);
-
-        //snprintf(str, sizeof(str) - 1, "%d", _voxels_curr_W[k].id);
-        //cv::putText(_out_dst, str, cv::Point2f(pt.pt2d.x()+6, pt.pt2d.y()), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.65, color::blue, 1);
-        
-        /*cv::Point2f cv_pt_curr_reproj(pts_curr_reproj[k].pt2d.x(), pts_curr_reproj[k].pt2d.y());
-
-        // Calculate depth in both projections
-        float depth_curr = CTriangulation::getDepth(_voxels_curr_W[k], P_cam_curr);
-
-        if (depth_curr > 0.f)
-            cv::circle(_out_dst, cv_pt_curr_reproj, 7, color::reproj_pts_2d_pos_depth, 1);
-        else
-            cv::circle(_out_dst, cv_pt_curr_reproj, 7, color::reproj_pts_2d_neg_depth, 1);
-
-        // Draw reprojection error
-        cv::line(_out_dst, cv_pt_curr, cv_pt_curr_reproj, color::reprojection, 1);*/
-    }
-
-    // *** Draw correspondences ***
-    cv::Mat img_corresp;
-    cv::Mat img_corresp_prev = cv::Mat::zeros(_out_dst.rows, _out_dst.cols, CV_8UC3);
-    cv::Mat img_corresp_curr = cv::Mat::zeros(_out_dst.rows, _out_dst.cols, CV_8UC3);
-    CImageDisplayUtils::draw_correspondences(img_corresp_prev, img_corresp_curr, img_corresp, prev_inliers_pts, curr_inliers_pts, 2);
-    
-    // Draw the sampled voxels used for calculating the scale factor, if any
-    //drawScaleFactor(img_corresp, _pSensorModel, _abs_cam_pose_C, voxels_prev_C, voxels_curr_C, _scale_factor_samples_1, _scale_factor_samples_2);
-
-    // Stich correspondences image to the main display
-    cv::resize(img_corresp, img_corresp, cv::Size(img_corresp.cols / 3.f, img_corresp.rows / 3.f));
-    cv::Mat disp_rect_corresp = _out_dst(cv::Rect(0, _out_dst.rows - img_corresp.rows, img_corresp.cols, img_corresp.rows));
-    cv::addWeighted(img_corresp, alpha, disp_rect_corresp, beta, gamma, disp_rect_corresp);
-
-    // *** Draw preintegrated IMU data ***
-    cv::Mat img_imu = cv::Mat::zeros(img_corresp.rows, _out_dst.cols - img_corresp.cols, CV_8UC3);
-    drawPreintegratedImu(img_imu, _preintegrated_imu_hist);
-
-    // Stich preintegrated IMU image to the main display
-    //cv::resize(img_imu, img_imu, cv::Size(img_corresp.cols / 3.f, img_corresp.rows / 3.f));
-    cv::Mat disp_rect_imu = _out_dst(cv::Rect(img_corresp.cols, _out_dst.rows - img_imu.rows, img_imu.cols, img_imu.rows));
-    cv::addWeighted(img_imu, alpha, disp_rect_imu, beta, gamma, disp_rect_imu);
-
-    // *** Additional info ***
-    cv::Mat disp_rect_info = _out_dst(cv::Rect(5, 5, _img.cols - 25, nTextOffsetY * 6));
-    cv::Mat black_rect = cv::Mat::zeros(disp_rect_info.rows, disp_rect_info.cols, CV_8UC3);
-    cv::addWeighted(black_rect, alpha, disp_rect_info, beta, gamma, disp_rect_info);
-
-    // Print computed extrinsics and body pose
-    CImageDisplayUtils::printT(_out_dst, "Abs [W]", _abs_body_pose_W.transform(), 1 * nTextOffsetY, color::blue, font_scale, font_thickness, "euler");
-
-    // Number of keypoints
-    snprintf(str, sizeof(str) - 1, "Num keypoints: %zd", curr_inliers_pts.size());
-    cv::putText(_out_dst, str, cv::Point(5, 2 * nTextOffsetY), cv::FONT_HERSHEY_PLAIN, font_scale, color::blue, font_thickness);
-
-    // Errors
-    float fReprojErr = CProjectiveGeometry::getReprojectionErr(_pSensorModel, prev_inliers_pts, curr_inliers_pts, CPose().transform(), _abs_cam_pose_C.transform());
-    snprintf(str, sizeof(str) - 1, "Reprojection error: %.3f", fReprojErr);
-    cv::putText(_out_dst, str, cv::Point2f(5, 3 * nTextOffsetY), cv::FONT_HERSHEY_PLAIN, font_scale, color::reprojection, font_thickness);
-
-    // Orthogonal projection to epiplar lines
-    float fOrthogonalErr = CProjectiveGeometry::getOrthogonalErr(prev_inliers_pts, curr_inliers_pts, epi_lines_prev, epi_lines_curr);
-    snprintf(str, sizeof(str) - 1, "Orthogonal error on epi lines: %.3f", fOrthogonalErr);
-    cv::putText(_out_dst, str, cv::Point2f(5, 4 * nTextOffsetY), cv::FONT_HERSHEY_PLAIN, font_scale, color::orthogonal_projection, font_thickness);
-
-    // Scale factor
-    snprintf(str, sizeof(str) - 1, "Scale factor: %.2f", _scale_factor);
-    cv::putText(_out_dst, str, cv::Point2f(5, 5 * nTextOffsetY), cv::FONT_HERSHEY_PLAIN, font_scale, color::blue, font_thickness);
-}
-
-void CImageDisplayUtils::drawSlam(const cv::Mat& _img,
-    cv::Mat& _out_dst,
-    const CPinholeCameraSensorModel* _pSensorModel,
-    const CycSlam& _slam_data,
-    const bool _draw_epi_projections,
-    const CCycCache* _preintegrated_imu_hist)
-{
-    /*drawSlam(_img,
-        _out_dst,
-        _pSensorModel,
-        _slam_data.abs_pose_W,
-        _slam_data.relative_pose_C,
-        _slam_data.keypoints_prev,
-        _slam_data.keypoints_curr,
-        _slam_data.voxels_prev,
-        _slam_data.voxels_curr,
-        _slam_data.scale_factor,
-        _slam_data.scale_factor_samples_1,
-        _slam_data.scale_factor_samples_2,
-        _draw_epi_projections,
-        _preintegrated_imu_hist);*/
-}
-
-void CImageDisplayUtils::drawSlam(const CycImage_& _rimg,
-    cv::Mat& _out_dst,
-    const CPinholeCameraSensorModel* _pSensorModel,
-    const CycSlam& _slam_data,
-    const bool _draw_epi_projections,
-    const CCycCache* _preintegrated_imu_hist)
-{
-    cv::Mat img_rgb = cv::Mat(_rimg.nRows, _rimg.nCols, _rimg.nType1, _rimg.pData1);
-
-    /*drawSlam(img_rgb,
-        _out_dst,
-        _pSensorModel,
-        _slam_data.abs_pose_W,
-        _slam_data.relative_pose_C,
-        _slam_data.keypoints_prev,
-        _slam_data.keypoints_curr,
-        _slam_data.voxels_prev,
-        _slam_data.voxels_curr,
-        _slam_data.scale_factor,
-        _slam_data.scale_factor_samples_1,
-        _slam_data.scale_factor_samples_2,
-        _draw_epi_projections,
-        _preintegrated_imu_hist);*/
-}
-
-void CImageDisplayUtils::drawScaleFactor(cv::Mat& _out_dst,
-    const CPinholeCameraSensorModel* _pSensorModel,
-    const CPose& _relative_pose_C,
-    const CycVoxels& _voxels_prev_corresp,
-    const CycVoxels& _voxels_curr_corresp,
-    const std::vector<CyC_INT>& _samples_1_ids,
-    const std::vector<CyC_INT>& _samples_2_ids)
-{
-    assert(_samples_1_ids.size() != _samples_2_ids.size());
-    assert(_out_dst.empty());
-
-    for (CyC_INT k = 1; k < _samples_1_ids.size(); ++k)
-    {
-
-        CyC_INT i = _samples_1_ids[k];
-        CyC_INT j = _samples_2_ids[k];
-
-        CycVoxel vx_prev_1, vx_prev_2, vx_curr_1, vx_curr_2;
-        CKeypointsMatching::getVoxelById(_voxels_prev_corresp, i, vx_prev_1);
-        CKeypointsMatching::getVoxelById(_voxels_prev_corresp, j, vx_prev_2);
-        CKeypointsMatching::getVoxelById(_voxels_curr_corresp, i, vx_curr_1);
-        CKeypointsMatching::getVoxelById(_voxels_curr_corresp, j, vx_curr_2);
-
-        // Project voxels
-        CycPoint pt_prev_1 = CProjectiveGeometry::project(_pSensorModel, CPose().transform(), vx_prev_1);
-        CycPoint pt_prev_2 = CProjectiveGeometry::project(_pSensorModel, CPose().transform(), vx_prev_2);
-        CycPoint pt_curr_1 = CProjectiveGeometry::project(_pSensorModel, _relative_pose_C.transform(), vx_curr_1);
-        CycPoint pt_curr_2 = CProjectiveGeometry::project(_pSensorModel, _relative_pose_C.transform(), vx_curr_2);
-
-        cv::Point2f cv_pt_prev_1{ pt_prev_1.pt2d.x(), pt_prev_1.pt2d.y() };
-        cv::Point2f cv_pt_prev_2{ pt_prev_2.pt2d.x(), pt_prev_2.pt2d.y() };
-        cv::Point2f cv_pt_curr_1{ pt_curr_1.pt2d.x() + CyC_INT(_out_dst.cols / 2.f), pt_curr_1.pt2d.y() };
-        cv::Point2f cv_pt_curr_2{ pt_curr_2.pt2d.x() + CyC_INT(_out_dst.cols / 2.f), pt_curr_2.pt2d.y() };
-
-        cv::circle(_out_dst, cv_pt_prev_1, 6, CV_RGB(255, 20, 28), 2);
-        cv::circle(_out_dst, cv_pt_prev_2, 6, CV_RGB(255, 20, 28), 2);
-        cv::circle(_out_dst, cv_pt_curr_1, 6, CV_RGB(255, 20, 28), 2);
-        cv::circle(_out_dst, cv_pt_curr_2, 6, CV_RGB(255, 20, 28), 2);
-        cv::line(_out_dst, cv_pt_prev_1, cv_pt_prev_2, CV_RGB(255, 20, 28), 2);
-        cv::line(_out_dst, cv_pt_curr_1, cv_pt_curr_2, CV_RGB(255, 20, 28), 2);
-    }
-}
-
-void CImageDisplayUtils::drawPreintegratedImu(cv::Mat& _out_dst, const CCycCache* _preintegrated_imu_hist)
-{
-    if (_preintegrated_imu_hist == nullptr)
-        return;
-
-    bool bFirst = true;
-    CyC_INT y_scale = 5;
-    CyC_INT x = 0;
-    
-    cv::Point cv_pt_prev_acc_x(x, 0);
-    cv::Point cv_pt_prev_acc_y(x, 0);
-    cv::Point cv_pt_prev_acc_z(x, 0);
-
-    for (CyC_INT n : _preintegrated_imu_hist->keys())
-    {
-        CyC_INT y_acc_x = (_out_dst.rows / 2) - ((CyC_INT)_preintegrated_imu_hist->at<CycImu>(n).acc.x() * y_scale);
-        CyC_INT y_acc_y = (_out_dst.rows / 2) - ((CyC_INT)_preintegrated_imu_hist->at<CycImu>(n).acc.y() * y_scale);
-        CyC_INT y_acc_z = (_out_dst.rows / 2) - ((CyC_INT)_preintegrated_imu_hist->at<CycImu>(n).acc.z() * y_scale);
-
-        cv::Point cv_pt_curr_acc_x(x, y_acc_x);
-        cv::Point cv_pt_curr_acc_y(x, y_acc_y);
-        cv::Point cv_pt_curr_acc_z(x, y_acc_z);
-        
-        if (!bFirst)
-        {
-            cv::line(_out_dst, cv_pt_prev_acc_x, cv_pt_curr_acc_x, color::x_axis, 1);
-            cv::line(_out_dst, cv_pt_prev_acc_y, cv_pt_curr_acc_y, color::y_axis, 1);
-            cv::line(_out_dst, cv_pt_prev_acc_z, cv_pt_curr_acc_z, color::z_axis, 1);
-        }
-        bFirst = false;
-
-        cv_pt_prev_acc_x = cv_pt_curr_acc_x;
-        cv_pt_prev_acc_y = cv_pt_curr_acc_y;
-        cv_pt_prev_acc_z = cv_pt_curr_acc_z;
-
-        ++x;
-    }
-
-    double font_scale = _out_dst.rows / 200.;
-    cv::putText(_out_dst, "inertial datastream", cv::Point(5, _out_dst.rows - 8), cv::FONT_HERSHEY_PLAIN, font_scale, CV_RGB(255, 255, 255), 1);
-}
-
-void CImageDisplayUtils::draw_slam_grid(cv::Mat& _out_dst, const cv::Size& _grid_size)
+void CImageDisplayUtils::draw_navigation_grid(cv::Mat& _out_dst, const cv::Size& _grid_size)
 {
     CyC_INT disp_scale = 2;
     if (_grid_size.width <= 400 || _grid_size.height <= 300)
@@ -1329,16 +1014,43 @@ void CImageDisplayUtils::draw_slam_grid(cv::Mat& _out_dst, const cv::Size& _grid
     cv::line(_out_dst, cv::Point2f(pt_or.x, pt_or.y - 10), cv::Point2f(pt_or.x, pt_or.y + 10), color::red, 1);
 }
 
-void CImageDisplayUtils::draw_slam(cv::Mat& _out_dst,
+void CImageDisplayUtils::draw_navigation_frame(cv::Mat& _out_dst, const CPinholeCameraSensorModel* _pCamSensorModel, const CycStateNavigation& _slam_data)
+{
+    float disp_scale = 1;
+    if (_pCamSensorModel->width() < 400 || _pCamSensorModel->height() < 300)
+        disp_scale = 2;
+
+    //_out_dst = cv::Mat(_frame->m_rImg.nRows, _frame->m_rImg.nCols, _frame->m_rImg.nType1, _frame->m_rImg.pData1).clone();
+    cv::resize(_out_dst, _out_dst, cv::Size(_out_dst.cols * disp_scale, _out_dst.rows * disp_scale));
+
+    // Reproject map points
+    CPose abs_cam_C = _pCamSensorModel->extrinsics_inv() * _slam_data.Body_W * _pCamSensorModel->extrinsics();
+
+    //snprintf(str, sizeof(str) - 1, "Timestamp ID: %lld", static_cast<long long>(_slam_data.timestamp));
+    //cv::putText(_out_dst, str, cv::Point(5, 15), cv::FONT_HERSHEY_PLAIN, disp_scale, CV_RGB(255, 255, 255), 2);
+
+    double alpha = 0.85;
+    double beta = 0.28;
+    double gamma = 0.;
+    double font_scale = 1.3;
+    CyC_INT font_thickness = 2;
+    CyC_INT nTextOffsetY = _pCamSensorModel->height() / 11;
+    cv::Mat disp_rect_info = _out_dst(cv::Range(_out_dst.rows - CyC_INT(nTextOffsetY * 1.5), _out_dst.rows - 5), cv::Range(5, CyC_INT(nTextOffsetY * 4)));
+    cv::Mat black_rect = cv::Mat::zeros(disp_rect_info.rows, disp_rect_info.cols, CV_8UC3);
+    cv::addWeighted(black_rect, alpha, disp_rect_info, beta, gamma, disp_rect_info);
+}
+
+void CImageDisplayUtils::draw_navigation(cv::Mat& _out_dst,
     const cv::Size& _grid_size,
-    const CycSlam& _slam_data,
+    const CycStateNavigation& _slam_data,
     const float& _bew_scale,
     const bool& _absolute_coord,
     const bool& _draw_curr_frame,
-    const bool& _show_curr_data)
+    const bool& _show_curr_data,
+    const bool& _show_keyframes)
 {
-    if (m_pSlamDispCache == nullptr)
-        m_pSlamDispCache = std::make_unique<CCycCache>(100);
+    if (_show_keyframes && m_pNavigationDispCache == nullptr)
+        m_pNavigationDispCache = std::make_unique<CCycCache>(300);
     
     char str[128];
     CyC_INT nTextOffsetY = _grid_size.height / 10;
@@ -1348,148 +1060,71 @@ void CImageDisplayUtils::draw_slam(cv::Mat& _out_dst,
     double font_scale = 1.8;
     CyC_INT font_thickness = 2;
 
-    draw_slam_grid(_out_dst, _grid_size);
+    draw_navigation_grid(_out_dst, _grid_size);
     cv::Point2f pt_or = cv::Point(_out_dst.cols / 2.f, _out_dst.rows / 2.f);
 
     // Used for relative coordinates drawing
-    CPose rel_pose(_slam_data.Absolute_Body_W.translation_3x1().x(),
-        _slam_data.Absolute_Body_W.translation_3x1().y(),
-        _slam_data.Absolute_Body_W.translation_3x1().z(),
+    CPose rel_pose(_slam_data.Body_W.translation_3x1().x(),
+        _slam_data.Body_W.translation_3x1().y(),
+        _slam_data.Body_W.translation_3x1().z(),
         0.f, 0.f, 0.f);
     rel_pose = rel_pose.inverse();
-
-    // Draw map points
-    for (size_t i = 0; i < _slam_data.rel_map_points_W.size(); ++i)
-    {
-        cv::Point2f pt;
-        Eigen::Vector4f MP = _slam_data.Absolute_Body_W.transform() * _slam_data.rel_map_points_W[i].first.pt3d;
-
-        if (!_absolute_coord)
-        {
-            CycVoxel vx_rel_W{ rel_pose.transform() * MP };
-            pt.x = vx_rel_W.pt3d.x();
-            pt.y = -vx_rel_W.pt3d.y();
-        }
-        else
-        {
-            pt.x = MP.x();
-            pt.y = -MP.y();
-        }
-
-        // Center on origin and scale
-        pt.x = pt_or.x + pt.x * _bew_scale;
-        pt.y = pt_or.y + pt.y * _bew_scale;
-
-        cv::circle(_out_dst, pt, 1, color::white, 2);
-
-        snprintf(str, sizeof(str) - 1, "%d", _slam_data.rel_map_points_W[i].first.id);
-        cv::putText(_out_dst, str, pt, cv::FONT_HERSHEY_COMPLEX_SMALL, 1., color::blue, 2);
-    }
-
-    // Draw robot trajectory
-    //m_SlamTrajectory.emplace_back(_slam_data.Absolute_Body_W.translation_3x1());
-    //for (size_t i = 1; i < m_SlamTrajectory.size(); ++i)
-    //{
-    //    Eigen::Vector2f pt_prev, pt_curr;
-
-    //    if (!_absolute_coord)
-    //    {
-    //        Eigen::Vector4f hom_prev = Eigen::Vector4f(m_SlamTrajectory[i - 1].x(), m_SlamTrajectory[i - 1].y(), m_SlamTrajectory[i - 1].z(), 1.f);
-    //        Eigen::Vector4f hom_curr = Eigen::Vector4f(m_SlamTrajectory[i].x(), m_SlamTrajectory[i].y(), m_SlamTrajectory[i].z(), 1.f);
-    //        Eigen::Vector4f vx_rel_W_prev = rel_pose.transform() * hom_prev;
-    //        Eigen::Vector4f vx_rel_W_curr = rel_pose.transform() * hom_curr;
-
-    //        pt_prev.x() = vx_rel_W_prev.x();
-    //        pt_prev.y() = -vx_rel_W_prev.y();
-
-    //        pt_curr.x() = vx_rel_W_curr.x();
-    //        pt_curr.y() = -vx_rel_W_curr.y();
-    //    }
-    //    else
-    //    {
-    //        pt_prev.x() = m_SlamTrajectory[i - 1].x();
-    //        pt_prev.y() = -m_SlamTrajectory[i - 1].y();
-
-    //        pt_curr.x() = m_SlamTrajectory[i].x();
-    //        pt_curr.y() = -m_SlamTrajectory[i].y();
-    //    }
-
-    //    // Center on origin and scale
-    //    pt_prev.x() = pt_or.x + pt_prev.x() * _bew_scale;
-    //    pt_prev.y() = pt_or.y + pt_prev.y() * _bew_scale;
-    //    pt_curr.x() = pt_or.x + pt_curr.x() * _bew_scale;
-    //    pt_curr.y() = pt_or.y + pt_curr.y() * _bew_scale;
-
-    //    cv::line(_out_dst, cv::Point2f(pt_prev.x(), pt_prev.y()), cv::Point2f(pt_curr.x(), pt_curr.y()), color::current_path, 4);
-    //}
-
-    // Draw stored slam data
-    Eigen::Vector2f prev_cam_position;
-    for (size_t i = 0; i < _slam_data.prev_poses_Body_W.size(); ++i)
-    {
-        cv::Scalar color = color::red;
-        const CPose prev_body_W = _slam_data.prev_poses_Body_W[i].second;
-        
-        // Calculate offset from the current pose
-        Eigen::Vector2f cam_position;
-        if (_absolute_coord)
-            cam_position = Eigen::Vector2f(prev_body_W.translation_3x1().x(), prev_body_W.translation_3x1().y());
-        else
-            cam_position = Eigen::Vector2f(prev_body_W.translation_3x1().x() - _slam_data.Absolute_Body_W.translation_3x1().x(),
-                prev_body_W.translation_3x1().y() - _slam_data.Absolute_Body_W.translation_3x1().y());
-
-        // Check if the frame is a local frame
-        if (_slam_data.prev_poses_type[i] == 1)
-            color = color::green;
-
-        // Check if the frame is a neighboring frame
-        if (_slam_data.prev_poses_type[i] == 2)
-            color = color::yellow;
-
-        if (i == 0)
-        {
-            Eigen::Vector2f curr_cam_pose = Eigen::Vector2f::Zero();
-            if (_absolute_coord)
-                curr_cam_pose = Eigen::Vector2f(_slam_data.Absolute_Body_W.translation_3x1().x(), _slam_data.Absolute_Body_W.translation_3x1().y());
-            
-            cv::line(_out_dst,
-                cv::Point2f(pt_or.x + cam_position.x() * _bew_scale, pt_or.y - cam_position.y() * _bew_scale),
-                cv::Point2f(pt_or.x + curr_cam_pose.x() * _bew_scale, pt_or.y - curr_cam_pose.y() * _bew_scale),
-                color::current_path, 1);
-        }
-        else
-        {
-            cv::line(_out_dst, 
-                cv::Point2f(pt_or.x + prev_cam_position.x() * _bew_scale, pt_or.y - prev_cam_position.y() * _bew_scale),
-                cv::Point2f(pt_or.x + cam_position.x() * _bew_scale, pt_or.y - cam_position.y() * _bew_scale),
-                color::current_path, 1);
-        }
-        CImageDisplayUtils::draw_pose(_out_dst, cam_position.x(), cam_position.y(), prev_body_W.rotation_euler().z(), _bew_scale, color, 2);
-
-        //if (_slam_data.prev_poses_Body_W[i].first == 44)
-        //    draw_pose(_out_dst, cam_position.x(), cam_position.y(), prev_body_W.rotation_euler().z(), _bew_scale, color::red, 2);
-
-        prev_cam_position = cam_position;
-    }
 
     // Draw current slam data
     if (_draw_curr_frame)
     {
         // Draw body frame
         if (_absolute_coord)
-            CImageDisplayUtils::draw_pose(_out_dst, _slam_data.Absolute_Body_W.translation_3x1().x(),
-                _slam_data.Absolute_Body_W.translation_3x1().y(),
-                _slam_data.Absolute_Body_W.rotation_euler().z(), _bew_scale, color::blue, 4);
+            CImageDisplayUtils::draw_pose(_out_dst, _slam_data.Body_W.translation_3x1().x(),
+                _slam_data.Body_W.translation_3x1().y(),
+                _slam_data.Body_W.rotation_euler().z(), _bew_scale, color::blue, 4);
         else
-            CImageDisplayUtils::draw_pose(_out_dst, 0.f, 0.f, _slam_data.Absolute_Body_W.rotation_euler().z(), _bew_scale, color::blue, 4);
+            CImageDisplayUtils::draw_pose(_out_dst, 0.f, 0.f, _slam_data.Body_W.rotation_euler().z(), _bew_scale, color::blue, 4);
+    }
 
-        // Draw IMU frame
-        if (_absolute_coord)
-            CImageDisplayUtils::draw_pose(_out_dst, _slam_data.Absolute_Imu_W.translation_3x1().x(),
-                _slam_data.Absolute_Imu_W.translation_3x1().y(),
-                _slam_data.Absolute_Imu_W.rotation_euler().z(), _bew_scale, color::pink, 4);
-        else
-            CImageDisplayUtils::draw_pose(_out_dst, 0.f, 0.f, _slam_data.Absolute_Imu_W.rotation_euler().z(), _bew_scale, color::pink, 4);
+    if (_show_keyframes)
+    {
+        Eigen::Vector2f prev_cam_position;
+        bool first = true;
+        for (auto it = m_pNavigationDispCache->keys().begin(); it != m_pNavigationDispCache->keys().end(); ++it)
+        {
+            const CycStateNavigation* state = &m_pNavigationDispCache->at<CycStateNavigation>(*it);
+            
+            cv::Scalar color = color::red;
+            const CPose prev_body_W = state->Body_W;
+
+            Eigen::Vector2f cam_position;
+            if (_absolute_coord)
+                cam_position = Eigen::Vector2f(prev_body_W.translation_3x1().x(), prev_body_W.translation_3x1().y());
+            else
+                cam_position = Eigen::Vector2f(prev_body_W.translation_3x1().x() - state->Body_W.translation_3x1().x(),
+                    prev_body_W.translation_3x1().y() - state->Body_W.translation_3x1().y());
+
+            color = color::green;
+
+            if (first)
+            {
+                Eigen::Vector2f curr_cam_pose = Eigen::Vector2f::Zero();
+                if (_absolute_coord)
+                    curr_cam_pose = Eigen::Vector2f(state->Body_W.translation_3x1().x(), state->Body_W.translation_3x1().y());
+
+                cv::line(_out_dst,
+                    cv::Point2f(pt_or.x + cam_position.x() * _bew_scale, pt_or.y - cam_position.y() * _bew_scale),
+                    cv::Point2f(pt_or.x + curr_cam_pose.x() * _bew_scale, pt_or.y - curr_cam_pose.y() * _bew_scale),
+                    color::current_path, 1);
+            }
+            else
+            {
+                cv::line(_out_dst,
+                    cv::Point2f(pt_or.x + prev_cam_position.x() * _bew_scale, pt_or.y - prev_cam_position.y() * _bew_scale),
+                    cv::Point2f(pt_or.x + cam_position.x() * _bew_scale, pt_or.y - cam_position.y() * _bew_scale),
+                    color::current_path, 1);
+            }
+            CImageDisplayUtils::draw_pose(_out_dst, cam_position.x(), cam_position.y(), prev_body_W.rotation_euler().z(), _bew_scale, color, 2);
+
+            first = false;
+            prev_cam_position = cam_position;
+        }
     }
 
     // *** Additional info ***
@@ -1502,7 +1137,7 @@ void CImageDisplayUtils::draw_slam(cv::Mat& _out_dst,
         ////cv::resize(_out_dst, _out_dst, cv::Size(_out_dst.cols * 2, _out_dst.rows * 2));
 
         // Print computed body pose
-        CImageDisplayUtils::printT(_out_dst, "Body [W]", _slam_data.Absolute_Body_W.transform(), nTextOffsetY, color::info, font_scale, font_thickness, "euler");
+        CImageDisplayUtils::printT(_out_dst, "Body [W]", _slam_data.Body_W.transform(), nTextOffsetY, color::info, font_scale, font_thickness, "euler");
 
         // Print velocity
         snprintf(str, sizeof(str) - 1, "V [%.2f; %.2f; %.2f]", _slam_data.Velocity_W.x(), _slam_data.Velocity_W.y(), _slam_data.Velocity_W.z());
@@ -1515,8 +1150,8 @@ void CImageDisplayUtils::draw_slam(cv::Mat& _out_dst,
         cv::putText(_out_dst, str, cv::Point(5, nTextOffsetY * 2), cv::FONT_HERSHEY_PLAIN, font_scale, color::info, font_thickness);
 
         // Keypoints information
-        snprintf(str, sizeof(str) - 1, "Map matches: %zd; Map points: %d; KeyFrames: %d",
-            _slam_data.rel_map_points_W.size(), _slam_data.num_map_points, _slam_data.num_keyframes);
+        snprintf(str, sizeof(str) - 1, "Map matches: %d; Map points: %d; KeyFrames: %d",
+            _slam_data.num_map_matches, _slam_data.num_map_points, _slam_data.num_keyframes);
         cv::putText(_out_dst, str, cv::Point(5, nTextOffsetY * 3), cv::FONT_HERSHEY_PLAIN, font_scale, color::info, font_thickness);
 
         // Draw axes convention
@@ -1530,111 +1165,6 @@ void CImageDisplayUtils::draw_slam(cv::Mat& _out_dst,
         cv::putText(_out_dst, "Y", ptY, cv::FONT_HERSHEY_PLAIN, font_scale, color::y_axis, font_thickness);
     }
     
-    if (_slam_data.is_keyframe)
-        m_pSlamDispCache->insert(_slam_data.timestamp, _slam_data);
-}
-
-void CImageDisplayUtils::draw_slam_frame(cv::Mat& _out_dst, const CPinholeCameraSensorModel* _pCamSensorModel, const CycSlam& _slam_data)
-{
-    float disp_scale = 1;
-    if (_pCamSensorModel->width() < 400 || _pCamSensorModel->height() < 300)
-        disp_scale = 2;
-
-    char str[128];
-    
-    //_out_dst = cv::Mat(_frame->m_rImg.nRows, _frame->m_rImg.nCols, _frame->m_rImg.nType1, _frame->m_rImg.pData1).clone();
-    cv::resize(_out_dst, _out_dst, cv::Size(_out_dst.cols * disp_scale, _out_dst.rows * disp_scale));
-
-    // Reproject map points
-    CPose abs_cam_C = _pCamSensorModel->extrinsics_inv() * _slam_data.Absolute_Body_W * _pCamSensorModel->extrinsics();
-
-    CycPoints vxs_reproj;
-    //CProjectiveGeometry::project(m_pCamSensorModel, m_Absolute_Cam_C.transform(), m_pMap->m_MapPoints, vxs_reproj);
-    for (const auto& MP : _slam_data.rel_map_points_W)
-    {
-        CycVoxel vx_C = MP.first;
-        vx_C.pt3d = _slam_data.Absolute_Body_W.transform() * vx_C.pt3d;
-        vx_C.pt3d = _pCamSensorModel->extrinsics_inv().transform() * vx_C.pt3d;
-        vxs_reproj.emplace_back(CProjectiveGeometry::project(_pCamSensorModel, abs_cam_C.transform(), vx_C));
-    }
-
-    // Compute projection matrices (required for computing the depth)
-    Pmatrix P_cam = CProjectiveGeometry::KT2P(_pCamSensorModel->K(), CProjectiveGeometry::invertT(abs_cam_C.transform()));
-
-    // Reproject matched map points to 2D for visualization
-    for (size_t k = 0; k < _slam_data.rel_map_points_W.size(); ++k)
-    {
-        const CycVoxel* pMP = &_slam_data.rel_map_points_W[k].first;
-
-        cv::Point2f cv_pt_curr_reproj((vxs_reproj[k].pt2d.x() / _pCamSensorModel->width()) * _out_dst.cols,
-            (vxs_reproj[k].pt2d.y() / _pCamSensorModel->height()) * _out_dst.rows);
-
-        // Calculate depth in both projections
-        CycVoxel vx_C = *pMP;
-        vx_C.pt3d = _slam_data.Absolute_Body_W.transform() * vx_C.pt3d;
-        vx_C.pt3d = _pCamSensorModel->extrinsics_inv().transform() * vx_C.pt3d;
-        float depth_curr = CTriangulation::getDepth(vx_C, P_cam);
-
-        // Draw observation
-        cv::Point2f cv_pt2d_1(_slam_data.rel_map_points_W[k].second.pt2d.x() * _out_dst.cols, _slam_data.rel_map_points_W[k].second.pt2d.y() * _out_dst.rows);
-        cv::circle(_out_dst, cv_pt2d_1 * disp_scale, 1, color::orthogonal_projection, 6);
-
-        cv::line(_out_dst, cv_pt2d_1 * disp_scale, cv_pt_curr_reproj * disp_scale, color::green, 1);
-
-        // Draw map point reprojection
-        snprintf(str, sizeof(str) - 1, "%d", pMP->id);
-        if (depth_curr > 0.f)
-        {
-            cv::circle(_out_dst, cv_pt_curr_reproj * disp_scale, 7, color::reproj_pts_2d_pos_depth, 2);
-            cv::putText(_out_dst, str, cv_pt_curr_reproj * disp_scale, cv::FONT_HERSHEY_PLAIN, 0.95, color::blue, 1);
-        }
-        else
-        {
-            cv::circle(_out_dst, cv_pt_curr_reproj * disp_scale, 7, color::reproj_pts_2d_neg_depth, 2);
-            cv::putText(_out_dst, str, cv_pt_curr_reproj * disp_scale, cv::FONT_HERSHEY_PLAIN, 1.15, color::reproj_pts_2d_neg_depth, 2);
-        }
-
-        // Check if this is a new voxel added to the map
-        for (const auto& idx : _slam_data.latest_map_points)
-            if (pMP->id == idx)
-                cv::circle(_out_dst, cv_pt_curr_reproj * disp_scale, 10, color::black, 1);
-
-        // Draw reprojection error
-        //cv::line(_out_dst, cv_pt_curr, cv_pt_curr_reproj, color::reprojection, 1);
-    }
-
-    snprintf(str, sizeof(str) - 1, "Frame ID: %lld", static_cast<long long>(_slam_data.id));
-    cv::putText(_out_dst, str, cv::Point(5, 15), cv::FONT_HERSHEY_PLAIN, disp_scale, CV_RGB(255, 255, 255), 2);
-
-    double alpha = 0.85;
-    double beta = 0.28;
-    double gamma = 0.;
-    double font_scale = 1.3;
-    CyC_INT font_thickness = 2;
-    CyC_INT nTextOffsetY = _pCamSensorModel->height() / 11;
-    cv::Mat disp_rect_info = _out_dst(cv::Range(_out_dst.rows - CyC_INT(nTextOffsetY * 1.5), _out_dst.rows - 5), cv::Range(5, CyC_INT(nTextOffsetY * 4)));
-    cv::Mat black_rect = cv::Mat::zeros(disp_rect_info.rows, disp_rect_info.cols, CV_8UC3);
-    cv::addWeighted(black_rect, alpha, disp_rect_info, beta, gamma, disp_rect_info);
-
-    if (_slam_data.is_mapping)
-        cv::putText(_out_dst, "Mapping", cv::Point(15, _out_dst.rows - CyC_INT(nTextOffsetY / 1.5)), cv::FONT_HERSHEY_PLAIN, font_scale, color::red, font_thickness);
-    else
-        cv::putText(_out_dst, "Tracking", cv::Point(15, _out_dst.rows - CyC_INT(nTextOffsetY / 1.5)), cv::FONT_HERSHEY_PLAIN, font_scale, color::green, font_thickness);
-
-    ////// *** Draw correspondences ***
-    ////cv::Mat img_corresp;
-    ////cv::Mat img_corresp_prev = cv::Mat::zeros(_out_dst.rows, _out_dst.cols, CV_8UC3);
-    ////cv::Mat img_corresp_curr = cv::Mat::zeros(_out_dst.rows, _out_dst.cols, CV_8UC3);
-
-    ////// TODO: fix dummy inliers
-    ////CycPoints ransacInliers_prev, ransacInliers_curr;
-    ////CImageDisplayUtils::draw_correspondences(img_corresp_prev, img_corresp_curr, img_corresp, ransacInliers_prev, ransacInliers_curr, 2);
-
-    ////// Draw the sampled voxels used for calculating the scale factor, if any
-    //////drawScaleFactor(img_corresp, _pSensorModel, _relative_cam_pose_C, voxels_prev_C, voxels_curr_C, _scale_factor_samples_1, _scale_factor_samples_2);
-
-    ////// Stich correspondences image to the main display
-    ////cv::resize(img_corresp, img_corresp, cv::Size(img_corresp.cols / 3.f, img_corresp.rows / 3.f));
-    ////cv::Mat disp_rect_corresp = _out_dst(cv::Rect(0, _out_dst.rows - img_corresp.rows, img_corresp.cols, img_corresp.rows));
-    ////cv::addWeighted(img_corresp, alpha, disp_rect_corresp, beta, gamma, disp_rect_corresp);
+    if (_show_keyframes && _slam_data.is_keyframe)
+        m_pNavigationDispCache->insert(_slam_data.timestamp, _slam_data);
 }
