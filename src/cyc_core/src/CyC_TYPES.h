@@ -734,6 +734,7 @@ struct CycStateNavigation
 {
     CyC_TIME_UNIT   timestamp = -1;
     bool            is_keyframe = false;
+    bool            is_mapping = false;
     int             num_map_points = -1;
     int             num_map_matches = -1;
     int             num_keyframes = -1;
