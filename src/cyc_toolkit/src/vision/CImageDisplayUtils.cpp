@@ -1038,6 +1038,11 @@ void CImageDisplayUtils::draw_navigation_frame(cv::Mat& _out_dst, const CPinhole
     cv::Mat disp_rect_info = _out_dst(cv::Range(_out_dst.rows - CyC_INT(nTextOffsetY * 1.5), _out_dst.rows - 5), cv::Range(5, CyC_INT(nTextOffsetY * 4)));
     cv::Mat black_rect = cv::Mat::zeros(disp_rect_info.rows, disp_rect_info.cols, CV_8UC3);
     cv::addWeighted(black_rect, alpha, disp_rect_info, beta, gamma, disp_rect_info);
+    
+    if (_slam_data.is_mapping)
+        cv::putText(_out_dst, "Mapping", cv::Point(15, _out_dst.rows - CyC_INT(nTextOffsetY / 1.5)), cv::FONT_HERSHEY_PLAIN, font_scale, color::red, font_thickness);
+    else
+        cv::putText(_out_dst, "Tracking", cv::Point(15, _out_dst.rows - CyC_INT(nTextOffsetY / 1.5)), cv::FONT_HERSHEY_PLAIN, font_scale, color::green, font_thickness);
 }
 
 void CImageDisplayUtils::draw_navigation(cv::Mat& _out_dst,
