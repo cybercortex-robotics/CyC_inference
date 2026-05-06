@@ -107,10 +107,10 @@ void disable_raw_mode()
 {
 }
 
-//bool kbhit()
-//{
-//    return _kbhit();
-//}
+bool kbhit()
+{
+    return _kbhit() != 0;
+}
 
 int gc()
 {

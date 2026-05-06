@@ -35,8 +35,8 @@ bool CLidarSensorModel::loadSensorModel(const std::string& calibration_file)
         if (rootConfig.exists("range"))
         {
             const libconfig::Setting& range = rootConfig.lookup("range");
-            min_range_ = range[0];
-            max_range_ = range[1];
+            min_range_ = static_cast<float>(range[0]);
+            max_range_ = static_cast<float>(range[1]);
         }
         else
         {

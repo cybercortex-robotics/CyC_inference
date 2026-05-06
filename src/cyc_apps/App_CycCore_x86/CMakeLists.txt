@@ -34,6 +34,8 @@ target_link_libraries(App_CycCore PUBLIC
     Qt5::PrintSupport)
 
 if (MSVC)
+    target_compile_definitions(App_CycCore PRIVATE _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING)
+
 	file(GLOB OCTOMAP_LIBRARIES "${CMAKE_SOURCE_DIR}/3rdParty/octomap/${CyC_LIBS_BINARY_KEY}/lib/*.lib")
 	file(GLOB GLUT_LIBRARIES "${CMAKE_SOURCE_DIR}/3rdParty/glut-2.0.0.29/${CyC_LIBS_BINARY_KEY}/lib/*.lib")
     #link_directories(${CMAKE_SOURCE_DIR}/3rdParty/pthreads/${CyC_LIBS_BINARY_KEY}/lib)
@@ -74,9 +76,3 @@ else ()
         ${CMAKE_SOURCE_DIR}/bin/App_CycCore
         ${CMAKE_SOURCE_DIR}/bin/App_CycCoreTwin)
 endif ()
-
-add_custom_target(BUILD_APP_WITH_FILTERS
-    DEPENDS App_CycCore BUILD_ALL_FILTERS
-)
-
-

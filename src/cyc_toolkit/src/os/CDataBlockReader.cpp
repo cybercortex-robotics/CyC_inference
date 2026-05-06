@@ -188,7 +188,7 @@ bool CDataBlockReader::makeDatastream(const std::string& _db_path, const CyC_INT
     }
     else
     {
-        _out_datastream.imgs_col = std::distance(m_SyncedCsvReader.get_column_names().begin(), imgs_col_iterator);
+        _out_datastream.imgs_col = static_cast<CyC_INT>(std::distance(m_SyncedCsvReader.get_column_names().begin(), imgs_col_iterator));
         return true;
     }
 }
@@ -256,9 +256,9 @@ bool CDataBlockReader::readKeypts(const std::string& _line, const std::string& _
             {
                 CycPoint pt;
                 pt.id = row_pt.get<CyC_INT>(PT_ID);
-                pt.score = row_pt.get<CyC_INT>(PT_SCORE);
-                pt.pt2d.x() = row_pt.get<CyC_INT>(PT_X);
-                pt.pt2d.y() = row_pt.get<CyC_INT>(PT_Y);
+                pt.score = static_cast<float>(row_pt.get<CyC_INT>(PT_SCORE));
+                pt.pt2d.x() = static_cast<float>(row_pt.get<CyC_INT>(PT_X));
+                pt.pt2d.y() = static_cast<float>(row_pt.get<CyC_INT>(PT_Y));
                 pts.emplace_back(pt);
             }
         }

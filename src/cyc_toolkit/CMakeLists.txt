@@ -4,10 +4,6 @@
 # CUDA dependency
 find_package(CUDAToolkit)
 
-if (NOT MSVC)
-    find_package(CURL REQUIRED)
-endif ()
-
 # Unit Testing
 if (Build_UnitTests)
     add_subdirectory(src/tu)
@@ -39,8 +35,6 @@ add_library(CycToolkit ${LIB_TYPE}
     src/os/CTimer.cpp
     src/os/CMacUtils.h
     src/os/CMacUtils.cpp
-    src/os/CFtpUtils.h
-    src/os/CFtpUtils.cpp
     src/os/CDataBlockReader.h
     src/os/CDataBlockReader.cpp
     src/os/CComputeInspect.h
@@ -162,9 +156,12 @@ target_link_libraries(CycToolkit
             octomath)
 
 if (MSVC)
-    target_link_libraries(CycToolkit PRIVATE pdh libcurl_shared)
-else ()
-    target_link_libraries(CycToolkit PRIVATE ${CURL_LIBRARIES})
+    target_link_libraries(CycToolkit PRIVATE pdh)
+    # Silence spdlog-1.4.2 / bundled fmt using deprecated stdext::checked_array_iterator (STL4043)
+    target_compile_definitions(CycToolkit PRIVATE
+        _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
+        _CRT_SECURE_NO_WARNINGS   # fopen, ctime, sprintf used intentionally
+    )
 endif ()
 
 if(CUDA_FOUND)

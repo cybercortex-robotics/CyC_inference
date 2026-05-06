@@ -137,7 +137,7 @@ size_t CCcrQTPlotSegment::get_name_width()
 void CCcrQTPlotSegment::align_signals(size_t width)
 {
     size_t segment_width = m_segment_name.geometry().width();
-    m_segment_name.setContentsMargins(10, 0, width - segment_width, 0);
+    m_segment_name.setContentsMargins(10, 0, static_cast<int>(width - segment_width), 0);
 }
 
 void CCcrQTPlotSegment::create_signal_names_layout(const std::vector<std::string>& sigs)

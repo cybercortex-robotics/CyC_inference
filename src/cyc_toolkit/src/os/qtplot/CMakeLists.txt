@@ -23,6 +23,10 @@ qt5_wrap_cpp(LIB_SOURCES
     qtimageapp.h)
 add_library(${QTPLOT_LIB} ${LIB_TYPE} ${LIB_SOURCES})
 
+if (MSVC)
+    target_compile_definitions(${QTPLOT_LIB} PRIVATE _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING)
+endif ()
+
 target_include_directories(${QTPLOT_LIB} 
     PUBLIC 
         ${CMAKE_SOURCE_DIR}/src/cyc_toolkit/src

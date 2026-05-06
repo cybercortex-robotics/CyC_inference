@@ -152,7 +152,12 @@ set (CyC_LibConfig_PATH ${CyC_LibConfig_PATH} PARENT_SCOPE)
 set (CyC_MsgPack_PATH ${CyC_THIRD_PARTY}/msgpack/include)
 if (NOT EXISTS ${CyC_MsgPack_PATH})
     message(STATUS "No valid MsgPack library version found in the 3rdParty folder. Searching for a system level installation.")
-    find_package(msgpack REQUIRED)
+    find_package(msgpack QUIET)
+    if(NOT msgpack_FOUND)
+        find_package(msgpack-cxx REQUIRED)
+        add_library(msgpack ALIAS msgpack-cxx) 
+        set(msgpack_FOUND TRUE)
+    endif()
 endif()
 set (CyC_MsgPack_PATH ${CyC_MsgPack_PATH} PARENT_SCOPE)
 
@@ -194,10 +199,8 @@ set(CyC_THIRD_PARTY_INCLUDE_DIRECTORIES
     ${CyC_Spdlog_PATH}
     ${CyC_LibConfig_PATH}
     ${CyC_MsgPack_PATH}
-    ${CyC_THIRD_PARTY}/libcurl/include
     ${CyC_THIRD_PARTY}/openh264/include
     ${CyC_THIRD_PARTY}/octomap/include
-    ${CyC_THIRD_PARTY}/enet-1.3.14/include
     ${CyC_THIRD_PARTY}/ffmpeg/include
     ${CyC_THIRD_PARTY}/nlohmann-json/include
     ${CyC_THIRD_PARTY}/cvplot-0.0.3/include
@@ -213,9 +216,7 @@ set(CyC_THIRD_PARTY_INCLUDE_DIRECTORIES ${CyC_THIRD_PARTY_INCLUDE_DIRECTORIES} P
 # 3rdParty library includes
 set(CyC_THIRD_PARTY_LIBRARY_DIRECTORIES 
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/${CyC_LIBS_BINARY_KEY} # CyberCortex.AI library includes
-    ${CyC_THIRD_PARTY}/enet-1.3.14/${CyC_LIBS_BINARY_KEY}/lib
     ${CyC_THIRD_PARTY}/libconfig/${CyC_LIBS_BINARY_KEY}/lib
-    ${CyC_THIRD_PARTY}/libcurl/${CyC_LIBS_BINARY_KEY}/lib
     ${CyC_THIRD_PARTY}/opencv/${CyC_OPENCV_VERSION}/${CyC_LIBS_BINARY_KEY}-${CyC_CUDA_VERSION_ID}/lib
     ${CyC_THIRD_PARTY}/libtorch/${CyC_TORCH_VERSION}/${CyC_LIBS_BINARY_KEY}-${CyC_CUDA_VERSION_ID}/lib
     ${CyC_THIRD_PARTY}/onnxruntime/${CyC_ONNXRUNTIME_VERSION}/${CyC_LIBS_BINARY_KEY}-${CyC_CUDA_VERSION_ID}/lib

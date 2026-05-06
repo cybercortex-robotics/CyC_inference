@@ -155,9 +155,9 @@ int CFileUtils::getLatestFolderAsInt(const std::string& _root_path)
             return std::stoi(latestFolderName);
 
     }
-	catch (const std::exception& e)
+	catch (const std::exception&)
 	{
-        return -1; 
+        return -1;
     }
 
     return -1;

@@ -18,7 +18,7 @@ bool CCycDatablock::insertEntry(CycDatablockEntry* pEntry)
 {
 	bool bReturn(true);
 
-	DatablockEntryKey key{ pEntry->Key.nCoreID, pEntry->Key.nFilterID };
+	DatablockEntryKey key{ static_cast<CyC_UINT>(pEntry->Key.nCoreID), static_cast<CyC_UINT>(pEntry->Key.nFilterID) };
 	m_DatablockMap[key] = pEntry;
     
 	m_DatablockDeque.push_back(pEntry);
@@ -43,7 +43,7 @@ bool CCycDatablock::readEntry(CycDatablockKey key, CycDatablockEntry*& pEntry)
 {
 	bool bReturn(false);
     
-	DatablockEntryKey PairingKey{ key.nCoreID, key.nFilterID };
+	DatablockEntryKey PairingKey{ static_cast<CyC_UINT>(key.nCoreID), static_cast<CyC_UINT>(key.nFilterID) };
 
 	if (m_DatablockMap.count(PairingKey))
 	{
@@ -58,7 +58,7 @@ bool CCycDatablock::deleteEntry(CycDatablockKey key)
 {
 	bool bReturn(false);
 
-	DatablockEntryKey PairingKey{ key.nCoreID, key.nFilterID };
+	DatablockEntryKey PairingKey{ static_cast<CyC_UINT>(key.nCoreID), static_cast<CyC_UINT>(key.nFilterID) };
 
 	// Search the filter in the Datablock
 	if (m_DatablockMap.count(PairingKey) != 0)
@@ -218,7 +218,7 @@ CycDatablockEntriesInfo CCycDatablock::getDatablock() const
         CyC_DATA_TYPE outType = m_DatablockDeque[i]->pCycFilter->getOutputDataType();
         CyC_TIME_UNIT samplingTime = m_DatablockDeque[i]->pCycFilter->getSamplingTime();
 
-        Datablock.emplace_back(filterKey, filterType, outType, enabled, running, samplingTime);
+        Datablock.emplace_back(filterKey, filterType, outType, enabled, running, static_cast<double>(samplingTime));
     }
 
     return Datablock;

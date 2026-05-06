@@ -8,7 +8,9 @@
 #include <vector>
 #include <algorithm>
 #include <iterator>
+#pragma warning(disable : 4275)
 #include <libconfig.h++>
+#pragma warning(default : 4275)
 #include <typeinfo>
 #include <map>
 #include "os/CyC_FILESYSTEM.h"
@@ -146,13 +148,14 @@ static bool check_filter_parameters(
 		{
 			fs::path path = fs::path(CConfigParameters::instance().getBasePath()) / fs::path(param.second);
 
-			if ((param.second.substr(0, 6) != "wss://") &&	// ignore signaling uri
-				(param.second.substr(0, 5) != "ws://") &&   // ignore signaling uri
-				(param.second.substr(0, 6) != "ftp://") &&	// ignore ftp
-				(param.second.substr(0, 7) != "sftp://") &&	// ignore sftp
-				(param.second.substr(0, 7) != "http://") &&	// ignore http
-				(param.second.substr(0, 8) != "https://") &&// ignore https
-				(param.second.substr(0, 8) != "/dev/tty"))	// ignore tty port (used in Linux)
+			if ((param.second.substr(0, 6) != "wss://") &&		// ignore signaling uri
+				(param.second.substr(0, 5) != "ws://") &&		// ignore signaling uri
+				(param.second.substr(0, 6) != "ftp://") &&		// ignore ftp
+				(param.second.substr(0, 7) != "sftp://") &&		// ignore sftp
+				(param.second.substr(0, 7) != "http://") &&		// ignore http
+				(param.second.substr(0, 8) != "https://") &&	// ignore https
+				(param.second.substr(0, 8) != "/dev/tty") &&	// ignore tty port (used in Linux)
+				(param.second.substr(0, 11) != "/dev/serial"))	// ignore serial port (used in Linux)
 			{
 				if (!exists(path))
 				{

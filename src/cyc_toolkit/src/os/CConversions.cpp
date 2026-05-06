@@ -209,9 +209,9 @@ CyC_DATA_TYPE CConversions::String2DataType(const std::string& sDataType)
 	{
 		nDataType = CyC_LANES_MODEL;
 	}
-	else if (strcmp(sDataType.c_str(), "CyC_SLAM") == 0)
+	else if (strcmp(sDataType.c_str(), "CyC_NAV") == 0)
 	{
-		nDataType = CyC_SLAM;
+		nDataType = CyC_NAV;
 	}
 	else if (strcmp(sDataType.c_str(), "CyC_DNN_OUTPUT") == 0)
 	{

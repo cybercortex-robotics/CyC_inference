@@ -326,7 +326,7 @@ bool CModelLegged::isMovingBody(const Eigen::VectorXf& u) const
 
     Eigen::VectorXf norms = (currentAngles - inputAngles).rowwise().norm();
     //const bool anyZero = (norms.array() < 1e-6).any();
-    const bool allNonZero = (norms.array() > 1e-3).all();
+    const bool allNonZero = (norms.array() > 1e-3f).all();
   
     return allNonZero;
 }

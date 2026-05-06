@@ -137,8 +137,8 @@ Eigen::Vector3f Iqdd_r(const Eigen::Vector3f& q, const Eigen::Vector3f& qd, cons
     float t17 = sin(t16);
     float t19 = sin(t18);
     float t21 = qd2 * t14 * 2.640997e-3f;
-    float t22 = qd3 * t14 * 2.640997e-3;
-    float t20 = qd1 * t19 * 3.328025e-3;
+    float t22 = qd3 * t14 * 2.640997e-3f;
+    float t20 = qd1 * t19 * 3.328025e-3f;
 
     float et1 = qd3 * t7 * 3.32e-3f + qd2 * t12 * 4.825e-6f + qd2 * t13 * 2.3385137e-2f + qd2 * t17 * 6.64e-3f + qd3 * t17 * 3.32e-3f + qd2 * t19 * 3.328025e-3f;
     float et2 = qd3 * t19 * 3.328025e-3f;
@@ -293,8 +293,8 @@ Eigen::Vector3f Iqdd_l(const Eigen::Vector3f& q, const Eigen::Vector3f& qd, cons
     float t17 = sin(t16);
     float t19 = sin(t18);
     float t21 = qd2 * t14 * 2.923323e-3f;
-    float t22 = qd3 * t14 * 2.923323e-3;
-    float t20 = qd1 * t19 * 3.328025e-3;
+    float t22 = qd3 * t14 * 2.923323e-3f;
+    float t20 = qd1 * t19 * 3.328025e-3f;
 
     float et1 = qd2 * (-t20 + t21 + t22 + qd2 * t3 * 1.9416171e-2f + qd2 * t6 * 2.2448e-5f + qd1 * t12 * 4.825e-6f - qd1 * t13 * 2.3385137e-2f - qd1 * t17 * 6.64e-3f);
     float et2 = -1.0f;
