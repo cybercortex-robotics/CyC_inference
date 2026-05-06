@@ -50,6 +50,21 @@ struct DroneModel : public StateSpaceModel<NO_DRONE_MODEL_STATES, NO_DRONE_MODEL
                 configFile.lookupValue("Cdy", m_Cdy);
                 configFile.lookupValue("Cdz", m_Cdz);
 
+                configFile.lookupValue("Kpx", m_Kpx);
+                configFile.lookupValue("Kpy", m_Kpy);
+                configFile.lookupValue("Kdx", m_Kdx);
+                configFile.lookupValue("Kdy", m_Kdy);
+                configFile.lookupValue("Kix", m_Kix);
+                configFile.lookupValue("Kiy", m_Kiy);
+
+                configFile.lookupValue("Kpz", m_Kpz);
+                configFile.lookupValue("Kdz", m_Kdz);
+                configFile.lookupValue("Kiz", m_Kiz);
+
+                configFile.lookupValue("Kp_yaw", m_Kp_yaw);
+                configFile.lookupValue("Kd_yaw", m_Kd_yaw);
+                configFile.lookupValue("Ki_yaw", m_Ki_yaw);
+
                 init();
             }
             else
@@ -75,6 +90,25 @@ struct DroneModel : public StateSpaceModel<NO_DRONE_MODEL_STATES, NO_DRONE_MODEL
         float m_Cdx = 1.f;
         float m_Cdy = 1.f;
         float m_Cdz = 1.f;
+
+        float m_Kpx = 0.f;
+        float m_Kpy = 0.f;
+
+        float m_Kdx = 0.f;
+        float m_Kdy = 0.f;
+
+        float m_Kix = 0.f;
+        float m_Kiy = 0.f;
+
+        // Altitude Gains (Needs to be higher to fight gravity effectively)
+        float m_Kpz = 0.f;
+        float m_Kdz = 0.f;
+        float m_Kiz = 0.f;
+
+        // Yaw Gains
+        float m_Kp_yaw = 0.f;
+        float m_Kd_yaw = 0.f;
+        float m_Ki_yaw = 0.f;
 };
 
 #endif /* CSTATESPACEMODELDRONE_H_ */
