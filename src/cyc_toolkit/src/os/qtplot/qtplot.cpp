@@ -67,6 +67,8 @@ void CCycQTSkeleton::init()
 
             initialized_promise.set_value();
             m_qtapp->exec();
+
+            m_qtapp.reset(nullptr);
         });
 
         initialized_future.wait();
@@ -76,37 +78,43 @@ void CCycQTSkeleton::init()
 
 void CCycQTSkeleton::destroy()
 {
-    if (!m_qt_initialized.load())
+    if (!m_qt_initialized.exchange(false))
         return;
 
-    m_qtapp->exit(0);
+    {
+        std::scoped_lock lock{m_plotapp_mutex};
+        for (auto& app : m_plotapps) {
+            if (app)
+                emit app->should_stop();
+        }
+        m_plotapps.clear();
+    }
+
+    {
+        std::scoped_lock lock{m_displayapp_mutex};
+        for (auto& disp : m_display_apps) {
+            if (disp && disp->app)
+                emit disp->app->should_stop();
+        }
+        m_display_apps.clear();
+    }
+
+    if (auto* app = QCoreApplication::instance()) {
+        QMetaObject::invokeMethod(
+            app,
+            [] {
+                QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+                QCoreApplication::processEvents();
+                QCoreApplication::quit();
+            },
+            Qt::QueuedConnection
+        );
+    }
+
     if (m_qtplot_thread.joinable())
     {
         m_qtplot_thread.join();
     }
-
-    for (auto& app : m_plotapps)
-    {
-        QObject::disconnect(app.get(), &CCcrQTPlotApp::should_start, app.get(), &CCcrQTPlotApp::start);
-        QObject::disconnect(app.get(), &CCcrQTPlotApp::should_plot_signals, app.get(), &CCcrQTPlotApp::plot_signals);
-        QObject::disconnect(app.get(), &CCcrQTPlotApp::should_stop, app.get(), &CCcrQTPlotApp::stop);
-    }
-
-    m_plotapps.clear();
-
-    std::scoped_lock lock{ m_displayapp_mutex };
-    for (auto& _disp_app : m_display_apps)
-    {
-        CCycQTImageApp* disp_app = _disp_app->app.get();
-        QObject::disconnect(disp_app, &CCycQTImageApp::should_start, disp_app, &CCycQTImageApp::start);
-        QObject::disconnect(disp_app, &CCycQTImageApp::should_set_rgba_pixels, disp_app, &CCycQTImageApp::set_rgba_pixels);
-        QObject::disconnect(disp_app, &CCycQTImageApp::should_stop, disp_app, &CCycQTImageApp::stop);
-    }
-
-    m_display_apps.clear();
-
-    m_qtapp.reset(nullptr);
-    m_qt_initialized = false;
 }
 
 //void CCycQTSkeleton::assert_running()

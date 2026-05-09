@@ -23,6 +23,8 @@
 #include "os/qtplot/qtplot.h"
 #include "os/CSingletonRegistry.h"
 
+#include <csignal>
+
 #ifdef WIN32
 // for timeBeginPeriod
 #include <timeapi.h>
@@ -51,7 +53,6 @@ void showTextualOutput(CCycFilterBase* pFilter);
 
 void startDatablockPlot(CCycCore* core) { core->startDatablockPlot(); };
 void stopDatablockPlot(CCycCore* core) { core->stopDatablockPlot(); };
-
 
 void showUsage()
 {
@@ -92,10 +93,20 @@ bool can_start_plots(CCycCore& core)
 #endif // QTPLOT_HAS_SKELETON
 }
 
+namespace {
+std::atomic<bool> appRunning = true;
+
+void handle_sigint(int sig) {
+    appRunning = false;
+}
+
+}
+
 CyC_INT main(CyC_INT argc, char** argv)
 {
     // Use "." as decimal separator
     std::setlocale(LC_NUMERIC, "C");
+    signal(SIGINT, handle_sigint);
 
 #ifdef WIN32
     // Set resolution of 1ms for the interrupt timer
@@ -278,10 +289,7 @@ CyC_INT main(CyC_INT argc, char** argv)
         qt_image = std::make_unique<CCycQTImage>(qt);
     }
 
-    // Uncomment for command line debug
-    //while (true) {}
-
-    while ((cmd_stream.tellg() > 0) || (ch != 27)) // 27 = ESC
+    while (((cmd_stream.tellg() > 0) || (ch != 27)) && appRunning) // 27 = ESC
     {
         console::cursor_guard guard;
 
@@ -381,6 +389,7 @@ CyC_INT main(CyC_INT argc, char** argv)
         }
     }
 
+
     console::disable_raw_mode();
     console::restore();
 
@@ -396,8 +405,6 @@ CyC_INT main(CyC_INT argc, char** argv)
             viz_pair.second.join();
         }
     }
-
-    std::this_thread::sleep_for(std::chrono::hours(2));
 
     return EXIT_SUCCESS;
 }

@@ -6,6 +6,8 @@
 
 #include "CSingletonBase.h"
 #include <unordered_map>
+#include <string>
+#include <memory>
 
 class CSingletonRegistry
 {

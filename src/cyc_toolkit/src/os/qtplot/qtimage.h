@@ -19,5 +19,5 @@ public:
     int get_last_key(const std::string& title);
 
 private:
-    std::shared_ptr<CCycQTSkeleton> m_CcrQTSkeleton = nullptr;
+    CCycQTSkeleton* m_CcrQTSkeleton = nullptr;
 };

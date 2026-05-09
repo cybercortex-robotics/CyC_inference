@@ -9,6 +9,7 @@
 #include "CCycCache.h"
 #include "CConfigParameters.h"
 #include <os/CTimer.h>
+#include <memory>
 
 class CCycFilterBase;
 
@@ -38,7 +39,11 @@ class CCycFilterBase
 public:
     explicit CCycFilterBase(CycDatablockKey key);
 	explicit CCycFilterBase(const ConfigFilterParameters& params);
-	virtual ~CCycFilterBase();
+    CCycFilterBase(CCycFilterBase const&) = delete;
+    CCycFilterBase(CCycFilterBase&&) = delete;
+    CCycFilterBase& operator=(CCycFilterBase const&) = delete;
+    CCycFilterBase& operator=(CCycFilterBase&&) = delete;
+	virtual ~CCycFilterBase() = default;
 
 	CycDatablockKey     getFilterKey();
     void                setFilterKey(const CycDatablockKey& f_key);
@@ -68,7 +73,7 @@ public:
     virtual bool    stop() final;
 
     // Base sensor model, if the derived filter is a sensor
-    CBaseSensorModel*   getSensorModel();
+    CBaseSensorModel* getSensorModel();
 
     template <typename DataType_t>
     void updateData(const DataType_t& data, 
@@ -135,7 +140,7 @@ protected:
     CyC_ATOMIC_BOOL     m_bIsEnabled;
     CyC_ATOMIC_BOOL     m_bIsProcessing;
 
-    CBaseSensorModel*   m_pSensorModel = nullptr;
+    std::unique_ptr<CBaseSensorModel> m_pSensorModel;
 
 private:
     CyC_FILTER_TYPE         m_FilterType;

@@ -62,12 +62,6 @@ CCycFilterBase::CCycFilterBase(const ConfigFilterParameters& params) :
     }
 }
 
-CCycFilterBase::~CCycFilterBase()
-{
-    if (m_pSensorModel != nullptr)
-        delete m_pSensorModel;
-}
-
 CycDatablockKey CCycFilterBase::getFilterKey()
 {
     return m_FilterKey;
@@ -128,7 +122,7 @@ std::string CCycFilterBase::getGlobalBasePath()
 
 CBaseSensorModel* CCycFilterBase::getSensorModel()
 {
-    return m_pSensorModel;
+    return m_pSensorModel.get();
 }
 
 CyC_TIME_UNIT CCycFilterBase::getDt()
@@ -266,9 +260,10 @@ void CCycFilterBase::run()
         // Call te process function
         if (!process())
             m_tTimestampStop = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-        
+
         // Elapsed time
         CyC_TIME_UNIT elapsed_time = m_tTimestampStop - m_tTimestampStart;
+        if (elapsed_time < 0) elapsed_time = 0;
 
         // Sleep acording to given dt
         CyC_TIME_UNIT sleep_time = m_dt - elapsed_time;

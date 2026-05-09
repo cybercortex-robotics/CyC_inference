@@ -92,23 +92,28 @@ bool CCycDatablock::clearDatablock()
 	bool bReturn(true);
 
 	// Parse and delete all Datablock entries in reversed order of entry
-	CyC_INT i = static_cast<CyC_INT>(m_DatablockDeque.size()) - 1;
+    for (auto it = m_DatablockDeque.rbegin(); it != m_DatablockDeque.rend(); it++)
+    {
+        auto entry = *it;
+        std::cout << "Stopping " << entry->pCycFilter->getFilterName() << "..." << std::endl;
 
-	while (i >= 0)
-	{
 		// Stop the filter
-		if (m_DatablockDeque[i]->pCycFilter->isRunning())
-			m_DatablockDeque[i]->pCycFilter->stop();
+        if (entry->pCycFilter->isRunning())
+			entry->pCycFilter->stop();
 
+        std::cout << "Disabling " << entry->pCycFilter->getFilterName() << "..." << std::endl;
 		// Disable the filter
-		if (m_DatablockDeque[i]->pCycFilter->isEnabled())
-			m_DatablockDeque[i]->pCycFilter->disable();
+		if (entry->pCycFilter->isEnabled())
+			entry->pCycFilter->disable();
+    }
 
-		delete m_DatablockDeque[i]->pCycFilter;
-		delete m_DatablockDeque[i];
+    for (auto it = m_DatablockDeque.rbegin(); it != m_DatablockDeque.rend(); it++)
+    {
+        auto entry = *it;
 
-		--i;
-	}
+        delete entry->pCycFilter;
+		delete entry;
+    }
 
 	// Clear the Datablock deque
 	m_DatablockDeque.clear();
