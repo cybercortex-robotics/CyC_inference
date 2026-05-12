@@ -140,7 +140,7 @@ protected:
     CyC_ATOMIC_BOOL     m_bIsEnabled;
     CyC_ATOMIC_BOOL     m_bIsProcessing;
 
-    std::unique_ptr<CBaseSensorModel> m_pSensorModel;
+    std::shared_ptr<CBaseSensorModel> m_pSensorModel;
 
 private:
     CyC_FILTER_TYPE         m_FilterType;
