@@ -55,6 +55,10 @@ target_link_libraries(CycCore
         ${CyC_OPENCV_WORLD})
 
 if (MSVC)
+    target_compile_definitions(CycCore
+        PUBLIC
+            _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING)
+
     target_link_libraries(CycCore
         PUBLIC
             pdh
