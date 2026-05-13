@@ -339,13 +339,13 @@ bool CHddStorage::readDatablockSynced()
         return false;
     }
 
-    csv_Datablock_descriptor.select_cols("vision_core_id", "filter_id");
+    csv_Datablock_descriptor.select_cols("core_id", "filter_id");
     std::vector<std::pair<CyC_INT, CyC_INT>> available_filter_datastreams;
 
-    CyC_INT vision_core_id, filter_id;
-    while (csv_Datablock_descriptor.read_row(vision_core_id, filter_id))
+    CyC_INT core_id, filter_id;
+    while (csv_Datablock_descriptor.read_row(core_id, filter_id))
     {
-        available_filter_datastreams.emplace_back(vision_core_id, filter_id);
+        available_filter_datastreams.emplace_back(core_id, filter_id);
     }
 
     csv::reader synced_csv_reader;
