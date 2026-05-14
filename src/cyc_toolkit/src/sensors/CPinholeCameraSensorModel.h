@@ -62,10 +62,6 @@ public:
     inline float                    b() const                   { return b_; };
 
     void            undistortImage(const cv::Mat& raw, cv::Mat& rectified);
-    Eigen::Vector2f undistort(const Eigen::Vector2f& _pt) const;
-    CycPoint        undistort(const CycPoint& _pt) const;
-    void            undistort(const std::vector<Eigen::Vector2f>& _pts_dist, std::vector<Eigen::Vector2f>& _pts_undist) const;
-    void            undistort(const CycPoints& _pts_dist, CycPoints& _pts_undist) const;
     Eigen::Vector2f distort(const Eigen::Vector2f& _pt) const;
     void            distort(const std::vector<Eigen::Vector2f>& _pts_undist, std::vector<Eigen::Vector2f>& _pts_dist) const;
 

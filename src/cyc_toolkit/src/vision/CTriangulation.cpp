@@ -10,30 +10,30 @@ CTriangulation::CTriangulation()
 CycVoxel CTriangulation::TriangulatePoint(const CPinholeCameraSensorModel* _pSensorModel, const CycPoint& _pt1, const CycPoint& _pt2, const Eigen::Matrix4f& _cam_pose_1, const Eigen::Matrix4f& _cam_pose_2)
 {
     // Undistort points
-    CycPoint pt1_undist = _pSensorModel->undistort(_pt1);
-    CycPoint pt2_undist = _pSensorModel->undistort(_pt2);
+    const Eigen::Vector2f pt1_undist = CProjectiveGeometry::undistort(_pSensorModel, _pt1.pt2d);
+    const Eigen::Vector2f pt2_undist = CProjectiveGeometry::undistort(_pSensorModel, _pt2.pt2d);
 
     Eigen::Matrix4f A;
 
-    A(0, 0) = pt1_undist.pt2d.x() * _cam_pose_1(2, 0) - _cam_pose_1(0, 0);
-    A(0, 1) = pt1_undist.pt2d.x() * _cam_pose_1(2, 1) - _cam_pose_1(0, 1);
-    A(0, 2) = pt1_undist.pt2d.x() * _cam_pose_1(2, 2) - _cam_pose_1(0, 2);
-    A(0, 3) = pt1_undist.pt2d.x() * _cam_pose_1(2, 3) - _cam_pose_1(0, 3);
+    A(0, 0) = pt1_undist.x() * _cam_pose_1(2, 0) - _cam_pose_1(0, 0);
+    A(0, 1) = pt1_undist.x() * _cam_pose_1(2, 1) - _cam_pose_1(0, 1);
+    A(0, 2) = pt1_undist.x() * _cam_pose_1(2, 2) - _cam_pose_1(0, 2);
+    A(0, 3) = pt1_undist.x() * _cam_pose_1(2, 3) - _cam_pose_1(0, 3);
 
-    A(1, 0) = pt1_undist.pt2d.y() * _cam_pose_1(2, 0) - _cam_pose_1(1, 0);
-    A(1, 1) = pt1_undist.pt2d.y() * _cam_pose_1(2, 1) - _cam_pose_1(1, 1);
-    A(1, 2) = pt1_undist.pt2d.y() * _cam_pose_1(2, 2) - _cam_pose_1(1, 2);
-    A(1, 3) = pt1_undist.pt2d.y() * _cam_pose_1(2, 3) - _cam_pose_1(1, 3);
+    A(1, 0) = pt1_undist.y() * _cam_pose_1(2, 0) - _cam_pose_1(1, 0);
+    A(1, 1) = pt1_undist.y() * _cam_pose_1(2, 1) - _cam_pose_1(1, 1);
+    A(1, 2) = pt1_undist.y() * _cam_pose_1(2, 2) - _cam_pose_1(1, 2);
+    A(1, 3) = pt1_undist.y() * _cam_pose_1(2, 3) - _cam_pose_1(1, 3);
      
-    A(2, 0) = pt2_undist.pt2d.x() * _cam_pose_2(2, 0) - _cam_pose_2(0, 0);
-    A(2, 1) = pt2_undist.pt2d.x() * _cam_pose_2(2, 1) - _cam_pose_2(0, 1);
-    A(2, 2) = pt2_undist.pt2d.x() * _cam_pose_2(2, 2) - _cam_pose_2(0, 2);
-    A(2, 3) = pt2_undist.pt2d.x() * _cam_pose_2(2, 3) - _cam_pose_2(0, 3);
+    A(2, 0) = pt2_undist.x() * _cam_pose_2(2, 0) - _cam_pose_2(0, 0);
+    A(2, 1) = pt2_undist.x() * _cam_pose_2(2, 1) - _cam_pose_2(0, 1);
+    A(2, 2) = pt2_undist.x() * _cam_pose_2(2, 2) - _cam_pose_2(0, 2);
+    A(2, 3) = pt2_undist.x() * _cam_pose_2(2, 3) - _cam_pose_2(0, 3);
 
-    A(3, 0) = pt2_undist.pt2d.y() * _cam_pose_2(2, 0) - _cam_pose_2(1, 0);
-    A(3, 1) = pt2_undist.pt2d.y() * _cam_pose_2(2, 1) - _cam_pose_2(1, 1);
-    A(3, 2) = pt2_undist.pt2d.y() * _cam_pose_2(2, 2) - _cam_pose_2(1, 2);
-    A(3, 3) = pt2_undist.pt2d.y() * _cam_pose_2(2, 3) - _cam_pose_2(1, 3);
+    A(3, 0) = pt2_undist.y() * _cam_pose_2(2, 0) - _cam_pose_2(1, 0);
+    A(3, 1) = pt2_undist.y() * _cam_pose_2(2, 1) - _cam_pose_2(1, 1);
+    A(3, 2) = pt2_undist.y() * _cam_pose_2(2, 2) - _cam_pose_2(1, 2);
+    A(3, 3) = pt2_undist.y() * _cam_pose_2(2, 3) - _cam_pose_2(1, 3);
 
     Eigen::JacobiSVD<Eigen::Matrix4f> svd(A, Eigen::ComputeFullV);
 

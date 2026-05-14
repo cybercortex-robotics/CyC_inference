@@ -2,6 +2,7 @@
 // Author: Sorin Mihai Grigorescu
 
 #include "CPinholeCameraSensorModel.h"
+#include "vision/CProjectiveGeometry.h"
 
 CPinholeCameraSensorModel::CPinholeCameraSensorModel(const std::string& calibration_file, const bool& _is_right_camera) :
     CBaseSensorModel(calibration_file),
@@ -216,50 +217,6 @@ void CPinholeCameraSensorModel::undistortImage(const cv::Mat& raw, cv::Mat& rect
         rectified = raw.clone();
 }
 
-Eigen::Vector2f CPinholeCameraSensorModel::undistort(const Eigen::Vector2f& px) const
-{
-    Eigen::Vector2f pt{
-        (px[0] - cx_) / fx_px_,
-        (px[1] - cy_) / fy_px_
-    };
-
-    if (distortion_)
-    {
-        float x0 = pt.x();
-        float y0 = pt.y();
-        for (CyC_INT j = 0; j < 3; j++)
-        {
-            float r2 = pt.x() * pt.x() + pt.y() * pt.y();
-            float k_inv = 1 / (1 + d_[0] * r2 + d_[1] * r2 * r2 + d_[4] * r2 * r2 * r2);
-            float delta_x = 2 * d_[2] * pt.x() * pt.y() + d_[3] * (r2 + 2 * pt.x() * pt.x());
-            float delta_y = d_[2] * (r2 + 2 * pt.y() * pt.y()) + 2 * d_[3] * pt.x() * pt.y();
-            pt.x() = (x0 - delta_x) * k_inv;
-            pt.y() = (y0 - delta_y) * k_inv;
-        }
-    }
-
-    return pt;
-}
-
-CycPoint CPinholeCameraSensorModel::undistort(const CycPoint& _pt) const
-{
-    return CycPoint{ undistort(_pt.pt2d), _pt.depth, _pt.id, _pt.score, _pt.descriptor, _pt.angle, _pt.key};
-}
-
-void CPinholeCameraSensorModel::undistort(const std::vector<Eigen::Vector2f>& _pts_dist, std::vector<Eigen::Vector2f>& _pts_undist) const
-{
-    _pts_undist.clear();
-    for (size_t i = 0; i < _pts_dist.size(); ++i)
-        _pts_undist.emplace_back(this->undistort(_pts_dist[i]));
-}
-
-void CPinholeCameraSensorModel::undistort(const CycPoints& _pts_dist, CycPoints& _pts_undist) const
-{
-    _pts_undist.clear();
-    for (size_t i = 0; i < _pts_dist.size(); ++i)
-        _pts_undist.emplace_back(CycPoint(this->undistort(_pts_dist[i].pt2d), _pts_dist[i].depth, _pts_dist[i].id, _pts_dist[i].score, _pts_dist[i].descriptor, _pts_dist[i].angle, _pts_dist[i].key));
-}
-
 Eigen::Vector2f CPinholeCameraSensorModel::distort(const Eigen::Vector2f& px) const
 {
     return Eigen::Vector2f{
@@ -277,7 +234,10 @@ void CPinholeCameraSensorModel::distort(const std::vector<Eigen::Vector2f>& _pts
 
 Eigen::Vector3f CPinholeCameraSensorModel::normalize(const Eigen::Vector3f& _px) const
 {
-    return K_inv_ * _px;
+    //return K_inv_ * _px;
+    Eigen::Vector3f norm = K_inv_ * _px; // distorted normalized
+    Eigen::Vector2f undist = CProjectiveGeometry::undistort(this, norm.head<2>());
+    return { undist.x(), undist.y(), 1.f };
 }
 
 Eigen::Vector3f CPinholeCameraSensorModel::normalize(const Eigen::Vector2f& _px) const 
@@ -291,7 +251,8 @@ Eigen::Vector3f CPinholeCameraSensorModel::unnormalize(const Eigen::Vector3f& _p
     Eigen::Vector3f px = _px;
     if (_px.z() != 1.f)
         px = _px / _px.z();
-    return K_ * px;
+    Eigen::Vector2f dist = distort(px.head<2>());
+    return K_ * Eigen::Vector3f(dist.x(), dist.y(), 1.f);
 }
 
 Eigen::Matrix<float, 2, 3> CPinholeCameraSensorModel::projectJac(const Eigen::Vector3f& _xyz) const
