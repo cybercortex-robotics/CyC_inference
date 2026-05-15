@@ -258,11 +258,18 @@ void CCycFilterBase::run()
         m_tTimestampStart = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 
         // Call te process function
-        if (!process())
-            m_tTimestampStop = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+        bool process_ok = process();
+        CyC_TIME_UNIT tmp_stop;
+        if (!process_ok)
+            tmp_stop = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 
         // Elapsed time
-        CyC_TIME_UNIT elapsed_time = m_tTimestampStop - m_tTimestampStart;
+        CyC_TIME_UNIT elapsed_time;
+        if (process_ok)
+            elapsed_time = m_tTimestampStop - m_tTimestampStart;
+        else
+            elapsed_time = tmp_stop - m_tTimestampStart;
+            
         if (elapsed_time < 0) elapsed_time = 0;
 
         // Sleep acording to given dt
