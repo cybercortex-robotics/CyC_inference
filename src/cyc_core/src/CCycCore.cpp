@@ -190,7 +190,10 @@ bool CCycCore::mallocFilter(CCycFilterBase*& pFilter, const ConfigFilterParamete
     }
     else
     {
-        spdlog::error("Filter '{}' could not be loaded.", config.nFilterType);
+        std::string err = "Filter '" + config.sName + "' could not be loaded. Exiting DataBlock.";
+        spdlog::error("{}", err);
+        std::cout << err << std::endl;
+        exit(EXIT_FAILURE);
     }
 
     return bReturn;
