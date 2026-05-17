@@ -240,6 +240,9 @@ endif (ANDROID)
 set(CyC_THIRD_PARTY_LIBRARY_DIRECTORIES ${CyC_THIRD_PARTY_LIBRARY_DIRECTORIES} PARENT_SCOPE)
 
 # Build CyberCortex.AI filters
+if (NOT TARGET BUILD_ALL_FILTERS)
+    add_custom_target(BUILD_ALL_FILTERS)
+endif ()
 macro(add_cyc_filter name filter_path)
 	set(Build_${name} FALSE CACHE BOOL "Build_${name}")
 	if (Build_${name})
@@ -249,10 +252,75 @@ macro(add_cyc_filter name filter_path)
 		#target_include_directories(${FN} PUBLIC ${filter_path}/include)
 		#target_compile_definitions(CycCore PUBLIC ${name})
         #target_link_libraries(${FN} PUBLIC ${CyC_OPENCV_WORLD})
-        add_dependencies(BUILD_ALL_FILTERS ${FN})
+        if (TARGET BUILD_ALL_FILTERS)
+            add_dependencies(BUILD_ALL_FILTERS ${FN})
+        endif ()
 		message(STATUS "Filter '${FN}' enabled.")
 	endif (Build_${name})
 endmacro()
+
+function(download_cyc_filter ZIP_URL FILTERS_PATH)
+    string(REGEX REPLACE ".*/" "" _zip_name "${ZIP_URL}")
+    string(REGEX REPLACE "\\.zip$" "" _filter_name "${_zip_name}")
+    set(_zip_path "${CMAKE_SOURCE_DIR}/bin/${_zip_name}")
+    set(_extract_dir "${CMAKE_SOURCE_DIR}/bin/${FILTERS_PATH}")
+    set(_need_extract FALSE)
+
+    if (NOT EXISTS "${_zip_path}")
+        message(STATUS "Downloading ${_zip_name} ...")
+        file(DOWNLOAD "${ZIP_URL}" "${_zip_path}"
+            SHOW_PROGRESS
+            STATUS _download_status)
+        list(GET _download_status 0 _download_error)
+        if (NOT _download_error EQUAL 0)
+            list(GET _download_status 1 _download_msg)
+            message(FATAL_ERROR "Failed to download ${_zip_name}: ${_download_msg}")
+        endif()
+        set(_need_extract TRUE)
+    else()
+        file(TIMESTAMP "${_zip_path}" _local_ts "%a, %d %b %Y %H:%M:%S GMT" UTC)
+        set(_zip_new "${CMAKE_BINARY_DIR}/${_filter_name}_new.zip")
+        message(STATUS "Checking for ${_zip_name} updates (local: ${_local_ts}) ...")
+        file(DOWNLOAD "${ZIP_URL}" "${_zip_new}"
+            SHOW_PROGRESS
+            HTTPHEADER "If-Modified-Since: ${_local_ts}"
+            STATUS _download_status)
+        list(GET _download_status 0 _download_error)
+        if (NOT _download_error EQUAL 0)
+            list(GET _download_status 1 _download_msg)
+            message(WARNING "Could not check for ${_zip_name} updates: ${_download_msg}")
+            file(REMOVE "${_zip_new}")
+        else()
+            # A 200 response contains a valid zip; a 304 produces no zip content.
+            # Check for the zip magic bytes PK (0x504b0304) to tell them apart.
+            file(READ "${_zip_new}" _zip_magic LIMIT 4 HEX)
+            if (_zip_magic STREQUAL "504b0304")
+                message(STATUS "Newer ${_zip_name} found — replacing local copy.")
+                file(RENAME "${_zip_new}" "${_zip_path}")
+                set(_need_extract TRUE)
+            else()
+                message(STATUS "${_zip_name} is up to date, skipping download.")
+                file(REMOVE "${_zip_new}")
+            endif()
+        endif()
+    endif()
+
+    if (_need_extract)
+        message(STATUS "Extracting ${_zip_name} to ${_extract_dir} ...")
+        set(_temp_dir "${CMAKE_BINARY_DIR}/${_filter_name}_temp")
+        file(MAKE_DIRECTORY "${_temp_dir}")
+        execute_process(
+            COMMAND ${CMAKE_COMMAND} -E tar xf "${_zip_path}"
+            WORKING_DIRECTORY "${_temp_dir}"
+            RESULT_VARIABLE _extract_result)
+        if (NOT _extract_result EQUAL 0)
+            message(FATAL_ERROR "Failed to extract ${_zip_name}")
+        endif()
+        execute_process(
+            COMMAND ${CMAKE_COMMAND} -E copy_directory "${_temp_dir}/${_filter_name}" "${_extract_dir}")
+        file(REMOVE_RECURSE "${_temp_dir}")
+    endif()
+endfunction()
 
 if (NOT ANDROID)
     #set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
