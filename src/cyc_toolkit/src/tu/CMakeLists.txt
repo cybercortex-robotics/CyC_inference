@@ -5,12 +5,11 @@
 
 # Compute inspector
 add_executable(tu_ComputeInspector src/tu_ComputeInspector.cpp)
+target_link_libraries(tu_ComputeInspector PUBLIC CycToolkit)
 
 if (MSVC)
-    target_link_libraries(tu_ComputeInspector
-        PUBLIC
-            CycToolkit
-            pdh)
-    target_compile_definitions(tu_ComputeInspector PRIVATE
-        _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING)
+    target_link_libraries(tu_ComputeInspector PUBLIC pdh)
+    target_compile_definitions(tu_ComputeInspector PRIVATE _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING)
+else ()
+    target_link_libraries(tu_ComputeInspector PUBLIC fmt::fmt)
 endif ()
