@@ -237,8 +237,14 @@ bool CConfigParameters::readFiltersConfiguration(const libconfig::Setting& Filte
             }
         }
 
-        float dt_sec, dt_sequencing_sec;
-        FilterConfig.lookupValue("dt", dt_sec);
+        float dt_sec = 0.1;
+        if (!FilterConfig.lookupValue("dt", dt_sec))
+        {
+            std::cerr << "Filter " << configParams.sName << " does not have a sampling time (dt)" << std::endl;
+            return false;
+        }
+
+        float dt_sequencing_sec = dt_sec; // defaults to dt
         FilterConfig.lookupValue("dt_Sequencing", dt_sequencing_sec);
         configParams.dt = static_cast<CyC_TIME_UNIT>(dt_sec * SEC2MSEC);
         configParams.dtSequencing = static_cast<CyC_TIME_UNIT>(dt_sequencing_sec * SEC2MSEC);
