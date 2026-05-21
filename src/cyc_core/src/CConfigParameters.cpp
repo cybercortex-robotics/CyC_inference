@@ -237,7 +237,7 @@ bool CConfigParameters::readFiltersConfiguration(const libconfig::Setting& Filte
             }
         }
 
-        float dt_sec = 0.1;
+        float dt_sec = 0.1f;
         if (!FilterConfig.lookupValue("dt", dt_sec))
         {
             std::cerr << "Filter " << configParams.sName << " does not have a sampling time (dt)" << std::endl;
