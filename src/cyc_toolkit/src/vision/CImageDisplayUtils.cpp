@@ -1035,14 +1035,14 @@ void CImageDisplayUtils::draw_navigation_frame(cv::Mat& _out_dst, const CPinhole
     double font_scale = 1.3;
     CyC_INT font_thickness = 2;
     CyC_INT nTextOffsetY = _pCamSensorModel->height() / 11;
-    cv::Mat disp_rect_info = _out_dst(cv::Range(_out_dst.rows - CyC_INT(nTextOffsetY * 1.5), _out_dst.rows - 5), cv::Range(5, CyC_INT(nTextOffsetY * 4)));
+    cv::Mat disp_rect_info = _out_dst(cv::Range(_out_dst.rows - CyC_INT(nTextOffsetY * 1.5), _out_dst.rows - 5), cv::Range(5, CyC_INT(nTextOffsetY * 4.4f)));
     cv::Mat black_rect = cv::Mat::zeros(disp_rect_info.rows, disp_rect_info.cols, CV_8UC3);
     cv::addWeighted(black_rect, alpha, disp_rect_info, beta, gamma, disp_rect_info);
     
-    if (_slam_data.is_mapping)
-        cv::putText(_out_dst, "Mapping", cv::Point(15, _out_dst.rows - CyC_INT(nTextOffsetY / 1.5)), cv::FONT_HERSHEY_PLAIN, font_scale, color::red, font_thickness);
+    if (_slam_data.is_multimap)
+        cv::putText(_out_dst, "Multimap", cv::Point(15, _out_dst.rows - CyC_INT(nTextOffsetY / 1.5)), cv::FONT_HERSHEY_PLAIN, font_scale, color::green, font_thickness);
     else
-        cv::putText(_out_dst, "Tracking", cv::Point(15, _out_dst.rows - CyC_INT(nTextOffsetY / 1.5)), cv::FONT_HERSHEY_PLAIN, font_scale, color::green, font_thickness);
+        cv::putText(_out_dst, "Single Map", cv::Point(15, _out_dst.rows - CyC_INT(nTextOffsetY / 1.5)), cv::FONT_HERSHEY_PLAIN, font_scale, color::red, font_thickness);
 }
 
 void CImageDisplayUtils::draw_navigation(cv::Mat& _out_dst,
