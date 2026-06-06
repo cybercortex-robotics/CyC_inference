@@ -104,7 +104,7 @@ void COcTreeUtils::voxels2octree(const CycVoxels& _voxels,
             {
                 node->setObjectClass(_cls);
                 node->setValue(_value);
-                node->setColor(_rgb_colors[0], _rgb_colors[1], _rgb_colors[2]);
+                node->setColor(_rgb_color[0], _rgb_color[1], _rgb_color[2]);
             }
         }
     }
