@@ -395,7 +395,18 @@ namespace CProjectiveGeometry
         for (std::size_t i = 0; i < _voxels.size(); ++i)
         {
             const Eigen::Vector4f* p = &_voxels[i].pt3d;
-            if (p->x() < _th_far && p->y() < _th_far && p->z() < _th_far && fabs(p->x()) > _th_proximity && fabs(p->y()) > _th_proximity && fabs(p->z()) > _th_proximity)
+            
+            // Absolute values for the far threshold
+            bool is_inside_far_bound = fabs(p->x()) < _th_far && 
+                                    fabs(p->y()) < _th_far && 
+                                    fabs(p->z()) < _th_far;
+                                    
+            // || so a point is valid if it's outside the proximity zone on ANY axis
+            bool is_outside_proximity = fabs(p->x()) > _th_proximity || 
+                                        fabs(p->y()) > _th_proximity || 
+                                        fabs(p->z()) > _th_proximity;
+
+            if (is_inside_far_bound && is_outside_proximity)
                 result.emplace_back(CycVoxel{ _T * _voxels[i].pt3d, _voxels[i].id });
         }
         _out_voxels = result;
