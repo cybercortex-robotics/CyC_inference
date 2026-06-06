@@ -392,24 +392,30 @@ namespace CProjectiveGeometry
         CycVoxels& _out_voxels)
     {
         CycVoxels result;
-        for (std::size_t i = 0; i < _voxels.size(); ++i)
+        result.reserve(_voxels.size());
+
+        for (const auto& voxel : _voxels)
         {
-            const Eigen::Vector4f* p = &_voxels[i].pt3d;
+            const auto& p = voxel.pt3d;
             
             // Absolute values for the far threshold
-            bool is_inside_far_bound = fabs(p->x()) < _th_far && 
-                                    fabs(p->y()) < _th_far && 
-                                    fabs(p->z()) < _th_far;
-                                    
+            bool is_inside_far_bound = fabs(p.x()) < _th_far && 
+                                       fabs(p.y()) < _th_far && 
+                                       fabs(p.z()) < _th_far;
+                                            
             // || so a point is valid if it's outside the proximity zone on ANY axis
-            bool is_outside_proximity = fabs(p->x()) > _th_proximity || 
-                                        fabs(p->y()) > _th_proximity || 
-                                        fabs(p->z()) > _th_proximity;
+            bool is_outside_proximity = fabs(p.x()) > _th_proximity || 
+                                        fabs(p.y()) > _th_proximity || 
+                                        fabs(p.z()) > _th_proximity;
 
             if (is_inside_far_bound && is_outside_proximity)
-                result.emplace_back(CycVoxel{ _T * _voxels[i].pt3d, _voxels[i].id });
+            {
+                // Construct directly in place inside the vector's memory array
+                result.emplace_back(_T * p, voxel.id);
+            }
         }
-        _out_voxels = result;
+
+        _out_voxels = std::move(result);
     }
     
     void clipVoxels(const CycVoxels& _voxels, 
@@ -418,14 +424,12 @@ namespace CProjectiveGeometry
         const Eigen::Vector3f& _pos_range)
     {
         CycVoxels result;
-        result.reserve(_voxels.size()); // 1. Prevent reallocation spikes
-
-        // Clean range-based loop (avoids manual indexing & raw pointers)
+        result.reserve(_voxels.size());
+        
         for (const auto& voxel : _voxels)
         {
             const auto& p = voxel.pt3d;
             
-            // Core logic (Your logic is perfectly intact here)
             if (p.x() >= _neg_range.x() && p.y() >= _neg_range.y() && p.z() >= _neg_range.z() &&
                 p.x() <= _pos_range.x() && p.y() <= _pos_range.y() && p.z() <= _pos_range.z())
             {
@@ -433,7 +437,6 @@ namespace CProjectiveGeometry
             }
         }
 
-        // Move the resource instead of copying it
         _out_voxels = std::move(result);
     }
 
