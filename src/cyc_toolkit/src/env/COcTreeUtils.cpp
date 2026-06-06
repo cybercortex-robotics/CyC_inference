@@ -59,9 +59,13 @@ bool COcTreeUtils::depth2octree(const CPinholeCameraSensorModel* _psensor_model,
                     if (fabsf(vx_W.x()) < 300.f && fabsf(vx_W.y()) < 300.f)
                     {
                         auto* node = _poctree->updateNode(vx_W.x(), vx_W.y(), vx_W.z(), true, true);
-                        node->setObjectClass(_cls);
-                        node->setValue(_value);
-                        node->setColor(_color[0], _color[1], _color[2]);
+                        
+                        if (node != nullptr)
+                        {
+                            node->setObjectClass(_cls);
+                            node->setValue(_value);
+                            node->setColor(_color[0], _color[1], _color[2]);
+                        }
                     }
                 }
             }
@@ -119,9 +123,13 @@ void COcTreeUtils::voxels2octree(const CycVoxels& _voxels,
         if (fabsf(voxel.pt3d.x()) < 300.f && fabsf(voxel.pt3d.y()) < 300.f && fabsf(voxel.pt3d.z()) < 300.f)
         {
             auto* node = _octree->updateNode(voxel.pt3d.x(), voxel.pt3d.y(), voxel.pt3d.z(), true, true);
-            node->setObjectClass(_cls);
-            node->setValue(_value);
-            node->setColor(_rgb_colors[i][0], _rgb_colors[i][1], _rgb_colors[i][2]);
+            
+            if (node != nullptr) 
+            {
+                node->setObjectClass(_cls);
+                node->setValue(_value);
+                node->setColor(_rgb_colors[i][0], _rgb_colors[i][1], _rgb_colors[i][2]);
+            }
         }
     }
 }
@@ -149,7 +157,9 @@ void COcTreeUtils::ultrasonics2octree(const CycUltrasonics& _ultrasonics,
         after_transform = pose.transform() * before_transform;
 
         auto* node = _octree.updateNode(after_transform.x(), after_transform.y(), after_transform.z(), true, true);
-        node->setValue(CObjectClasses::ULTRASONICS);
+        
+        if (node != nullptr)
+            node->setValue(CObjectClasses::ULTRASONICS);
     }
 }
 
@@ -261,7 +271,9 @@ void COcTreeUtils::trajectory2octree(const CycBBoxes3D& _objects,
         for (Eigen::Index j = 0; j < traj_pts.cols(); ++j)
         {
             auto* node = _octree.updateNode(traj_pts.col(j)[0], traj_pts.col(j)[1], 0.F, true, true);
-            node->setValue(CObjectClasses::UNDEFINED);
+            
+            if (node != nullptr)
+                node->setValue(CObjectClasses::UNDEFINED);
         }
     }
 }
@@ -413,8 +425,12 @@ void COcTreeUtils::semseg_ground2octree(const CPinholeCameraSensorModel* _psenso
                         Eigen::Vector4f after_transform = _psensor_model->extrinsics().transform() * pt3dCam;
 
                         auto* node = _octree.updateNode(after_transform.x(), after_transform.y(), after_transform.z(), true, true);
-                        node->setObjectClass(nGroundID);
-                        node->setValue(octomap::logodds(0.7));
+                        
+                        if (node != nullptr)
+                        {
+                            node->setObjectClass(nGroundID);
+                            node->setValue(octomap::logodds(0.7));
+                        }
                     }
                 }
             }
@@ -443,9 +459,13 @@ void COcTreeUtils::transformOctree(CCycOcTree& _octree, const CPose& _pose)
         const Eigen::Vector4f after_transform = _pose.transform() * before_transform;
 
         auto* node = transformed_octree.updateNode(after_transform(0), after_transform(1), after_transform(2), true);
-        node->setColor(it->getColor());
-        node->setValue(it->getValue());
-        node->setObjectClass(it->getObjectClass());
+        
+        if (node != nullptr)
+        {
+            node->setColor(it->getColor());
+            node->setValue(it->getValue());
+            node->setObjectClass(it->getObjectClass());
+        }
     }
 
     _octree.swapContent(transformed_octree);
