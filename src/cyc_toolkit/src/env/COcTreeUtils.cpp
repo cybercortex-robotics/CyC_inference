@@ -86,14 +86,22 @@ void COcTreeUtils::voxels2octree(const CycVoxels& _voxels,
     const CyC_INT _cls,
     const float _value)
 {
-    for (const auto& voxel : _voxels)
+    for (size_t i = 0; i < _voxels.size(); ++i)
     {
-        if (fabsf(voxel.pt3d.x()) < 300.f && fabsf(voxel.pt3d.y()) < 300.f && fabsf(voxel.pt3d.z()) < 300.f)
+        const CycVoxel& voxel = _voxels[i]; 
+
+        if (fabsf(voxel.pt3d.x()) < 300.f && 
+            fabsf(voxel.pt3d.y()) < 300.f && 
+            fabsf(voxel.pt3d.z()) < 300.f)
         {
             auto* node = _octree->updateNode(voxel.pt3d.x(), voxel.pt3d.y(), voxel.pt3d.z(), true, true);
-            node->setObjectClass(_cls);
-            node->setValue(_value);
-            node->setColor(_rgb_color[0], _rgb_color[1], _rgb_color[2]);
+            
+            if (node != nullptr) 
+            {
+                node->setObjectClass(_cls);
+                node->setValue(_value);
+                node->setColor(_rgb_colors[i][0], _rgb_colors[i][1], _rgb_colors[i][2]);
+            }
         }
     }
 }
