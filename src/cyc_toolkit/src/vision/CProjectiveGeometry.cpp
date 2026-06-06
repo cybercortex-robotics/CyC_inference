@@ -418,14 +418,23 @@ namespace CProjectiveGeometry
         const Eigen::Vector3f& _pos_range)
     {
         CycVoxels result;
-        for (std::size_t i = 0; i < _voxels.size(); ++i)
+        result.reserve(_voxels.size()); // 1. Prevent reallocation spikes
+
+        // Clean range-based loop (avoids manual indexing & raw pointers)
+        for (const auto& voxel : _voxels)
         {
-            const Eigen::Vector4f* p = &_voxels[i].pt3d;
-            if (p->x() >= _neg_range.x() && p->y() >= _neg_range.y() && p->z() >= _neg_range.z() &&
-                p->x() <= _pos_range.x() && p->y() <= _pos_range.y() && p->z() <= _pos_range.z())
-                result.emplace_back(_voxels[i]);
+            const auto& p = voxel.pt3d;
+            
+            // Core logic (Your logic is perfectly intact here)
+            if (p.x() >= _neg_range.x() && p.y() >= _neg_range.y() && p.z() >= _neg_range.z() &&
+                p.x() <= _pos_range.x() && p.y() <= _pos_range.y() && p.z() <= _pos_range.z())
+            {
+                result.emplace_back(voxel);
+            }
         }
-        _out_voxels = result;
+
+        // Move the resource instead of copying it
+        _out_voxels = std::move(result);
     }
 
     float getReprojectionErr(const CPinholeCameraSensorModel* _pSensorModel, 
