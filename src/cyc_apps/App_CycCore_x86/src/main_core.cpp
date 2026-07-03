@@ -464,6 +464,7 @@ CCycFilterBase* processCommand(const std::string& cmd, CCycCore& core)
                 case CyC_IMU:
                 case CyC_GPS:
                 case CyC_VECTOR_INT:
+                case CyC_VECTOR_FLOAT:
                 case CyC_ULTRASONICS:
 				    break; // not a textual output
 			    default:
@@ -526,6 +527,55 @@ void displayImage(CyC_UINT filterID, const cv::Mat& img)
 void displayImage(CCycFilterBase* pFilter, const cv::Mat& img)
 {
     displayImage(pFilter->getFilterKey().nFilterID, img);
+}
+
+// Plots a filter output that is a plain vector of numeric values (CyC_VECTOR_INT / CyC_VECTOR_FLOAT).
+// One plot segment is created per vector element, using the vector size from the first sample read.
+template <typename T>
+void plotCycVectorOutput(CCycCore* pCore, CCycFilterBase* pFilter, bool& visualization_running, const std::string& sIdentifier)
+{
+    CyC_TIME_UNIT lastReadTime = 0;
+    bool bInitialized(false);
+    CCcrQTPlot* qt_plot = nullptr;
+
+    while (visualization_running)
+    {
+        auto readTime = pFilter->getTimestampStop();
+
+        if (readTime > lastReadTime)
+        {
+            std::vector<T> data;
+            bool bDataRead = pFilter->getData(data);
+
+            if (!bInitialized && bDataRead)
+            {
+                qt_plot = new CCcrQTPlot(sIdentifier + ": " + pFilter->getFilterName(), pCore->getSingletonRegistry()->get<CCycQTSkeleton>().get());
+                for (size_t i = 0; i < data.size(); ++i)
+                    qt_plot->add_segment("Data " + std::to_string(i), {});
+
+                qt_plot->run();
+                bInitialized = true;
+            }
+
+            if (bInitialized)
+            {
+                std::vector<float> signals_values;
+                for (size_t i = 0; i < data.size(); ++i)
+                    signals_values.push_back((float)data[i]);
+
+                qt_plot->plot_signals(signals_values);
+            }
+
+            lastReadTime = readTime;
+        }
+    }
+
+    // Free memory
+    if (qt_plot != nullptr)
+    {
+        qt_plot->stop();
+        delete qt_plot;
+    }
 }
 
 void showCycFilterOutput(CCycCore* pCore, CCycFilterBase* pFilter, CycDatablockKey keyOverlayFilter)
@@ -922,46 +972,12 @@ void showCycFilterOutput(CCycCore* pCore, CCycFilterBase* pFilter, CycDatablockK
             break;
 
             case CyC_VECTOR_INT:
-            {
-                CyC_TIME_UNIT lastReadTime = 0;
-                bool bInitialized(false);
-                CCcrQTPlot* qt_plot;
+                plotCycVectorOutput<CyC_INT>(pCore, pFilter, visualization_running, sIdentifier);
+                break;
 
-                while (visualization_running)
-                {
-                    auto readTime = pFilter->getTimestampStop();
-
-                    if (readTime > lastReadTime)
-                    {
-                        std::vector<CyC_INT> data;
-                        bool bDataRead = pFilter->getData(data);
-
-                        if (!bInitialized && bDataRead)
-                        {
-                            qt_plot = new CCcrQTPlot(sIdentifier + ": " + pFilter->getFilterName(), pCore->getSingletonRegistry()->get<CCycQTSkeleton>().get());
-                            for (size_t i = 0; i < data.size(); ++i)
-                                qt_plot->add_segment("Data " + std::to_string(i), {});
-
-                            qt_plot->run();
-                            bInitialized = true;
-                        }
-                    
-
-                        std::vector<float> signals_values;
-                        for (size_t i = 0; i < data.size(); ++i)
-                            signals_values.push_back((float)data[i]);
-
-                        qt_plot->plot_signals(signals_values);
-
-                        lastReadTime = readTime;
-                    }
-                }
-
-                // Free memory
-                qt_plot->stop();
-                delete qt_plot;
-            }
-            break;
+            case CyC_VECTOR_FLOAT:
+                plotCycVectorOutput<float>(pCore, pFilter, visualization_running, sIdentifier);
+                break;
 
 		    default:
 			break;
