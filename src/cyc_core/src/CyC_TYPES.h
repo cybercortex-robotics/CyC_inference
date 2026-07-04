@@ -559,12 +559,22 @@ typedef std::vector<CycUltrasonic> CycUltrasonics;
 // --- GPS ---
 struct CycGps
 {
-    float baseLat;
-    float baseLng;
-    float baseAlt;
-    float lat;
-    float lng;
-    float alt;
+    CycGps()
+    {
+        latitude = 0.f;
+        longitude = 0.f;
+        altitude = 0.f;
+        num_satelites = 0;
+        fix_type = 0;
+        timestamp = -1;
+    }
+
+    float           latitude;       // latitude  [deg]
+    float           longitude;      // longitude  [deg]
+    float           altitude;       // altitude  [m]
+    CyC_INT         num_satelites;  // number of satellites
+    CyC_INT         fix_type = 0;   // GPS fix type (0 = no fix)
+    CyC_TIME_UNIT   timestamp;
 };
 
 // TBD: use CycVoxel instead
