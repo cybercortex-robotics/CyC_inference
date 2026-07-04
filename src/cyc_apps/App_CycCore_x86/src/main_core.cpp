@@ -941,6 +941,7 @@ void showCycFilterOutput(CCycCore* pCore, CCycFilterBase* pFilter, CycDatablockK
                 std::vector<std::string> signals_names;
                 signals_names.push_back("Latitude");
                 signals_names.push_back("Longitude");
+                signals_names.push_back("Altitude");
             
                 CCcrQTPlot plot(sIdentifier + ": " + pFilter->getFilterName(), pCore->getSingletonRegistry()->get<CCycQTSkeleton>().get());
                 for (const std::string& name : signals_names)
@@ -959,8 +960,9 @@ void showCycFilterOutput(CCycCore* pCore, CCycFilterBase* pFilter, CycDatablockK
                         bool bDataRead = pFilter->getData(gps);
 
                         std::vector<float> signals_values;
-                        signals_values.push_back(gps.lat);
-                        signals_values.push_back(gps.lng);
+                        signals_values.push_back(gps.latitude);
+                        signals_values.push_back(gps.longitude);
+                        signals_values.push_back(gps.altitude);
 
                         plot.plot_signals(signals_values);
 
@@ -1012,7 +1014,7 @@ void showTextualOutput(CCycFilterBase* pFilter)
 
 			if (bDataRead)
 			{
-				std::cout << "gps: " << gps.lat << " " << gps.lng << " " << gps.alt << std::endl;
+				std::cout << "gps: " << gps.latitude << " " << gps.longitude << " " << gps.altitude << std::endl;
 			}
 		}
 		break;
