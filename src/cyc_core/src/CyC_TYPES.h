@@ -619,10 +619,10 @@ struct CycRoi2D
     // Top left corner is considered as origin
     CyC_INT         id;
     CyC_INT         cls;
-    float       confidence;
+    float           confidence;
     Eigen::Vector2f origin;
-    float       width;
-    float       height;
+    float           width;
+    float           height;
 
     // Key of the image source filter for which the ROI was computed
     CycDatablockKey key;
@@ -651,12 +651,12 @@ struct CycBBox3D
     }
 
 	// Top left corner is considered as origin
-    CyC_INT         id;
-	CPose    		origin;
-	float		width;
-	float		height;
-	float		depth;
-	CyC_INT	        cls;
+    CyC_INT id;
+	CPose   origin;
+	float	width;
+	float	height;
+	float   depth;
+	CyC_INT	cls;
 
     // Key of the image source filter for which the ROI was computed
     CycDatablockKey key;
