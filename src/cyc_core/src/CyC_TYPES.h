@@ -188,7 +188,7 @@ struct CycState
 
     CycState(const CyC_UINT _num_state_variables)
     {
-        this->x_hat = Eigen::VectorXf::Zero(_num_state_variables);
+        x_hat = Eigen::VectorXf::Zero(_num_state_variables);
     }
 
     friend auto operator<<(std::ostream& _os, CycState const& _state) -> std::ostream&
@@ -213,7 +213,7 @@ struct CycMeasurement
 
     CycMeasurement(const CyC_UINT _num_measurement_variables)
     {
-        this->y_hat = Eigen::VectorXf::Zero(_num_measurement_variables);
+        y_hat = Eigen::VectorXf::Zero(_num_measurement_variables);
     }
 
     Eigen::VectorXf y_hat; // Measurement vector (output)
@@ -226,7 +226,7 @@ struct CycControlInput
 
     CycControlInput(const CyC_UINT _num_control_inputs)
     {
-        this->u = Eigen::VectorXf::Zero(_num_control_inputs);
+        u = Eigen::VectorXf::Zero(_num_control_inputs);
     }
     // Control input calculated for setpoint 
     Eigen::VectorXf                 u; // u = [thrust, roll_torque, pitch_torque, yaw_torque]
@@ -248,7 +248,7 @@ struct CycImu
         acc = Eigen::Vector3f{ 0.f, 0.f, 0.f };
         gyro = Eigen::Vector3f{ 0.f, 0.f, 0.f };
         magnet = Eigen::Vector3f{ 0.f, 0.f, 0.f };
-        this->timestamp = -1;
+        timestamp = -1;
     }
 
     CycImu(const Eigen::Vector3f& _acc, const Eigen::Vector3f& _gyro, const CyC_TIME_UNIT& _timestamp = -1) :
@@ -564,10 +564,19 @@ struct CycGps
         latitude = 0.f;
         longitude = 0.f;
         altitude = 0.f;
-        num_satelites = 0;
-        fix_type = 0;
+        num_satelites = -1;
+        fix_type = -1;
         timestamp = -1;
     }
+
+    CycGps(float _latitude, float _longitude, float _altitude, CyC_INT _num_satelites = -1, CyC_INT _fix_type = -1, CyC_TIME_UNIT _timestamp = -1) :
+        latitude(_latitude),
+        longitude(_longitude),
+        altitude(_altitude),
+        num_satelites(_num_satelites),
+        fix_type(_fix_type),
+        timestamp(_timestamp)
+    {}
 
     float           latitude;       // latitude  [deg]
     float           longitude;      // longitude  [deg]
@@ -593,22 +602,22 @@ struct CycRoi2D
 {
     CycRoi2D(Eigen::Vector2f _origin, float _width, float _height, float _conf = 0.F, CyC_INT _cls = -1, CyC_INT _id = -1)
     {
-        this->cls = _cls; 
-        this->id = _id;
-        this->confidence = _conf;
-        this->origin = std::move(_origin);
-        this->width = _width;
-        this->height = _height;
+        cls = _cls; 
+        id = _id;
+        confidence = _conf;
+        origin = std::move(_origin);
+        width = _width;
+        height = _height;
     }
 
     CycRoi2D()
     {
-        this->cls = -1; 
-        this->id = -1;
-        this->confidence = 0.F;
-        this->origin = Eigen::Vector2f(0, 0);
-        this->width = 0;
-        this->height = 0;
+        cls = -1; 
+        id = -1;
+        confidence = 0.F;
+        origin = Eigen::Vector2f(0, 0);
+        width = 0;
+        height = 0;
     }
 
     friend auto operator<<(std::ostream& _os, CycRoi2D const& _roi) -> std::ostream&
@@ -633,21 +642,21 @@ struct CycBBox3D
 {
 	CycBBox3D(CPose _origin, float _width, float _height, float _depth,  CyC_INT _cls = -1, CyC_INT _id = -1)
 	{
-        this->id = _id;
-		this->origin = std::move(_origin);
-		this->width = _width;
-		this->height = _height;
-		this->depth = _depth;
-		this->cls = _cls;
+        id = _id;
+		origin = std::move(_origin);
+		width = _width;
+		height = _height;
+		depth = _depth;
+		cls = _cls;
 	}
 
 	CycBBox3D()
     {
-        this->id = -1;
-        this->width = 0.f;
-        this->height = 0.f;
-        this->depth = 0.f;
-        this->cls = -1;
+        id = -1;
+        width = 0.f;
+        height = 0.f;
+        depth = 0.f;
+        cls = -1;
     }
 
 	// Top left corner is considered as origin
@@ -718,18 +727,18 @@ struct CycLane
 {
     CycLane()
     {
-        this->id = -1;
+        id = -1;
     }
 
     CycLane(CyC_INT _id)
     {
-        this->id = _id;
+        id = _id;
     }
 
     CycLane(CyC_INT _id, Eigen::Vector4f _model)
     {
-        this->id = _id;
-        this->model = _model;
+        id = _id;
+        model = _model;
     }
 
     CyC_INT         id;
@@ -761,8 +770,8 @@ struct CycDnnBranchIO
 {
     CycDnnBranchIO()
     {
-        this->id = CyC_UNDEFINED;
-        this->data_type = CyC_UNDEFINED;
+        id = CyC_UNDEFINED;
+        data_type = CyC_UNDEFINED;
     }
 
     CyC_INT       id;
