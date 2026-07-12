@@ -127,8 +127,6 @@ add_library(CycToolkit ${LIB_TYPE}
     src/plan/CPlanningUtils.cpp
     src/plan/CWaypointsPlanner.h
     src/plan/CWaypointsPlanner.cpp
-    src/dl/CDnnConfigParameters.h
-    src/dl/CDnnConfigParameters.cpp
     src/dl/CDnnConfig.h
     src/dl/CDnnConfig.cpp
     src/env/CConcaveHull.h

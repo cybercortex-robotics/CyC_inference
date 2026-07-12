@@ -1,8 +1,8 @@
 // Copyright (c) 2026 CyberCortex Robotics SRL. All rights reserved
 // Author: Sorin Mihai Grigorescu
 
-#ifndef CDNNCONFIG_H_
-#define CDNNCONFIG_H_
+#ifndef CDnnConfig_H_
+#define CDnnConfig_H_
 
 #include <map>
 #include <vector>
@@ -87,4 +87,4 @@ private:
     bool    m_bIsInitialized;
 };
 
-#endif /* CDNNCONFIG_H_ */
+#endif /* CDnnConfig_H_ */
