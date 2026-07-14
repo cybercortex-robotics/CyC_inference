@@ -83,6 +83,8 @@ add_library(CycToolkit ${LIB_TYPE}
     src/control/CBaseController.cpp
     src/control/CStateSpaceController.h
     src/control/CStateSpaceController.cpp
+    src/control/CRobotConfig.h
+    src/control/CRobotConfig.cpp
     src/control/CModelCartPole.h
     src/control/CModelCartPole.cpp
     src/control/CModelVehicle.h
