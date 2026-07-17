@@ -243,7 +243,7 @@ struct CycMultiRobotState
     // robotsState[i] is the full-robot state vector of the i-th robot handed to
     // CSimulator::load; its layout (and x_hat size) is the State block of that
     // robot's CRobotConfig, which is what decodes any slot back into a field.
-    std::vector<CycStateQ> robotsState{};
+    std::vector<CycState> robotsState{};
 };
 
 struct CycLandmark
