@@ -153,16 +153,97 @@ struct std::hash<CycDatablockKey>
 /*
  * Control types
  */
-struct CycReferenceSetPoints
+struct CycSetPoint
 {
+    CycSetPoint()
+    {}
+
+    CycSetPoint(const int _dim)
+    {
+        r = Eigen::VectorXf::Zero(_dim);
+    }
+
     // Reference vector calculated via planning (control reference)
-    std::vector<Eigen::VectorXf> ref;
+    Eigen::VectorXf r;
+};
+
+struct CycSetPoints
+{
+    // unique ID for the reference trajectory
+    int id;
+
+    // Reference vector calculated via planning (control reference)
+    std::vector<CycSetPoint> ref;
 
     // Samples of reference state trajectories (used mainly for visualization)
-    std::vector<std::vector<Eigen::VectorXf>> ref_samples;
+    std::vector<std::vector<CycSetPoint>> ref_samples;
+};
 
-    // unique ID for the reference trajectory
-    CyC_INT id;
+struct CycControlInput
+{
+    // MuJoCo:  u = [kp, kd, q, qd, tau_ff]
+    // Drone:   u = [thrust, roll_torque, pitch_torque, yaw_torque]
+    CycControlInput()
+    {}
+
+    CycControlInput(const int _num_control_inputs)
+    {
+        u = Eigen::VectorXf::Zero(_num_control_inputs);
+    }
+    
+    // Control input calculated for setpoint 
+    Eigen::VectorXf                 u;
+    CycSetPoints                    ref_pts;
+    std::vector<Eigen::VectorXf>    goal_points;
+};
+typedef std::unordered_map<std::string, std::vector<CycControlInput>> CycControlInputs;
+
+struct CycState
+{
+    CycState()
+    {}
+
+    CycState(const int _num_state_variables)
+    {
+        x_hat = Eigen::VectorXf::Zero(_num_state_variables);
+    }
+
+    friend auto operator<<(std::ostream& _os, CycState const& _state) -> std::ostream&
+    {
+        std::string str;
+        for (int i = 0; i < _state.x_hat.size() - 1; ++i)
+            str.append(std::to_string(_state.x_hat[i]) + "\t");
+
+        if (_state.x_hat.size() > 0)
+            str.append(std::to_string(_state.x_hat[_state.x_hat.size() - 1]));
+
+        return _os << "State: [" << str << "]";
+    }
+
+    std::string     name;
+    CyC_TIME_UNIT   timestamp;
+    Eigen::VectorXf x_hat; // State vector
+};
+
+struct CycMeasurement
+{
+    CycMeasurement()
+    {}
+
+    CycMeasurement(const int _num_measurement_variables)
+    {
+        y_hat = Eigen::VectorXf::Zero(_num_measurement_variables);
+    }
+
+    Eigen::VectorXf y_hat; // Measurement vector (output)
+};
+
+struct CycMultiRobotState
+{
+    // robotsState[i] is the full-robot state vector of the i-th robot handed to
+    // CSimulator::load; its layout (and x_hat size) is the State block of that
+    // robot's CRobotConfig, which is what decodes any slot back into a field.
+    std::vector<CycStateQ> robotsState{};
 };
 
 struct CycLandmark
@@ -179,59 +260,6 @@ struct CycTerminalCommand
     std::vector<CyC_INT>    cmd;
     CycLandmarks            landmarks;
     CPose                   destination;
-};
-
-struct CycState
-{
-    CycState()
-    {}
-
-    CycState(const CyC_UINT _num_state_variables)
-    {
-        x_hat = Eigen::VectorXf::Zero(_num_state_variables);
-    }
-
-    friend auto operator<<(std::ostream& _os, CycState const& _state) -> std::ostream&
-    {
-        std::string str;
-        for (CyC_INT i = 0; i < _state.x_hat.size() - 1; ++i)
-            str.append(std::to_string(_state.x_hat[i]) + "\t");
-
-        if (_state.x_hat.size() > 0)
-            str.append(std::to_string(_state.x_hat[_state.x_hat.size() - 1]));
-
-        return _os << "State: [" << str << "]";
-    }
-
-    Eigen::VectorXf x_hat; // State vector
-};
-
-struct CycMeasurement
-{
-    CycMeasurement()
-    {}
-
-    CycMeasurement(const CyC_UINT _num_measurement_variables)
-    {
-        y_hat = Eigen::VectorXf::Zero(_num_measurement_variables);
-    }
-
-    Eigen::VectorXf y_hat; // Measurement vector (output)
-};
-
-struct CycControlInput
-{
-    CycControlInput()
-    {}
-
-    CycControlInput(const CyC_UINT _num_control_inputs)
-    {
-        u = Eigen::VectorXf::Zero(_num_control_inputs);
-    }
-    // Control input calculated for setpoint 
-    Eigen::VectorXf                 u; // u = [thrust, roll_torque, pitch_torque, yaw_torque]
-    CycReferenceSetPoints           ref_pts;
-    std::vector<Eigen::VectorXf>    goal_points;
 };
 
 /*
