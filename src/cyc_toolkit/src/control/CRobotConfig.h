@@ -54,6 +54,12 @@ public:
     int     baseStateSlot(const std::string& _field) const;
     int     jointStateSlot(const std::string& _field, int _dof) const;
 
+    // Value of a base state field read out of '_state.x_hat', or '_fallback' if
+    // the descriptor does not list the field. Bridges the backend-agnostic slot
+    // layout (baseStateSlot) to a concrete published state vector.
+    float   baseStateValue(
+        const CycState& _state, const std::string& _field, float _fallback = 0.f) const;
+
 private:
     bool    loadFromConfig(const std::string& _robot_config_file);
 

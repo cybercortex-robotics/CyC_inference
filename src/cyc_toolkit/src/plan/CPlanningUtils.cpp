@@ -10,7 +10,7 @@ CPlanningUtils::CPlanningUtils()
 CPlanningUtils::~CPlanningUtils()
 {}
 
-void CPlanningUtils::plotReferenceSetpointsOnGridmap(cv::Mat& _disp_img, const CycReferenceSetPoints& _local_ref_path, const Eigen::MatrixXi& _gridmap, const float _angle, const std::vector<Eigen::Vector2f>& _fake__obstacles)
+void CPlanningUtils::plotReferenceSetpointsOnGridmap(cv::Mat& _disp_img, const CycSetPoints& _local_ref_path, const Eigen::MatrixXi& _gridmap, const float _angle, const std::vector<Eigen::Vector2f>& _fake__obstacles)
 {
     cv::Size size = _disp_img.size();
 
@@ -20,10 +20,10 @@ void CPlanningUtils::plotReferenceSetpointsOnGridmap(cv::Mat& _disp_img, const C
     CPose T_gridmap_rotation(float(_gridmap.rows() / 2), (float)(_gridmap.cols() / 2), 0.F, 0.F, 0.F, _angle + DEG2RAD * 90.F);
 
     // Draw the control reference path
-    for (CyC_UINT i = 0; i < _local_ref_path.ref.size(); ++i)
+    for (CyC_UINT i = 0; i < _local_ref_path.size(); ++i)
     {
-        CyC_INT x_coord = _local_ref_path.ref.at(i)(0);
-        CyC_INT y_coord = _local_ref_path.ref.at(i)(1);
+        CyC_INT x_coord = _local_ref_path.at(i).r(0);
+        CyC_INT y_coord = _local_ref_path.at(i).r(1);
 
         Eigen::Vector4f before_transform((float)x_coord - _gridmap.rows() / 2, (float)y_coord - _gridmap.cols() / 2, 0.F, 1.f);
         Eigen::Vector4f after_transform(0.F, 0.F, 0.F, 1.f);
@@ -37,7 +37,7 @@ void CPlanningUtils::plotReferenceSetpointsOnGridmap(cv::Mat& _disp_img, const C
     }
 }
 
-void CPlanningUtils::plotPath(cv::Mat& _disp_img, const std::vector<Eigen::Vector4f>& _global_mission_path, const CycState& _vehicle_state, const Eigen::MatrixXi& _gridmap, const float& _octree_resolution, const cv::Scalar& _color)
+void CPlanningUtils::plotPath(cv::Mat& _disp_img, const CycSetPoints& _global_mission_path, const CycState& _vehicle_state, const Eigen::MatrixXi& _gridmap, const float& _octree_resolution, const cv::Scalar& _color)
 {
     // Rotation with PI radians (180 degrees) around the X axis is necessary because we need to flip the Y axis because:
     // in car coordinates Y axis increases to the left of the X axis
@@ -55,7 +55,7 @@ void CPlanningUtils::plotPath(cv::Mat& _disp_img, const std::vector<Eigen::Vecto
     for (const auto& pt : _global_mission_path)
     {
         // Subtract the pivot point coordinates in order to rotate around the current position of the car
-        Eigen::Vector4f before_transform((float)pt.x() - _vehicle_state.x_hat(0), (float)pt.y() - _vehicle_state.x_hat(1), 0.F, 1.f);
+        Eigen::Vector4f before_transform((float)pt.r.x() - _vehicle_state.x_hat(0), (float)pt.r.y() - _vehicle_state.x_hat(1), 0.F, 1.f);
         Eigen::Vector4f after_transform(0.F, 0.F, 0.F, 1.f);
         after_transform = T_globalpath2vehicle.transform() * before_transform;
 
@@ -73,7 +73,7 @@ void CPlanningUtils::plotPath(cv::Mat& _disp_img, const std::vector<Eigen::Vecto
     }
 }
 
-void CPlanningUtils::plotReferenceSetpoints(cv::Mat& _disp_img, const std::vector<Eigen::VectorXf>& _ref_setpoints, const CycState& _vehicle_state, const Eigen::MatrixXi& _gridmap, const float& _octree_resolution)
+void CPlanningUtils::plotReferenceSetpoints(cv::Mat& _disp_img, const CycSetPoints& _ref_setpoints, const CycState& _vehicle_state, const Eigen::MatrixXi& _gridmap, const float& _octree_resolution)
 {
     // Rotation with PI radians (180 degrees) around the X axis is necessary because we need to flip the Y axis because:
     // in car coordinates Y axis increases to the left of the X axis
@@ -89,7 +89,7 @@ void CPlanningUtils::plotReferenceSetpoints(cv::Mat& _disp_img, const std::vecto
     for (const auto& pt : _ref_setpoints)
     {
         // Subtract the pivot point coordinates in order to rotate around the current position of the car
-        Eigen::Vector4f before_transform(pt.x() - _ref_setpoints.front().x(), pt.y() - _ref_setpoints.front().y(), 0.F, 1.f);
+        Eigen::Vector4f before_transform(pt.r.x() - _ref_setpoints.front().r.x(), pt.r.y() - _ref_setpoints.front().r.y(), 0.F, 1.f);
         Eigen::Vector4f after_transform(0.F, 0.F, 0.F, 1.f);
         after_transform = T_globalpath2vehicle.transform() * before_transform;
 
@@ -107,7 +107,7 @@ void CPlanningUtils::plotReferenceSetpoints(cv::Mat& _disp_img, const std::vecto
     }
 }
 
-void CPlanningUtils::plotAStarGoalPoint(cv::Mat& _disp_img, const Eigen::Vector4f &_goal_point, const CycState &_vehicle_state, const Eigen::MatrixXi& _gridmap, const float& _octree_resolution)
+void CPlanningUtils::plotAStarGoalPoint(cv::Mat& _disp_img, const CycSetPoint& _goal_point, const CycState& _vehicle_state, const Eigen::MatrixXi& _gridmap, const float& _octree_resolution)
 {
     CPose T_globalpath2vehicle(0.F, 0.F, 0.F, 180.F * DEG2RAD, 0.F, 0.F);
 
@@ -116,7 +116,7 @@ void CPlanningUtils::plotAStarGoalPoint(cv::Mat& _disp_img, const Eigen::Vector4
 
     const cv::Point2f ego_vehicle_origin{ _disp_img.rows / 2.f, _disp_img.cols / 2.f };
 
-    Eigen::Vector4f before_transform(_goal_point(0) - _vehicle_state.x_hat(0), _goal_point(1) - _vehicle_state.x_hat(1), 0.F, 1.f);
+    Eigen::Vector4f before_transform(_goal_point.r(0) - _vehicle_state.x_hat(0), _goal_point.r(1) - _vehicle_state.x_hat(1), 0.F, 1.f);
     Eigen::Vector4f after_transform(0.F, 0.F, 0.F, 1.f);
     after_transform = T_globalpath2vehicle.transform() * before_transform;
 
@@ -127,7 +127,7 @@ void CPlanningUtils::plotAStarGoalPoint(cv::Mat& _disp_img, const Eigen::Vector4
         cv::circle(_disp_img, cv::Point(x, y), 9, cv::Scalar(0, 255, 255), -1);
 }
 
-void CPlanningUtils::plotCandidateTrajectories(cv::Mat & _disp_img, const std::vector<std::vector<Eigen::VectorXf>>& _candidate_trajectories, const CycState & _vehicle_state, const Eigen::MatrixXi & _gridmap, const float & _octree_resolution)
+void CPlanningUtils::plotCandidateTrajectories(cv::Mat & _disp_img, const std::vector<CycSetPoints>& _candidate_trajectories, const CycState & _vehicle_state, const Eigen::MatrixXi & _gridmap, const float & _octree_resolution)
 {
     // Rotation with PI radians (180 degrees) around the X axis is necessary because we need to flip the Y axis because:
     // in car coordinates Y axis increases to the left of the X axis
@@ -144,8 +144,8 @@ void CPlanningUtils::plotCandidateTrajectories(cv::Mat & _disp_img, const std::v
         {
             // Subtract the pivot point coordinates in order to rotate around the current position of the car
             Eigen::Vector4f before_transform(
-                pt.x() - trajectory.front().x(),
-                pt.y() - trajectory.front().y(), 0.F, 1.f);
+                pt.r.x() - trajectory.front().r.x(),
+                pt.r.y() - trajectory.front().r.y(), 0.F, 1.f);
 
             Eigen::Vector4f after_transform(0.F, 0.F, 0.F, 1.f);
             after_transform = T_globalpath2vehicle.transform() * before_transform;
@@ -159,7 +159,7 @@ void CPlanningUtils::plotCandidateTrajectories(cv::Mat & _disp_img, const std::v
     }
 }
 
-size_t CPlanningUtils::findClosestPoint(const std::vector<Eigen::Vector4f>& _mission_path,
+size_t CPlanningUtils::findClosestPoint(const std::vector<CycSetPoint>& _mission_path,
     const CycState& _vehicle_state,
     size_t _previous_trajectory_point_index,
     size_t _closest_index)
@@ -167,7 +167,7 @@ size_t CPlanningUtils::findClosestPoint(const std::vector<Eigen::Vector4f>& _mis
     Eigen::MatrixXf mission_mat(2, _mission_path.size());
     for (size_t i = 0; i < _mission_path.size(); ++i)
     {
-        mission_mat.col(i) << _mission_path[i].x(), _mission_path[i].y();
+        mission_mat.col(i) << _mission_path[i].r.x(), _mission_path[i].r.y();
     }
 
     mission_mat.colwise() -= _vehicle_state.x_hat.topRows(2);

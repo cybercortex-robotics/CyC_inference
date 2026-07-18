@@ -37,7 +37,7 @@ CDwa::CDwa(const float _dt,
     m_bEnabled = true;
 }
 
-void CDwa::setMissionPath(const std::vector<Eigen::Vector4f>& _mission_path, const CycState& _vehicle_state)
+void CDwa::setMissionPath(const std::vector<CycSetPoint>& _mission_path, const CycState& _vehicle_state)
 {
     m_MissionPath = _mission_path;
 
@@ -49,7 +49,7 @@ void CDwa::setMissionPath(const std::vector<Eigen::Vector4f>& _mission_path, con
 
     for (size_t idx = 1; idx < m_MissionPath.size(); ++idx)
     {
-        sum += dist(m_MissionPath[idx - 1], m_MissionPath[idx]);
+        sum += dist(m_MissionPath[idx - 1].r, m_MissionPath[idx].r);
     }
 
     const auto mean_pt_dist = sum / m_MissionPath.size();
@@ -65,7 +65,7 @@ void CDwa::setMissionPath(const std::vector<Eigen::Vector4f>& _mission_path, con
     const Eigen::Vector4f state{ _vehicle_state.x_hat[0], _vehicle_state.x_hat[1], 0.F, 0.F };
     for (size_t idx = 0; idx < m_MissionPath.size(); ++idx)
     {
-        auto d = dist(m_MissionPath[idx], state);
+        auto d = dist(m_MissionPath[idx].r, state);
         if (d < minDist)
         {
             minDist = d;
@@ -102,19 +102,19 @@ bool CDwa::obstacleCollision(const Eigen::VectorXf& state, const Eigen::VectorXf
 }
 
 // Cost functions
-float CDwa::obstacleCost(const std::vector<Eigen::VectorXf>& trajectory, const std::vector<Eigen::VectorXf>& obstacles)
+float CDwa::obstacleCost(const std::vector<CycSetPoint>& trajectory, const std::vector<CycSetPoint>& obstacles)
 {
     const float obstacle_cost = 10e6f;
 
     if (!obstacles.empty())
     {
-        for (const Eigen::VectorXf& pt : trajectory)
+        for (const CycSetPoint& pt : trajectory)
         {
-            const Eigen::Vector2f xy(pt.x(), pt.y());
+            const Eigen::Vector2f xy(pt.r.x(), pt.r.y());
 
-            for (const Eigen::VectorXf& ob : obstacles)
+            for (const CycSetPoint& ob : obstacles)
             {
-                if (obstacleCollision(xy, ob))
+                if (obstacleCollision(xy, ob.r))
                 {
                     return obstacle_cost;
                 }
@@ -125,7 +125,7 @@ float CDwa::obstacleCost(const std::vector<Eigen::VectorXf>& trajectory, const s
     return 0.f;
 }
 
-float CDwa::traversableCost(const std::vector<Eigen::VectorXf>& trajectory, const std::vector<Eigen::VectorXf>& traversable)
+float CDwa::traversableCost(const std::vector<CycSetPoint>& trajectory, const std::vector<CycSetPoint>& traversable)
 {
     float traversable_cost = 10e6f;
 
@@ -133,13 +133,13 @@ float CDwa::traversableCost(const std::vector<Eigen::VectorXf>& trajectory, cons
     {
         CyC_INT num_nodes = 0;
 
-        for (const Eigen::VectorXf& pt : trajectory)
+        for (const CycSetPoint& pt : trajectory)
         {
-            const Eigen::Vector2f xy(pt.x(), pt.y());
+            const Eigen::Vector2f xy(pt.r.x(), pt.r.y());
 
-            for (const Eigen::VectorXf& ob : traversable)
+            for (const CycSetPoint& ob : traversable)
             {
-                if (obstacleCollision(xy, ob))
+                if (obstacleCollision(xy, ob.r))
                     ++num_nodes;
             }
         }
@@ -150,19 +150,19 @@ float CDwa::traversableCost(const std::vector<Eigen::VectorXf>& trajectory, cons
     return traversable_cost;
 }
 
-float CDwa::goalPointsCost(const std::vector<Eigen::VectorXf>& trajectory, const std::vector<Eigen::VectorXf>& goal_points)
+float CDwa::goalPointsCost(const std::vector<CycSetPoint>& trajectory, const std::vector<CycSetPoint>& goal_points)
 {
     float cost = 0.F;
 
     if (!trajectory.empty())
     {
-        for (const Eigen::VectorXf& goal_point : goal_points)
+        for (const CycSetPoint& goal_point : goal_points)
         {
             std::vector<float> distances;
             distances.reserve(trajectory.size());
 
             std::transform(trajectory.begin(), trajectory.end(), std::back_inserter(distances),
-                [this, &goal_point](const Eigen::VectorXf& pt) { return distance(pt, goal_point); });
+                [this, &goal_point](const CycSetPoint& pt) { return distance(pt.r, goal_point.r); });
 
             const auto it = std::min_element(distances.begin(), distances.end());
             cost += *it;
@@ -192,7 +192,7 @@ float CDwa::topSpeedCost(float linear_vel)
     return m_pVehicleModel->m_fMaxForwardSpeed - linear_vel;
 }
 
-float CDwa::lanesCost(const std::vector<Eigen::VectorXf>& trajectory, const CycLanesModel& lanes)
+float CDwa::lanesCost(const std::vector<CycSetPoint>& trajectory, const CycLanesModel& lanes)
 {
     // no lanes available
     if (lanes.empty())
@@ -222,16 +222,16 @@ float CDwa::lanesCost(const std::vector<Eigen::VectorXf>& trajectory, const CycL
 
     // generate trajectory and use the already-implemented function
     // to calculate the cost of staying between lanes
-    std::vector<Eigen::VectorXf> lane_trajectory;
+    std::vector<CycSetPoint> lane_trajectory;
     lane_trajectory.reserve(trajectory.size());
     for (const auto& point : trajectory)
     {
         const auto y =
-            (CPolynomialFitting::polyeval(leftLane.model, point.x()) +
-             CPolynomialFitting::polyeval(rightLane.model, point.x())) * 0.5F;
+            (CPolynomialFitting::polyeval(leftLane.model, point.r.x()) +
+             CPolynomialFitting::polyeval(rightLane.model, point.r.x())) * 0.5F;
 
-        lane_trajectory.emplace_back(2);
-        lane_trajectory.back() << point.x(), y;
+        CycSetPoint pt(2); pt.r << point.r.x(), y;
+        lane_trajectory.emplace_back(pt);
     }
 
     return goalPointsCost(trajectory, lane_trajectory);
@@ -386,9 +386,9 @@ float CDwa::roadSegmentationHullCost(const CycTrajectory& trajectory, const std:
     return 0.F;
 }
 
-std::vector<Eigen::VectorXf> CDwa::generateTrajectory(float target_speed, float steer)
+std::vector<CycSetPoint> CDwa::generateTrajectory(float target_speed, float steer)
 {
-    std::vector<Eigen::VectorXf> traj;
+    std::vector<CycSetPoint> traj;
 
     // Sanity check
     float speed = target_speed;
@@ -403,7 +403,9 @@ std::vector<Eigen::VectorXf> CDwa::generateTrajectory(float target_speed, float 
     for (auto t = 0.f; t <= fPredictTime; t += m_config.dt)
     {
         predictState(target_speed, steer);
-        traj.emplace_back(m_pVehicleModel->x());
+        CycSetPoint sp;
+        sp.r = m_pVehicleModel->x();
+        traj.push_back(std::move(sp));
     }
 
     return traj;
@@ -432,7 +434,7 @@ float get_angle(
     return angle;
 }
 
-void CDwa::find_goal_points(const CycState& _vehicle_state, std::vector<Eigen::VectorXf>& _out_goal_points)
+void CDwa::find_goal_points(const CycState& _vehicle_state, std::vector<CycSetPoint>& _out_goal_points)
 {
     _out_goal_points.clear();
 
@@ -445,7 +447,7 @@ void CDwa::find_goal_points(const CycState& _vehicle_state, std::vector<Eigen::V
 
     size_t index = CPlanningUtils::findClosestPoint(m_MissionPath, _vehicle_state, m_PreviousTrajectoryPointIndex, m_ClosestIndex);
 
-    if (distance_between(last_point, m_MissionPath[index]) > (2.F * DISTANCE_BETWEEN_POINTS))
+    if (distance_between(last_point, m_MissionPath[index].r) > (2.F * DISTANCE_BETWEEN_POINTS))
     {
         index = m_PreviousTrajectoryPointIndex;
     }
@@ -454,19 +456,21 @@ void CDwa::find_goal_points(const CycState& _vehicle_state, std::vector<Eigen::V
 
     for (size_t i = 0; i < m_NumGoalPoints; ++i)
     {
-        float dist = distance_between(last_point, m_MissionPath[index]);
+        float dist = distance_between(last_point, m_MissionPath[index].r);
         while ((dist < DISTANCE_BETWEEN_POINTS) && ((index + 1) < m_MissionPath.size()))
         {
             ++index;
-            dist = distance_between(last_point, m_MissionPath[index]);
+            dist = distance_between(last_point, m_MissionPath[index].r);
         }
 
-        last_point << m_MissionPath[index].x(), m_MissionPath[index].y(), m_MissionPath[index][2], m_MissionPath[index][3], 0.f;
-        _out_goal_points.emplace_back(last_point);
+        last_point << m_MissionPath[index].r.x(), m_MissionPath[index].r.y(), m_MissionPath[index].r[2], m_MissionPath[index].r[3], 0.f;
+        CycSetPoint goal_sp;
+        goal_sp.r = last_point;
+        _out_goal_points.push_back(std::move(goal_sp));
     }
 }
 
-void CDwa::parse_octree(const CCycOcTree& _octree, std::vector<Eigen::VectorXf>& _out_obstacles, std::vector<Eigen::VectorXf>& _out_traversable)
+void CDwa::parse_octree(const CCycOcTree& _octree, std::vector<CycSetPoint>& _out_obstacles, std::vector<CycSetPoint>& _out_traversable)
 {
     _out_obstacles.clear();
     _out_traversable.clear();
@@ -482,7 +486,7 @@ void CDwa::parse_octree(const CCycOcTree& _octree, std::vector<Eigen::VectorXf>&
         //    continue;
 
         // Point in global coordinates
-        Eigen::Vector4f point(it.getCoordinate().x(), it.getCoordinate().y(), it.getCoordinate().z(), 1.f);
+        CycSetPoint point(4); point.r << it.getCoordinate().x(), it.getCoordinate().y(), it.getCoordinate().z(), 1.f;
 
         // Check if the segmented class is in the vector of traversable classes
         bool bTraversableFound = false;
@@ -528,7 +532,7 @@ std::vector<Eigen::VectorXf> CDwa::find_traversable_nodes(const CCycOcTree& _oct
     return traversable_nodes;
 }
 
-bool CDwa::goalPointReached(const std::vector<Eigen::VectorXf>& goal_points, const CycState& _vehicle_state)
+bool CDwa::goalPointReached(const std::vector<CycSetPoint>& goal_points, const CycState& _vehicle_state)
 {
     auto dist = [&](const Eigen::VectorXf& pt1, const Eigen::VectorXf& pt2)
     {
@@ -545,9 +549,9 @@ bool CDwa::goalPointReached(const std::vector<Eigen::VectorXf>& goal_points, con
     {
         for (const auto& goal : goal_points)
         {
-            if (dist(goal, m_MissionPath.back()) < threshold_goal_reached) // If goal point is close to the end of the global trajectory
+            if (dist(goal.r, m_MissionPath.back().r) < threshold_goal_reached) // If goal point is close to the end of the global trajectory
             {
-                if (dist(_vehicle_state.x_hat, goal) < threshold_goal_reached) // If vehicle is close to the goal point
+                if (dist(_vehicle_state.x_hat, goal.r) < threshold_goal_reached) // If vehicle is close to the goal point
                 {
                     m_GoalPointReached = true;
                     return true;
@@ -574,25 +578,26 @@ CycControlInput CDwa::filterSignals(const CycControlInput& raw_control)
     return ctrl;
 }
 
-CycControlInput CDwa::dwaControl(
-    const CycState& vehicle_state,
-    const CycEnvironment& env)
+CycControlInput CDwa::dwaControl(const CycState& _vehicle_state, const CycEnvironment& _env, std::vector<CycSetPoints>* _out_samples)
 {
+    if (_out_samples != nullptr)
+        _out_samples->clear();
+
     CycControlInput control;
     control.u = Eigen::VectorXf::Zero(m_pVehicleModel->getNumInputs());
 
-    std::vector<Eigen::VectorXf> obstacles, traversable;
-    parse_octree(*env.pOccupancyModel, obstacles, traversable);
+    std::vector<CycSetPoint> obstacles, traversable;
+    parse_octree(*_env.pOccupancyModel, obstacles, traversable);
     //std::vector<Eigen::VectorXf> traversable_nodes = find_traversable_nodes(*env.pOccupancyModel, traversable_class_id);
-    std::vector<Eigen::VectorXf> goal_points;
-    find_goal_points(vehicle_state, goal_points);
+    std::vector<CycSetPoint> goal_points;
+    find_goal_points(_vehicle_state, goal_points);
 
     if (!m_GoalPointReached)
-        if (goalPointReached(goal_points, vehicle_state))
+        if (goalPointReached(goal_points, _vehicle_state))
             return control;
 
     float min_cost = std::numeric_limits<float>::max();
-    std::vector<Eigen::VectorXf> best_traj;
+    std::vector<CycSetPoint> best_traj;
     
     const CyC_UINT angular_vel_steps = 20;
     const CyC_UINT linear_vel_steps = 5;
@@ -606,7 +611,7 @@ CycControlInput CDwa::dwaControl(
     const float angular_vel_stop = m_pVehicleModel->m_fMaxSteeringAngleRad;
 
     const float goal_orientation = (goal_points.size() > 1U)
-        ? get_angle(goal_points.front(), goal_points.back())
+        ? get_angle(goal_points.front().r, goal_points.back().r)
         : 0.F;
 
     const float orientation_coeff = (goal_points.size() > 1U) ? m_config.orientation_coefficient : 0.F;
@@ -618,11 +623,12 @@ CycControlInput CDwa::dwaControl(
     {
         for (auto linear_vel = linear_vel_start; linear_vel < linear_vel_stop; linear_vel += linear_vel_res)
         {
-            m_pVehicleModel->set_x(vehicle_state.x_hat);
+            m_pVehicleModel->set_x(_vehicle_state.x_hat);
             m_pVehicleModel->set_y(m_pVehicleModel->x());
 
-            std::vector<Eigen::VectorXf> traj = generateTrajectory(linear_vel, angular_vel);
-            control.ref_pts.ref_samples.push_back(traj);
+            CycSetPoints traj = generateTrajectory(linear_vel, angular_vel);
+            if (_out_samples != nullptr)
+                _out_samples->push_back(traj);
 
             const auto goal_cost = m_config.goal_coefficient * goalPointsCost(traj, goal_points); // Drive towards goal point(s)
             const auto obs_cost = obstacleCost(traj, obstacles); // No need for obstacle amplification; cost is big anyway
@@ -630,7 +636,7 @@ CycControlInput CDwa::dwaControl(
             const auto linear_momentum_cost = m_config.linear_momentum_coefficient * linearMomentumCost(linear_vel); // Penalize velocity differences
             const auto top_speed_cost = m_config.top_speed_coefficient * topSpeedCost(linear_vel); // Penalize low speed runs
             const auto lanes_cost = 0; // m_config.lanes_coefficient* lanesCost(traj, lanes);
-            const auto orientation_cost = orientation_coeff * abs(goal_orientation - traj.back()[3]);
+            const auto orientation_cost = orientation_coeff * abs(goal_orientation - traj.back().r[3]);
             
             //const auto semseg_cost = m_config.semseg_coefficient * roadSegmentationCost(traj, traversable_nodes);
             const auto traversable_cost = 0.f; // m_config.traversable_coefficient* roadSegmentationHullCost(traj, segmentation_hull);
@@ -642,7 +648,7 @@ CycControlInput CDwa::dwaControl(
                 min_cost = total_cost;
                 best_traj = traj;
                 control.u << linear_vel, angular_vel;
-                control.ref_pts.ref = best_traj;
+                control.ref = best_traj;
             }
 
             ++idx;
@@ -651,8 +657,8 @@ CycControlInput CDwa::dwaControl(
 
     m_PreviousControl = control;
 
-    for (const auto& gp : goal_points)
-        control.goal_points.push_back(gp);
+    //for (const auto& gp : goal_points)
+    //    control.goal_points.push_back(gp);
 
     if (m_PreviousControlSignals.size() >= m_NumHistoryControlSignals)
         m_PreviousControlSignals.erase(m_PreviousControlSignals.begin());
@@ -663,43 +669,45 @@ CycControlInput CDwa::dwaControl(
     return control;
 }
 
-CycReferenceSetPoints CDwa::dwaPlan(
-    const CycState& vehicle_state,
-    const CycEnvironment& env)
+CycSetPoints CDwa::dwaPlan(const CycState& _vehicle_state, const CycEnvironment& _env, std::vector<CycSetPoints>* _out_samples)
 {
+    if (_out_samples != nullptr)
+        _out_samples->clear();
+
     float min_cost = std::numeric_limits<float>::max();
-    std::vector<Eigen::VectorXf> best_traj;
-    CycReferenceSetPoints reference;
+    std::vector<CycSetPoint> best_traj;
+    CycSetPoints reference;
 
     // TODO: remove hardcode
     float target_speed = 4.f;
 
-    std::vector<Eigen::VectorXf> obstacles, traversable;
-    parse_octree(*env.pOccupancyModel, obstacles, traversable);
-    std::vector<Eigen::VectorXf> goal_points;
-    find_goal_points(vehicle_state, goal_points);
+    std::vector<CycSetPoint> obstacles, traversable;
+    parse_octree(*_env.pOccupancyModel, obstacles, traversable);
+    std::vector<CycSetPoint> goal_points;
+    find_goal_points(_vehicle_state, goal_points);
 
     if (!m_GoalPointReached)
-        if (goalPointReached(goal_points, vehicle_state))
+        if (goalPointReached(goal_points, _vehicle_state))
             return reference;
 
     const float goal_orientation = (goal_points.size() > 1U)
-        ? get_angle(goal_points.front(), goal_points.back())
+        ? get_angle(goal_points.front().r, goal_points.back().r)
         : 0.F;
 
     const float orientation_coeff = (goal_points.size() > 1U) ? m_config.orientation_coefficient : 0.F;
 
     for (float yaw = -m_pVehicleModel->m_fMaxSteeringAngleRad; yaw <= m_pVehicleModel->m_fMaxSteeringAngleRad; yaw += m_pVehicleModel->m_fSteeringRateResolution)
     {
-        m_pVehicleModel->set_x(vehicle_state.x_hat);
+        m_pVehicleModel->set_x(_vehicle_state.x_hat);
         m_pVehicleModel->set_y(m_pVehicleModel->x());
 
-        std::vector<Eigen::VectorXf> traj = generateTrajectory(target_speed, yaw);
-        reference.ref_samples.push_back(traj);
+        std::vector<CycSetPoint> traj = generateTrajectory(target_speed, yaw);
+        if (_out_samples != nullptr)
+            _out_samples->push_back(traj);
         
         const float goal_cost = m_config.goal_coefficient * goalPointsCost(traj, goal_points); // Drive towards goal point(s)
         const float obs_cost = obstacleCost(traj, obstacles); // No need for obstacle amplification; cost is big anyway
-        const float orientation_cost = orientation_coeff * abs(goal_orientation - traj.back()[3]);
+        const float orientation_cost = orientation_coeff * abs(goal_orientation - traj.back().r[3]);
 
         const float traversable_cost = m_config.traversable_coefficient * traversableCost(traj, traversable);
         //spdlog::info("goal and traversable_costs = {},\t{}", goal_cost, traversable_cost);
@@ -710,7 +718,7 @@ CycReferenceSetPoints CDwa::dwaPlan(
         {
             min_cost = total_cost;
             best_traj = traj;
-            reference.ref = best_traj;
+            reference = best_traj;
         }
     }
 

@@ -21,21 +21,17 @@ public:
 
     bool isEnabled() { return m_bEnabled; };
 
-    void setMissionPath(const std::vector<Eigen::Vector4f>& _mission_path, const CycState& _vehicle_state);
+    void setMissionPath(const std::vector<CycSetPoint>& _mission_path, const CycState& _vehicle_state);
 
-    CycControlInput dwaControl(
-        const CycState& vehicle_state,
-        const CycEnvironment& env);
+    CycControlInput dwaControl(const CycState& _vehicle_state, const CycEnvironment& _env, std::vector<CycSetPoints>* _out_samples = nullptr);
 
-    CycReferenceSetPoints dwaPlan(
-        const CycState& vehicle_state,
-        const CycEnvironment& env);
+    CycSetPoints dwaPlan(const CycState& _vehicle_state, const CycEnvironment& _env, std::vector<CycSetPoints>* _out_samples = nullptr);
 
 private:
-    void find_goal_points(const CycState& _vehicle_state, std::vector<Eigen::VectorXf>& _out_goal_points);
-    void parse_octree(const CCycOcTree& _octree, std::vector<Eigen::VectorXf>& _out_obstacles, std::vector<Eigen::VectorXf>& _out_traversable);
+    void find_goal_points(const CycState& _vehicle_state, std::vector<CycSetPoint>& _out_goal_points);
+    void parse_octree(const CCycOcTree& _octree, std::vector<CycSetPoint>& _out_obstacles, std::vector<CycSetPoint>& _out_traversable);
     std::vector<Eigen::VectorXf> find_traversable_nodes(const CCycOcTree& _octree, const CyC_INT& _traversable_class_id);
-    bool goalPointReached(const std::vector<Eigen::VectorXf>& goal_points, const CycState& _vehicle_state);
+    bool goalPointReached(const std::vector<CycSetPoint>& goal_points, const CycState& _vehicle_state);
     CycControlInput filterSignals(const CycControlInput& raw_control);
 
     // Use the underlying vehicle model to predict the vehicle state over the dynamic window
@@ -45,7 +41,7 @@ private:
     bool obstacleCollision(const Eigen::VectorXf& state, const Eigen::VectorXf& obstacle_point);
 
     // Cost for (not) hitting goal point(s)
-    float goalPointsCost(const std::vector<Eigen::VectorXf>& trajectory, const std::vector<Eigen::VectorXf>& goal_points);
+    float goalPointsCost(const std::vector<CycSetPoint>& trajectory, const std::vector<CycSetPoint>& goal_points);
 
     // Penalty for differences between successive angular velocity commands (oscillation)
     float angularMomentumCost(float angular_vel);
@@ -57,13 +53,13 @@ private:
     float topSpeedCost(float linear_vel);
 
     // Hitting an obstacle - should be very large when hitting an obstacle; zero otherwise
-    float obstacleCost(const std::vector<Eigen::VectorXf>& trajectory, const std::vector<Eigen::VectorXf>& obstacles);
+    float obstacleCost(const std::vector<CycSetPoint>& trajectory, const std::vector<CycSetPoint>& obstacles);
 
     // Traversable cost - is inverse proportional to the number of traversable nodes in the environment model
-    float traversableCost(const std::vector<Eigen::VectorXf>& trajectory, const std::vector<Eigen::VectorXf>& traversable);
+    float traversableCost(const std::vector<CycSetPoint>& trajectory, const std::vector<CycSetPoint>& traversable);
 
     // Cost for staying in between lanes
-    float lanesCost(const std::vector<Eigen::VectorXf>& trajectory, const CycLanesModel& lanes);
+    float lanesCost(const std::vector<CycSetPoint>& trajectory, const CycLanesModel& lanes);
 
     // Cost for staying on the segmented road
     //float roadSegmentationCost(const std::vector<Eigen::VectorXf>& trajectory, const CycImages& semseg_imgs);
@@ -71,7 +67,7 @@ private:
     float roadSegmentationHullCost(const CycTrajectory& trajectory, const std::vector<Eigen::Vector4f>& hull_nodes);
 
     // Generate trajectory with given linear velocity and agular velocity commands
-    std::vector<Eigen::VectorXf> generateTrajectory(float target_speed, float steer);
+    std::vector<CycSetPoint> generateTrajectory(float target_speed, float steer);
 
     // Euclidean distance
     float distance(const Eigen::VectorXf& pt1, const Eigen::VectorXf& pt2)
@@ -109,9 +105,9 @@ private:
 
     std::unique_ptr<CModelVehicle>  m_pVehicleModel; // Vehicle state space model
     DWAConfig                       m_config;
-    std::vector<Eigen::VectorXf>    m_previous_trajectory;
+    std::vector<CycSetPoint>        m_previous_trajectory;
 
-    std::vector<Eigen::Vector4f>    m_MissionPath;
+    std::vector<CycSetPoint>        m_MissionPath;
     CyC_UINT                        m_NumGoalPoints = 1;
     float                           m_GoalDistance = 1.f;
     size_t                          m_PreviousTrajectoryPointIndex = 0;

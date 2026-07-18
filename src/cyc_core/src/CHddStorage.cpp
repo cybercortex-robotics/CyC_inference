@@ -836,7 +836,7 @@ void CHddStorage::saveFilter(CCycFilterBase* _pFilter, std::ofstream& _csv_writt
         break;
         case CyC_REFERENCE_SETPOINTS:
         {
-            CycReferenceSetPoints refSetpoints;
+            CycSetPoints refSetpoints;
             if (_pFilter->getData(refSetpoints))
             {
                 if (m_extra_writers.find(_pFilter->getFilterKey()) == m_extra_writers.end())
@@ -850,7 +850,7 @@ void CHddStorage::saveFilter(CCycFilterBase* _pFilter, std::ofstream& _csv_writt
                     }
                     else
                     {
-                        std::vector<std::string> columnNames(refSetpoints.ref[0].size() + 1);
+                        std::vector<std::string> columnNames(refSetpoints[0].r.size() + 1);
                         columnNames[0] = "frame_id";
                         size_t i = 0;
                         std::generate(columnNames.begin() + 1, columnNames.end(), [&i]() { return fmt::format("ref_point_{}", i++);  });
@@ -864,13 +864,13 @@ void CHddStorage::saveFilter(CCycFilterBase* _pFilter, std::ofstream& _csv_writt
 
                 if (extra_writer.is_open())
                 {
-                    for (const auto& refPt : refSetpoints.ref)
+                    for (const auto& refPt : refSetpoints)
                     {
                         auto crtRow = extra_writer.new_row();
                         crtRow.write_column(frame_id);
-                        for (auto idx = 0; idx < refPt.size(); ++idx)
+                        for (auto idx = 0; idx < refPt.r.size(); ++idx)
                         {
-                            crtRow.write_column(refPt[idx]);
+                            crtRow.write_column(refPt.r[idx]);
                         }
                     }
 

@@ -40,6 +40,14 @@ int CRobotConfig::baseStateSlot(const std::string& _field) const
     return static_cast<int>(std::distance(base_state.begin(), it));
 }
 
+float CRobotConfig::baseStateValue(
+    const CycState& _state, const std::string& _field, float _fallback) const
+{
+    const int slot = baseStateSlot(_field);
+
+    return (slot < 0) ? _fallback : _state.x_hat[slot];
+}
+
 int CRobotConfig::jointStateSlot(const std::string& _field, int _dof) const
 {
     const auto it = std::find(joint_state.begin(), joint_state.end(), _field);

@@ -23,18 +23,18 @@ public:
 
     const       CycLandmarks getLandmarks() const { return m_Landmarks; };
     bool        getLandmark(const CyC_INT _marker_id, CycLandmark& _landmark);
-    bool        getWaypoints(const CyC_INT _marker_id, std::vector<Eigen::Vector4f>& _waypoints);
+    bool        getWaypoints(const CyC_INT _marker_id, std::vector<CycSetPoint>& _waypoints);
     CyC_UINT    getNumLandmarks();
 
-    static void landmark2mission(const CycLandmark& _landmark, std::vector<Eigen::Vector4f>& _mission_pts);
-    static void waypoints2mission(const std::vector<Eigen::Vector2f>& waypoints, std::vector<Eigen::Vector4f>& mission_pts);
-    static bool waypoints2mission(csv::reader& csv_reader, std::vector<Eigen::Vector4f>& _out_ref_path_pts);
+    static void landmark2mission(const CycLandmark& _landmark, std::vector<CycSetPoint>& _mission_pts);
+    static void waypoints2mission(const std::vector<CycSetPoint>& waypoints, std::vector<CycSetPoint>& mission_pts);
+    static bool waypoints2mission(csv::reader& csv_reader, std::vector<CycSetPoint>& _out_ref_path_pts);
 
-    static void interpolate_between_points(const Eigen::Vector4f& begin, const Eigen::Vector4f& end, std::vector<Eigen::Vector4f>& _in_out_ref_path_pts);
+    static void interpolate_between_points(const CycSetPoint& begin, const CycSetPoint& end, std::vector<CycSetPoint>& _in_out_ref_path_pts);
     static CycLandmark getClosestTraj(const CycLandmarks& _landmarks, const CPose& _dst);
 
 private:
-    void str2waypoints(std::string _str_waypoints, std::vector<Eigen::Vector4f>& _waypoints);
+    void str2waypoints(std::string _str_waypoints, std::vector<CycSetPoint>& _waypoints);
     static float dist(float x1, float y1, float x2, float y2);
 
 private:

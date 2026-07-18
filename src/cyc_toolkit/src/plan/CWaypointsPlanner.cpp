@@ -7,6 +7,28 @@
 #include <sstream>
 #include <algorithm>
 
+// Waypoints are stored as 2D setpoints [x, y], while mission points are 4D setpoints [x, y, v, yaw]
+static CycSetPoint make_waypoint(const float _x, const float _y)
+{
+    CycSetPoint wp(2);
+    wp.r << _x, _y;
+    return wp;
+}
+
+static CycSetPoint make_mission_pt(const float _x, const float _y, const float _v, const float _yaw)
+{
+    CycSetPoint pt(4);
+    pt.r << _x, _y, _v, _yaw;
+    return pt;
+}
+
+static CycSetPoint make_setpoint(const Eigen::VectorXf& _r)
+{
+    CycSetPoint sp;
+    sp.r = _r;
+    return sp;
+}
+
 CWaypointsPlanner::CWaypointsPlanner()
 {}
 
@@ -114,7 +136,7 @@ bool CWaypointsPlanner::saveWaypoints(CycLandmarks& _landmarks, const std::strin
         for (CyC_INT j = 0; j < landmark.waypoints.size(); j++)
         {
             auto w = landmark.waypoints[j];
-            CsvWritter << "[" << w.x() << ";" << w.y() << ";" << w.z() << ";0]";
+            CsvWritter << "[" << w.r.x() << ";" << w.r.y() << ";" << w.r.z() << ";0]";
         }
         CsvWritter << "]";
 
@@ -139,7 +161,7 @@ bool CWaypointsPlanner::getLandmark(const CyC_INT _marker_id, CycLandmark& _land
     return false;
 }
 
-bool CWaypointsPlanner::getWaypoints(const CyC_INT _marker_id, std::vector<Eigen::Vector4f>& _waypoints)
+bool CWaypointsPlanner::getWaypoints(const CyC_INT _marker_id, std::vector<CycSetPoint>& _waypoints)
 {
     _waypoints.clear();
     for (const auto& l : m_Landmarks)
@@ -158,7 +180,7 @@ CyC_UINT CWaypointsPlanner::getNumLandmarks()
     return static_cast<CyC_UINT>(m_Landmarks.size());
 }
 
-void CWaypointsPlanner::str2waypoints(std::string _str_waypoints, std::vector<Eigen::Vector4f>& _waypoints)
+void CWaypointsPlanner::str2waypoints(std::string _str_waypoints, std::vector<CycSetPoint>& _waypoints)
 {
     //_waypoints.clear();
 
@@ -202,7 +224,7 @@ void CWaypointsPlanner::str2waypoints(std::string _str_waypoints, std::vector<Ei
     }
 
     for (auto it = tmp_waypoints.begin(); it != tmp_waypoints.end(); ++it)
-        _waypoints.emplace_back(*it);
+        _waypoints.emplace_back(make_setpoint(*it));
 }
 
 bool CWaypointsPlanner::addLandmark(const int& _id, const CPose& _pose, const std::vector<Eigen::VectorXf>& _waypoints)
@@ -217,29 +239,27 @@ bool CWaypointsPlanner::addLandmark(const int& _id, const CPose& _pose, const st
     {
         if (waypt.size() < 4)
             return false;
-        landmark.waypoints.emplace_back(waypt.head<4>());
+        landmark.waypoints.emplace_back(make_setpoint(waypt.head<4>()));
     }
     m_Landmarks.emplace_back(landmark);
 
     return true;
 }
 
-void CWaypointsPlanner::landmark2mission(const CycLandmark& _landmark, std::vector<Eigen::Vector4f>& _mission_pts)
+void CWaypointsPlanner::landmark2mission(const CycLandmark& _landmark, std::vector<CycSetPoint>& _mission_pts)
 {
-    std::vector<Eigen::Vector2f> waypoints;
-    //for (const auto& w : _landmark.waypoints)
-    //    waypoints.emplace_back(w.x(), w.y());
+    std::vector<CycSetPoint> waypoints;
     for (auto it = _landmark.waypoints.rbegin(); it != _landmark.waypoints.rend(); ++it)
     {
         const auto& w = *it;
-        waypoints.emplace_back(w.x(), w.y());
+        waypoints.emplace_back(make_waypoint(w.r.x(), w.r.y()));
     }
-    waypoints.emplace_back(_landmark.pose.translation_3x1().x(), _landmark.pose.translation_3x1().y());
+    waypoints.emplace_back(make_waypoint(_landmark.pose.translation_3x1().x(), _landmark.pose.translation_3x1().y()));
 
     waypoints2mission(waypoints, _mission_pts);
 }
 
-void CWaypointsPlanner::waypoints2mission(const std::vector<Eigen::Vector2f>& waypoints, std::vector<Eigen::Vector4f>& mission_pts)
+void CWaypointsPlanner::waypoints2mission(const std::vector<CycSetPoint>& waypoints, std::vector<CycSetPoint>& mission_pts)
 {
     mission_pts.clear();
     const bool interpolate_points = true;
@@ -248,12 +268,12 @@ void CWaypointsPlanner::waypoints2mission(const std::vector<Eigen::Vector2f>& wa
 
     for (const auto& w : waypoints)
     {
-        float x = w.x(), y = w.y();
+        float x = w.r.x(), y = w.r.y();
 
         if (mission_pts.size() > 0)
         {
-            const auto prev_x = mission_pts.back()[0];
-            const auto prev_y = mission_pts.back()[1];
+            const auto prev_x = mission_pts.back().r[0];
+            const auto prev_y = mission_pts.back().r[1];
 
             // Estimate yaw angle for each state
             yaw = atan2f(y - prev_y, x - prev_x);
@@ -261,20 +281,20 @@ void CWaypointsPlanner::waypoints2mission(const std::vector<Eigen::Vector2f>& wa
             // Interpolate points in between measurements
             if (interpolate_points)
             {
-                const auto prev_angle = mission_pts.back()[3];
-                const Eigen::Vector4f begin{ prev_x, prev_y, velocity, prev_angle };
-                const Eigen::Vector4f end{ x, y, velocity, yaw };
+                const auto prev_angle = mission_pts.back().r[3];
+                const CycSetPoint begin = make_mission_pt(prev_x, prev_y, velocity, prev_angle);
+                const CycSetPoint end = make_mission_pt(x, y, velocity, yaw);
                 interpolate_between_points(begin, end, mission_pts);
             }
         }
 
-        mission_pts.emplace_back(x, y, velocity, yaw);
+        mission_pts.emplace_back(make_mission_pt(x, y, velocity, yaw));
     }
 }
 
-bool CWaypointsPlanner::waypoints2mission(csv::reader& csv_reader, std::vector<Eigen::Vector4f>& _out_ref_path_pts)
+bool CWaypointsPlanner::waypoints2mission(csv::reader& csv_reader, std::vector<CycSetPoint>& _out_ref_path_pts)
 {
-    std::vector<Eigen::Vector2f> pts;
+    std::vector<CycSetPoint> pts;
 
     csv_reader.select_cols("x", "y", "waypoints");
     float x, y;
@@ -285,7 +305,7 @@ bool CWaypointsPlanner::waypoints2mission(csv::reader& csv_reader, std::vector<E
     while (csv_reader.read_row(x, y, waypoints))
     {
         // Insert landmark to the reference set points vector
-        pts.emplace_back(x, y);
+        pts.emplace_back(make_waypoint(x, y));
 
         // Remove first two "["
         waypoints = waypoints.substr(2, waypoints.size() - 1);
@@ -322,7 +342,7 @@ bool CWaypointsPlanner::waypoints2mission(csv::reader& csv_reader, std::vector<E
                 waypoint.erase(0, pos2 + delimiter_inside.length());
             }
 
-            pts.emplace_back(x_wpt, y_wpt);
+            pts.emplace_back(make_waypoint(x_wpt, y_wpt));
 
             waypoints.erase(0, pos + delimiter_outside.length());
         }
@@ -333,17 +353,17 @@ bool CWaypointsPlanner::waypoints2mission(csv::reader& csv_reader, std::vector<E
     return true;
 }
 
-void CWaypointsPlanner::interpolate_between_points(const Eigen::Vector4f& begin, const Eigen::Vector4f& end, std::vector<Eigen::Vector4f>& _in_out_ref_path_pts)
+void CWaypointsPlanner::interpolate_between_points(const CycSetPoint& begin, const CycSetPoint& end, std::vector<CycSetPoint>& _in_out_ref_path_pts)
 {
     const float sampling_distance = 0.1f;  // If points will be interpolated, use this distance
 
-    const auto prev_x = begin[0];
-    const auto prev_y = begin[1];
+    const auto prev_x = begin.r[0];
+    const auto prev_y = begin.r[1];
 
-    const auto x = end[0];
-    const auto y = end[1];
-    const auto v = end[2];
-    const auto yaw = end[3];
+    const auto x = end.r[0];
+    const auto y = end.r[1];
+    const auto v = end.r[2];
+    const auto yaw = end.r[3];
 
     if (!_in_out_ref_path_pts.empty())
     {
@@ -362,7 +382,7 @@ void CWaypointsPlanner::interpolate_between_points(const Eigen::Vector4f& begin,
                 const float new_x = prev_x + interp_idx * ((x - prev_x) / num_interpolate);
                 const float new_y = m * new_x + b;
                 const float new_yaw = atan2f(new_y - prev_y, new_x - prev_x);
-                _in_out_ref_path_pts.emplace_back(new_x, new_y, v, new_yaw);
+                _in_out_ref_path_pts.emplace_back(make_mission_pt(new_x, new_y, v, new_yaw));
             }
         }
 #else
@@ -380,7 +400,7 @@ void CWaypointsPlanner::interpolate_between_points(const Eigen::Vector4f& begin,
                 new_y += dy;
 
                 const float new_yaw = atan2f(new_y - prev_y, new_x - prev_x);
-                _in_out_ref_path_pts.emplace_back(new_x, new_y, v, new_yaw);
+                _in_out_ref_path_pts.emplace_back(make_mission_pt(new_x, new_y, v, new_yaw));
             }
         }
 #endif

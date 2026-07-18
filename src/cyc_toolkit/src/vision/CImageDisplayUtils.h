@@ -87,9 +87,9 @@ public:
     static void drawVoxels(cv::Mat& dst, const CycVoxels& voxels, const CPinholeCameraSensorModel& camera_model, const cv::Scalar& _color = CV_RGB(255, 114, 118));
 
     /**
-     * \brief Draws a vehicle control input onto a given image
+     * \brief Draws a vehicle trajectory onto a given image
      **/
-    static void drawVehicleControlInput(cv::Mat& dst, const CycControlInput& control_input, const CPinholeCameraSensorModel& camera_model);
+    static void drawVehicleControlInput(cv::Mat& dst, const CycSetPoints& ref_traj, const CPinholeCameraSensorModel& camera_model);
 
     /**
      * \brief Compute and draw the epipolar lines in two images

@@ -166,18 +166,7 @@ struct CycSetPoint
     // Reference vector calculated via planning (control reference)
     Eigen::VectorXf r;
 };
-
-struct CycSetPoints
-{
-    // unique ID for the reference trajectory
-    int id;
-
-    // Reference vector calculated via planning (control reference)
-    std::vector<CycSetPoint> ref;
-
-    // Samples of reference state trajectories (used mainly for visualization)
-    std::vector<std::vector<CycSetPoint>> ref_samples;
-};
+typedef std::vector<CycSetPoint> CycSetPoints;
 
 struct CycControlInput
 {
@@ -192,9 +181,10 @@ struct CycControlInput
     }
     
     // Control input calculated for setpoint 
-    Eigen::VectorXf                 u;
-    CycSetPoints                    ref_pts;
-    std::vector<Eigen::VectorXf>    goal_points;
+    Eigen::VectorXf u;
+
+    // Reference setpoints, based on which the control u has been calculated
+    CycSetPoints    ref;
 };
 typedef std::unordered_map<std::string, std::vector<CycControlInput>> CycControlInputs;
 
@@ -248,10 +238,10 @@ struct CycMultiRobotState
 
 struct CycLandmark
 {
-    CyC_INT                         id = -1;
-    CPose                           pose;
-    float                           travel_time = 0.f;
-    std::vector<Eigen::Vector4f>    waypoints;
+    CyC_INT         id = -1;
+    CPose           pose;
+    float           travel_time = 0.f;
+    CycSetPoints    waypoints;
 };
 typedef std::vector<CycLandmark> CycLandmarks;
 

@@ -398,14 +398,14 @@ void CImageDisplayUtils::drawVoxels(cv::Mat& dst, const CycVoxels& voxels, const
     }
 } 
 
-void CImageDisplayUtils::drawVehicleControlInput(cv::Mat& dst, const CycControlInput& control_input, const CPinholeCameraSensorModel& camera_model)
+void CImageDisplayUtils::drawVehicleControlInput(cv::Mat& dst, const CycSetPoints& ref_traj, const CPinholeCameraSensorModel& camera_model)
 {
     Eigen::Vector2f pt2d_prev{ -1.f, -1.f };
     Eigen::Matrix4f M_w2cam = camera_model.pose().transform().inverse();
 
-    for (const auto& pt3d_w : control_input.ref_pts.ref)
+    for (const auto& pt3d_w : ref_traj)
     {
-        Eigen::Vector4f pt3d_cam = M_w2cam * Eigen::Vector4f{ pt3d_w.x(), pt3d_w.y(), 0.F, 1.F };
+        Eigen::Vector4f pt3d_cam = M_w2cam * Eigen::Vector4f{ pt3d_w.r.x(), pt3d_w.r.y(), 0.F, 1.F };
         Eigen::Vector2f pt2d = camera_model.world2sensor(pt3d_cam);
 
         // Draw reference trajectory

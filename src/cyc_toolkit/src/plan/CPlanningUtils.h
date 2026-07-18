@@ -27,7 +27,7 @@ public:
     * \param _resolution        Input gridmap resolution (equal to the original octree resolution)
     * \param _angle             Vehicle yaw angle
     **/
-    static void plotReferenceSetpointsOnGridmap(cv::Mat& _disp_img, const CycReferenceSetPoints& _local_ref_path, const Eigen::MatrixXi& _gridmap, const float _angle = 0.F, const std::vector<Eigen::Vector2f>& _fake__obstacles = std::vector<Eigen::Vector2f>());
+    static void plotReferenceSetpointsOnGridmap(cv::Mat& _disp_img, const CycSetPoints& _local_ref_path, const Eigen::MatrixXi& _gridmap, const float _angle = 0.F, const std::vector<Eigen::Vector2f>& _fake__obstacles = std::vector<Eigen::Vector2f>());
 
     /**
     * \brief Display the global mission planner's path in the A* coordinate system
@@ -38,7 +38,7 @@ public:
     * \param _octree_resolution Input octree resolution (in meters)
     * \param _gridmap_size      Input gridmap size (in meters)
     **/
-    static void plotPath(cv::Mat& _disp_img, const std::vector<Eigen::Vector4f>& _global_path, const CycState& _vehicle_state, const Eigen::MatrixXi& _gridmap, const float& _octree_resolution, const cv::Scalar& _color);
+    static void plotPath(cv::Mat& _disp_img, const CycSetPoints& _global_path, const CycState& _vehicle_state, const Eigen::MatrixXi& _gridmap, const float& _octree_resolution, const cv::Scalar& _color);
 
     /**
     * \brief Display the global mission planner's path in the A* coordinate system
@@ -49,7 +49,7 @@ public:
     * \param _octree_resolution Input octree resolution (in meters)
     * \param _gridmap_size      Input gridmap size (in meters)
     **/
-    static void plotReferenceSetpoints(cv::Mat& _disp_img, const std::vector<Eigen::VectorXf>& _ref_setpoints, const CycState& _vehicle_state, const Eigen::MatrixXi& _gridmap, const float& _octree_resolution);
+    static void plotReferenceSetpoints(cv::Mat& _disp_img, const CycSetPoints& _ref_setpoints, const CycState& _vehicle_state, const Eigen::MatrixXi& _gridmap, const float& _octree_resolution);
 
     /**
     * \brief Display the goal point of A* the A* coordinate system
@@ -60,7 +60,7 @@ public:
     * \param _octree_resolution Input octree resolution (in meters)
     * \param _gridmap_size      Input gridmap size (in meters)
     **/
-    static void plotAStarGoalPoint(cv::Mat& _disp_img, const Eigen::Vector4f &_goal_point, const CycState &_vehicle_state, const Eigen::MatrixXi& _gridmap, const float& _octree_resolution);
+    static void plotAStarGoalPoint(cv::Mat& _disp_img, const CycSetPoint &_goal_point, const CycState &_vehicle_state, const Eigen::MatrixXi& _gridmap, const float& _octree_resolution);
 
     /**
     * \brief Plot candidate trajectories e.g. DWA can produce multiple outputs
@@ -70,7 +70,7 @@ public:
     * \param _gridmap                        Input gridmap
     * \param _octree_resolution              Resolution of the octree
     **/
-    static void plotCandidateTrajectories(cv::Mat & _disp_img, const std::vector<std::vector<Eigen::VectorXf>>& _candidate_trajectories, const CycState & _vehicle_state, const Eigen::MatrixXi & _gridmap, const float & _octree_resolution);
+    static void plotCandidateTrajectories(cv::Mat & _disp_img, const std::vector<CycSetPoints>& _candidate_trajectories, const CycState & _vehicle_state, const Eigen::MatrixXi & _gridmap, const float & _octree_resolution);
 
     /**
     * \brief Find closest point from trajectory to the vehicle current position
@@ -79,7 +79,7 @@ public:
     * \param _vehicle_state                   Current vehicle state
     * \param _previous_trajectory_point_index Previously selected trajectory point index
     **/
-    static size_t findClosestPoint(const std::vector<Eigen::Vector4f>& _mission_path, const CycState& _vehicle_state, size_t _previous_trajectory_point_index, size_t _closest_index=0);
+    static size_t findClosestPoint(const std::vector<CycSetPoint>& _mission_path, const CycState& _vehicle_state, size_t _previous_trajectory_point_index, size_t _closest_index=0);
 };
 
 #endif /* CPLANNINGUTILS_H_ */
