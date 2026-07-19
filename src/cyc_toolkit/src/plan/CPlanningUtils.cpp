@@ -187,7 +187,7 @@ size_t CPlanningUtils::findClosestPoint(const std::vector<CycSetPoint>& _mission
     }
 
     if ((selected_index == _previous_trajectory_point_index) &&
-        (selected_index < _mission_path.size()))
+        ((selected_index + 1) < _mission_path.size()))
     {
         selected_index++;
     }

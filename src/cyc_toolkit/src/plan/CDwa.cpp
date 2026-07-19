@@ -438,6 +438,9 @@ void CDwa::find_goal_points(const CycState& _vehicle_state, std::vector<CycSetPo
 {
     _out_goal_points.clear();
 
+    if (m_MissionPath.empty())
+        return;
+
     const float DISTANCE_BETWEEN_POINTS = m_GoalDistance;
     Eigen::VectorXf last_point = _vehicle_state.x_hat.topRows(ModelVehicle_NumStates);
 
@@ -445,7 +448,9 @@ void CDwa::find_goal_points(const CycState& _vehicle_state, std::vector<CycSetPo
         return sqrtf(powf(pt1[0] - pt2[0], 2) + powf(pt1[1] - pt2[1], 2));
     };
 
-    size_t index = CPlanningUtils::findClosestPoint(m_MissionPath, _vehicle_state, m_PreviousTrajectoryPointIndex, m_ClosestIndex);
+    size_t index = std::min(
+        CPlanningUtils::findClosestPoint(m_MissionPath, _vehicle_state, m_PreviousTrajectoryPointIndex, m_ClosestIndex),
+        m_MissionPath.size() - 1);
 
     if (distance_between(last_point, m_MissionPath[index].r) > (2.F * DISTANCE_BETWEEN_POINTS))
     {
