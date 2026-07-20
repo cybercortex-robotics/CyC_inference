@@ -229,7 +229,7 @@ void COcTreeUtils::bboxes3d2octree(const CycBBoxes3D& _objects, CCycOcTree& _oct
 }
 
 void COcTreeUtils::trajectory2octree(const CycBBoxes3D& _objects,
-    const std::vector<CycTrajectory>& _trajectories,
+    const std::vector<CycSetPoints>& _trajectories,
     CCycOcTree& _octree,
     const Eigen::Vector3f& origin,
     float origin_yaw)
@@ -249,14 +249,14 @@ void COcTreeUtils::trajectory2octree(const CycBBoxes3D& _objects,
     for (size_t i = 0; i < _objects.size(); ++i)
     {
         const CycBBox3D& obj = _objects[i];
-        const CycTrajectory& traj = _trajectories[i];
+        const CycSetPoints& traj = _trajectories[i];
         
         const Eigen::AngleAxisf Rz_obj(obj.origin.rotation_euler()[2], Eigen::Vector3f::UnitZ());
 
         Eigen::MatrixXf traj_pts(3, traj.size());
         for (size_t j = 0; j < traj.size(); ++j)
         {
-            traj_pts.col(j) << traj[j][0], traj[j][1], 0.F;
+            traj_pts.col(j) << traj[j].r[0], traj[j].r[1], 0.F;
 
             // translate points relative to vehicle position
             traj_pts.col(j) -= origin;

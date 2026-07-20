@@ -63,8 +63,8 @@ private:
 
     // Cost for staying on the segmented road
     //float roadSegmentationCost(const std::vector<Eigen::VectorXf>& trajectory, const CycImages& semseg_imgs);
-    float roadSegmentationCost(const CycTrajectory& trajectory, const std::vector<Eigen::VectorXf>& traversable_nodes);
-    float roadSegmentationHullCost(const CycTrajectory& trajectory, const std::vector<Eigen::Vector4f>& hull_nodes);
+    float roadSegmentationCost(const CycSetPoints& trajectory, const std::vector<Eigen::VectorXf>& traversable_nodes);
+    float roadSegmentationHullCost(const CycSetPoints& trajectory, const std::vector<Eigen::Vector4f>& hull_nodes);
 
     // Generate trajectory with given linear velocity and agular velocity commands
     std::vector<CycSetPoint> generateTrajectory(float target_speed, float steer);

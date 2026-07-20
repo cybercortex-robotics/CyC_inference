@@ -237,17 +237,17 @@ float CDwa::lanesCost(const std::vector<CycSetPoint>& trajectory, const CycLanes
     return goalPointsCost(trajectory, lane_trajectory);
 }
 
-float CDwa::roadSegmentationCost(const CycTrajectory& trajectory, const std::vector<Eigen::VectorXf>& traversable_nodes)
+float CDwa::roadSegmentationCost(const CycSetPoints& trajectory, const std::vector<Eigen::VectorXf>& traversable_nodes)
 {
-    const CPose robot_pose{ trajectory.front().x(), trajectory.front().y(), 0.F, 0.F, 0.F, trajectory.front()[3] };
+    const CPose robot_pose{ trajectory.front().r.x(), trajectory.front().r.y(), 0.F, 0.F, 0.F, trajectory.front().r[3] };
     const Eigen::Matrix4f T = robot_pose.transform().inverse();
 
     CyC_INT num_non_collisions = 0;
     if (!traversable_nodes.empty() && !trajectory.empty())
     {
-        for (const Eigen::VectorXf& pt : trajectory)
+        for (const CycSetPoint& pt : trajectory)
         {
-            const Eigen::Vector4f pt_w{ pt.x(), pt.y(), 0.F, 1.F };
+            const Eigen::Vector4f pt_w{ pt.r.x(), pt.r.y(), 0.f, 1.f };
             const Eigen::Vector4f pt_veh = T * pt_w;
 
             Eigen::VectorXf xyz(2);
@@ -330,9 +330,9 @@ std::vector<Eigen::Vector4f> getVehicleCorners(const Eigen::Vector4f& center, fl
     return corners;
 }
 
-float CDwa::roadSegmentationHullCost(const CycTrajectory& trajectory, const std::vector<Eigen::Vector4f>& hull_nodes)
+float CDwa::roadSegmentationHullCost(const CycSetPoints& trajectory, const std::vector<Eigen::Vector4f>& hull_nodes)
 {
-    const CPose robot_pose{ trajectory.front().x(), trajectory.front().y(), 0.F, 0.F, 0.F, trajectory.front()[3] };
+    const CPose robot_pose{ trajectory.front().r.x(), trajectory.front().r.y(), 0.f, 0.f, 0.f, trajectory.front().r[3] };
     const Eigen::Matrix4f T = robot_pose.transform().inverse();
 
     const float max_dim = std::min(m_pVehicleModel->m_fVehicleLength, m_pVehicleModel->m_fVehicleWidth);
@@ -342,7 +342,7 @@ float CDwa::roadSegmentationHullCost(const CycTrajectory& trajectory, const std:
         size_t num_points_inside = 0;
         for (const auto& pt : trajectory)
         {
-            const Eigen::Vector4f pt_w{ pt.x(), pt.y(), 0.F, 1.F };
+            const Eigen::Vector4f pt_w{ pt.r.x(), pt.r.y(), 0.F, 1.F };
             const Eigen::Vector4f pt_veh = T * pt_w;
 
             const auto vehicle_corners = getVehicleCorners(pt_veh, max_dim);

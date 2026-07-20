@@ -92,7 +92,7 @@ public:
 
     static void trajectory2octree(
         const CycBBoxes3D& _objects,
-        const std::vector<CycTrajectory>& _trajectories,
+        const std::vector<CycSetPoints>& _trajectories,
         CCycOcTree& _octree,
         const Eigen::Vector3f& origin,
         float origin_yaw);
