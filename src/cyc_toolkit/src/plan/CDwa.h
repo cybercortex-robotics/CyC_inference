@@ -67,7 +67,7 @@ private:
     float roadSegmentationHullCost(const CycSetPoints& trajectory, const std::vector<Eigen::Vector4f>& hull_nodes);
 
     // Generate trajectory with given linear velocity and agular velocity commands
-    std::vector<CycSetPoint> generateTrajectory(float target_speed, float steer);
+    CycSetPoints generateTrajectory(float target_speed, float steer);
 
     // Euclidean distance
     float distance(const Eigen::VectorXf& pt1, const Eigen::VectorXf& pt2)

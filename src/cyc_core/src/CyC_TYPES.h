@@ -169,7 +169,11 @@ struct CycSetPoint
     // Reference vector calculated via planning (control reference)
     Eigen::VectorXf r;
 };
-typedef std::vector<CycSetPoint> CycSetPoints;
+struct CycSetPoints : public std::vector<CycSetPoint>
+{
+    using std::vector<CycSetPoint>::vector;
+    CyC_INT id = -1;
+};
 
 struct CycControlInput
 {

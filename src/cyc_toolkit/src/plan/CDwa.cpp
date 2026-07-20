@@ -386,9 +386,9 @@ float CDwa::roadSegmentationHullCost(const CycSetPoints& trajectory, const std::
     return 0.F;
 }
 
-std::vector<CycSetPoint> CDwa::generateTrajectory(float target_speed, float steer)
+CycSetPoints CDwa::generateTrajectory(float target_speed, float steer)
 {
-    std::vector<CycSetPoint> traj;
+    CycSetPoints traj;
 
     // Sanity check
     float speed = target_speed;
@@ -602,7 +602,7 @@ CycControlInput CDwa::dwaControl(const CycState& _vehicle_state, const CycEnviro
             return control;
 
     float min_cost = std::numeric_limits<float>::max();
-    std::vector<CycSetPoint> best_traj;
+    CycSetPoints best_traj;
     
     const CyC_UINT angular_vel_steps = 20;
     const CyC_UINT linear_vel_steps = 5;
@@ -680,7 +680,7 @@ CycSetPoints CDwa::dwaPlan(const CycState& _vehicle_state, const CycEnvironment&
         _out_samples->clear();
 
     float min_cost = std::numeric_limits<float>::max();
-    std::vector<CycSetPoint> best_traj;
+    CycSetPoints best_traj;
     CycSetPoints reference;
 
     // TODO: remove hardcode
@@ -706,7 +706,7 @@ CycSetPoints CDwa::dwaPlan(const CycState& _vehicle_state, const CycEnvironment&
         m_pVehicleModel->set_x(_vehicle_state.x_hat);
         m_pVehicleModel->set_y(m_pVehicleModel->x());
 
-        std::vector<CycSetPoint> traj = generateTrajectory(target_speed, yaw);
+        CycSetPoints traj = generateTrajectory(target_speed, yaw);
         if (_out_samples != nullptr)
             _out_samples->push_back(traj);
         
