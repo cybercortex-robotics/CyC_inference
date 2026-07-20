@@ -738,9 +738,6 @@ struct CycEnvironment
     }
 };
 
-// TODO: use CycReferenceSetpoints instead
-using CycTrajectory = std::vector<Eigen::VectorXf>;
-
 struct CycLane
 {
     CycLane()
