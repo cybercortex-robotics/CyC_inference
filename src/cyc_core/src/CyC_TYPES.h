@@ -163,6 +163,9 @@ struct CycSetPoint
         r = Eigen::VectorXf::Zero(_dim);
     }
 
+    explicit CycSetPoint(const Eigen::VectorXf& _r) : r(_r)
+    {}
+
     // Reference vector calculated via planning (control reference)
     Eigen::VectorXf r;
 };
