@@ -137,6 +137,33 @@ static bool check_filter_input_sources(
 	return true;
 }
 
+// A path-valued parameter may carry several files as a comma-separated list
+// (e.g. robot_config = "a.conf, b.conf"), so split on ',' and validate each entry
+// on its own. A single path yields one (trimmed) entry, leaving that case unchanged.
+static std::vector<std::string> split_path_list(const std::string &value)
+{
+	std::vector<std::string> out;
+	std::size_t start = 0;
+
+	while (true)
+	{
+		std::size_t const comma = value.find(',', start);
+		std::size_t const end = (comma == std::string::npos) ? value.size() : comma;
+
+		std::string const token = value.substr(start, end - start);
+		auto const first = token.find_first_not_of(" \t");
+		auto const last = token.find_last_not_of(" \t");
+		if (first != std::string::npos)
+			out.push_back(token.substr(first, last - first + 1));
+
+		if (comma == std::string::npos)
+			break;
+		start = comma + 1;
+	}
+
+	return out;
+}
+
 static bool check_filter_parameters(
 	const ConfigFilter &filter,
 	const std::string &config_file
@@ -144,18 +171,22 @@ static bool check_filter_parameters(
 {
 	for(const auto &param: filter.custom_parameters)
 	{
-		if(param.second.find('/') != std::string::npos)
-		{
-			fs::path path = fs::path(CConfigParameters::instance().getBasePath()) / fs::path(param.second);
+		if(param.second.find('/') == std::string::npos)
+			continue;
 
-			if ((param.second.substr(0, 6) != "wss://") &&		// ignore signaling uri
-				(param.second.substr(0, 5) != "ws://") &&		// ignore signaling uri
-				(param.second.substr(0, 6) != "ftp://") &&		// ignore ftp
-				(param.second.substr(0, 7) != "sftp://") &&		// ignore sftp
-				(param.second.substr(0, 7) != "http://") &&		// ignore http
-				(param.second.substr(0, 8) != "https://") &&	// ignore https
-				(param.second.substr(0, 8) != "/dev/tty") &&	// ignore tty port (used in Linux)
-				(param.second.substr(0, 11) != "/dev/serial"))	// ignore serial port (used in Linux)
+		// The value may list several files, comma-separated; check each one.
+		for(const std::string &entry: split_path_list(param.second))
+		{
+			fs::path path = fs::path(CConfigParameters::instance().getBasePath()) / fs::path(entry);
+
+			if ((entry.substr(0, 6) != "wss://") &&		// ignore signaling uri
+				(entry.substr(0, 5) != "ws://") &&		// ignore signaling uri
+				(entry.substr(0, 6) != "ftp://") &&		// ignore ftp
+				(entry.substr(0, 7) != "sftp://") &&	// ignore sftp
+				(entry.substr(0, 7) != "http://") &&	// ignore http
+				(entry.substr(0, 8) != "https://") &&	// ignore https
+				(entry.substr(0, 8) != "/dev/tty") &&	// ignore tty port (used in Linux)
+				(entry.substr(0, 11) != "/dev/serial"))	// ignore serial port (used in Linux)
 			{
 				if (!exists(path))
 				{
@@ -165,8 +196,8 @@ static bool check_filter_parameters(
 					return false;
 				}
 			}
-			
-			if(param.second.substr(param.second.size() - 5, 5) == ".conf")
+
+			if(entry.size() >= 5 && entry.compare(entry.size() - 5, 5, ".conf") == 0)
 			{
 				if(!CConfigCheck::check(path))
 					return false;
