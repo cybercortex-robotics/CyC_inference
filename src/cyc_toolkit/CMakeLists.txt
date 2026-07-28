@@ -113,8 +113,6 @@ add_library(CycToolkit ${LIB_TYPE}
     src/env/CQuaternion.cpp
     src/env/CSensorFusion.h
     src/env/CSensorFusion.cpp
-    src/plan/CDwa.h
-    src/plan/CDwa.cpp
     src/plan/CPlanningUtils.h
     src/plan/CPlanningUtils.cpp
     src/plan/CWaypointsPlanner.h
