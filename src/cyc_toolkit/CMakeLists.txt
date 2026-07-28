@@ -93,11 +93,8 @@ add_library(CycToolkit ${LIB_TYPE}
     src/control/CModelLegged.cpp
     src/control/CStateSpaceModel.h
     src/control/CStateSpaceModelVehicle.h
-    src/control/CStateSpaceModelDrone.h
     src/control/CStateSpaceModelArm.h
     src/control/CSimulation.h
-    src/control/CSimulationDrone.h
-    src/control/CSimulationDrone.cpp
     src/control/CSimulationArm.h
     src/control/CKalmanOps.h
     src/control/CKalmanOps.cpp
