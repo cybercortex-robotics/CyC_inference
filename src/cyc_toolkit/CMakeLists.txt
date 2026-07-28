@@ -85,14 +85,9 @@ add_library(CycToolkit ${LIB_TYPE}
     src/control/CStateSpaceController.cpp
     src/control/CRobotConfig.h
     src/control/CRobotConfig.cpp
-    src/control/CModelCartPole.h
-    src/control/CModelCartPole.cpp
-    src/control/CModelVehicle.h
-    src/control/CModelVehicle.cpp
     src/control/CModelLegged.h
     src/control/CModelLegged.cpp
     src/control/CStateSpaceModel.h
-    src/control/CStateSpaceModelVehicle.h
     src/control/CStateSpaceModelArm.h
     src/control/CSimulation.h
     src/control/CSimulationArm.h
