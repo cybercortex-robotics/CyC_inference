@@ -1,4 +1,5 @@
 #include "CSimulationDrone.h"
+#include <algorithm>
 #include <spdlog/fmt/fmt.h>
 #include <math/CPolynomialFitting.h>
 
@@ -56,12 +57,29 @@ void DroneSimulation::step(const Eigen::VectorXf& u, float dt)
     }
 
     // --- 1. INPUT INTERPRETATION ---
-    float thrust = u[0];
-    // We treat u[1..3] as desired angular rates (Body Frame)
-    Eigen::Vector3f target_rates{ u[1], u[2], u[3] };
+    // u is physical: thrust [N], roll/pitch angle setpoints [rad], yaw rate
+    // setpoint [rad/s] -- the same command an angle-mode flight controller takes.
+    const float thrust = u[0];
+    const float roll_sp = u[1];
+    const float pitch_sp = u[2];
+    const float yaw_rate_sp = u[3];
 
-    // --- 2. ATTITUDE CONTROL (INNER LOOP) ---
-    // These gains define how quickly the drone reaches the commanded tilt
+    // --- 2. ATTITUDE CONTROL (OUTER LOOP) ---
+    // Roll and pitch arrive as angles, so an outer loop turns angle error into a
+    // rate setpoint for the rate loop below. Yaw arrives as a rate and enters
+    // that loop directly. Handing an angle to a rate loop would make the
+    // attitude integrate away instead of settling at the commanded tilt.
+    const float k_angle = 6.0f;     // angle error -> rate setpoint [1/s]
+    const float max_rate = 4.0f;    // rate setpoint saturation [rad/s]
+
+    const Eigen::Vector3f target_rates{
+        std::clamp(k_angle * (roll_sp - m_DroneState.roll), -max_rate, max_rate),
+        std::clamp(k_angle * (pitch_sp - m_DroneState.pitch), -max_rate, max_rate),
+        yaw_rate_sp
+    };
+
+    // --- 3. ATTITUDE CONTROL (RATE LOOP) ---
+    // These gains define how quickly the drone reaches the commanded rate
     const float k_roll = 0.1f;
     const float k_pitch = 0.1f;
     const float k_yaw = 0.05f;
@@ -84,7 +102,7 @@ void DroneSimulation::step(const Eigen::VectorXf& u, float dt)
     m_DroneState.set_att_vel_vector(m_DroneState.att_vel_vector() + att_acc * dt);
     m_DroneState.set_att_vector(m_DroneState.att_vector() + m_DroneState.att_vel_vector() * dt);
 
-    // --- 3. LINEAR DYNAMICS (OUTER LOOP) ---
+    // --- 4. TRANSLATIONAL DYNAMICS ---
 
     // A. Create the Full Rotation Matrix (Body -> World)
     // This handles Roll, Pitch, AND Yaw in one transformation
@@ -111,7 +129,7 @@ void DroneSimulation::step(const Eigen::VectorXf& u, float dt)
     // F_total = F_thrust + F_gravity + F_drag
     Eigen::Vector3f acc_world = (1.F / m_Model.m_Mass) * (thrust_world + gravity_world + drag_force_world);
 
-    // --- 4. STATE UPDATE ---
+    // --- 5. STATE UPDATE ---
     m_DroneState.set_acc_vector(acc_world);
 
     // Update Velocity: V_new = V_old + a * dt
@@ -230,6 +248,12 @@ void ARParrotDroneSim::step(const Eigen::VectorXf& u, float dt)
     Eigen::VectorXf u_sim(4);
     u_sim << thrust, roll_torque, pitch_torque, yaw_torque;
 
+    // TODO: this hands body torques [Nm] to a step() that reads its last three
+    // slots as roll/pitch angle and yaw rate setpoints, so the attitude channel
+    // is misinterpreted (it was, equally, when step() read them as body rates).
+    // Only the 'parrot' simulator type reaches here. Fixing it means splitting
+    // the attitude and translational halves of DroneSimulation::step, so that a
+    // model which already produces torques can skip the attitude loop.
     DroneSimulation::step(u_sim, dt);
 }
 

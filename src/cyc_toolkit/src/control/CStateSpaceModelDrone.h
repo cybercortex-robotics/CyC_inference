@@ -15,9 +15,14 @@
 /*
  * x := [x_pos, y_pos, z_pos, x_vel, y_vel, z_vel, x_acc, y_acc, z_acc, roll, pitch, yaw, roll_vel, pitch_vel, yaw_vel]^T
  * y := [x_pos, y_pos, z_pos, x_vel, y_vel, z_vel, x_acc, y_acc, z_acc, roll, pitch, yaw, roll_vel, pitch_vel, yaw_vel]^T
- * u := [thrust, roll_torque, pitch_torque, yaw_torque, vel_x, vel_y, vel_z, angular_vel_yaw]
- * or
- * u := [thrust, roll_torque, pitch_torque, yaw_torque]
+ * u := [thrust, roll, pitch, yaw_rate]
+ *
+ * u is physical throughout the pipeline -- thrust in [N], roll/pitch as angle
+ * setpoints in [rad], yaw as a rate setpoint in [rad/s]. Normalisation to a
+ * backend's own units (BetaFlight's [0,1] / [-1,1] RC sticks, ANAFI's
+ * percentages) belongs to the actuator filter that talks to that backend, so
+ * that every other consumer of the control datablock -- simulator, data
+ * channel, visualisers -- reads one airframe-independent quantity.
  *
  * To parameterise the system the following physical measurements are required:
  */
@@ -49,6 +54,13 @@ struct DroneModel : public StateSpaceModel<NO_DRONE_MODEL_STATES, NO_DRONE_MODEL
                 configFile.lookupValue("Cdx", m_Cdx);
                 configFile.lookupValue("Cdy", m_Cdy);
                 configFile.lookupValue("Cdz", m_Cdz);
+
+                configFile.lookupValue("thrust_to_weight", m_ThrustToWeight);
+                configFile.lookupValue("max_tilt", m_MaxTilt);
+                configFile.lookupValue("max_yaw_rate", m_MaxYawRate);
+
+                if (m_ThrustToWeight <= 1.f)
+                    spdlog::error("DroneModel: thrust_to_weight = {} (must be > 1.0, or the drone cannot lift its own weight).", m_ThrustToWeight);
 
                 configFile.lookupValue("Kpx", m_Kpx);
                 configFile.lookupValue("Kpy", m_Kpy);
@@ -82,6 +94,12 @@ struct DroneModel : public StateSpaceModel<NO_DRONE_MODEL_STATES, NO_DRONE_MODEL
             C << Eigen::MatrixXf::Identity(NO_DRONE_MODEL_STATES, NO_DRONE_MODEL_STATES);
         }
 
+        // Thrust that holds the drone in a level hover [N]
+        float hoverThrust() const { return m_Mass * GRAVITY; }
+
+        // Thrust of all rotors together at full stick [N]
+        float maxThrust() const { return m_Mass * GRAVITY * m_ThrustToWeight; }
+
     public:
         float m_Mass = 0.2f;
         float m_Ixx = 1.f;
@@ -90,6 +108,12 @@ struct DroneModel : public StateSpaceModel<NO_DRONE_MODEL_STATES, NO_DRONE_MODEL
         float m_Cdx = 1.f;
         float m_Cdy = 1.f;
         float m_Cdz = 1.f;
+
+        // Actuation envelope: the physical units of u, and what an actuator
+        // divides by to reach a backend's normalised stick range.
+        float m_ThrustToWeight = 2.f;       // total static thrust / weight [-]
+        float m_MaxTilt = 0.5236f;          // max commandable roll/pitch [rad]
+        float m_MaxYawRate = 3.1416f;       // max commandable yaw rate [rad/s]
 
         float m_Kpx = 0.f;
         float m_Kpy = 0.f;

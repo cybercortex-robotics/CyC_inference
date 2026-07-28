@@ -178,7 +178,8 @@ struct CycSetPoints : public std::vector<CycSetPoint>
 struct CycControlInput
 {
     // MuJoCo:  u = [kp, kd, q, qd, tau_ff]
-    // Drone:   u = [thrust, roll_torque, pitch_torque, yaw_torque]
+    // Drone:   u = [thrust [N], roll [rad], pitch [rad], yaw_rate [rad/s]]
+    //          Physical units throughout; an actuator filter normalises them to whatever its own backend link expects.
     CycControlInput()
     {}
 
