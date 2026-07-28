@@ -62,8 +62,6 @@ add_library(CycToolkit ${LIB_TYPE}
     src/vision/CDepthImageProcessing.cpp
     src/vision/CKeypointsMatching.h
     src/vision/CKeypointsMatching.cpp
-    src/vision/keypoints_parser_func.h
-    src/vision/keypoints_parser_func.cpp
     src/vision/CProjectiveGeometry.h
     src/vision/CProjectiveGeometry.cpp
     src/vision/CPoseSolver.h
