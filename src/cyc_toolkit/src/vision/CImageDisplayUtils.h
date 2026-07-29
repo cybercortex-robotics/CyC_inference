@@ -18,7 +18,6 @@
 #include "sensors/CImuSensorModel.h"
 #include "vision/CProjectiveGeometry.h"
 #include "vision/CTriangulation.h"
-#include "vision/CKeypointsMatching.h"
 #include "env/CObjectClasses.h"
 
 class CImageDisplayUtils

@@ -60,12 +60,8 @@ add_library(CycToolkit ${LIB_TYPE}
     src/vision/CImageProcessing.cpp
     src/vision/CDepthImageProcessing.h
     src/vision/CDepthImageProcessing.cpp
-    src/vision/CKeypointsMatching.h
-    src/vision/CKeypointsMatching.cpp
     src/vision/CProjectiveGeometry.h
     src/vision/CProjectiveGeometry.cpp
-    src/vision/CPoseSolver.h
-    src/vision/CPoseSolver.cpp
     src/vision/CTriangulation.h
     src/vision/CTriangulation.cpp
     src/vision/CImageDisplayUtils.h
@@ -73,8 +69,6 @@ add_library(CycToolkit ${LIB_TYPE}
     src/vision/clustering/kdtree.h
     src/vision/clustering/kdtree.cpp
     src/vision/clustering/dbscan.hpp
-    src/vision/CLanesPostprocessor.h
-    src/vision/CLanesPostprocessor.cpp
     src/control/CBaseStateSpaceModel.h
     src/control/CBaseStateSpaceModel.cpp
     src/control/CBaseController.h
@@ -107,17 +101,12 @@ add_library(CycToolkit ${LIB_TYPE}
     src/env/CPose.cpp
     src/env/CQuaternion.h
     src/env/CQuaternion.cpp
-    src/env/CSensorFusion.h
-    src/env/CSensorFusion.cpp
     src/plan/CPlanningUtils.h
     src/plan/CPlanningUtils.cpp
     src/plan/CWaypointsPlanner.h
     src/plan/CWaypointsPlanner.cpp
     src/dl/CDnnConfig.h
-    src/dl/CDnnConfig.cpp
-    src/env/CConcaveHull.h
-    src/env/CConcaveHull.cpp
-    src/env/concaveman.h)
+    src/dl/CDnnConfig.cpp)
 
 target_include_directories(CycToolkit
     PUBLIC
