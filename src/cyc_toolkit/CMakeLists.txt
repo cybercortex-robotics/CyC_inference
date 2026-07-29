@@ -83,8 +83,6 @@ add_library(CycToolkit ${LIB_TYPE}
     src/control/CStateSpaceController.cpp
     src/control/CRobotConfig.h
     src/control/CRobotConfig.cpp
-    src/control/CModelLegged.h
-    src/control/CModelLegged.cpp
     src/control/CStateSpaceModel.h
     src/control/CStateSpaceModelArm.h
     src/control/CSimulation.h
@@ -95,8 +93,6 @@ add_library(CycToolkit ${LIB_TYPE}
     src/control/CLinearFirstOrderSystem.cpp
     src/control/CDenavitHartenberg.h
     src/control/CDenavitHartenberg.cpp
-    src/control/CModelLeggedDynamics.h
-    src/control/CModelLeggedDynamics.cpp
     src/env/CGridMapUtils.h
     src/env/CGridMapUtils.cpp
     src/env/CCycOcTree.h
