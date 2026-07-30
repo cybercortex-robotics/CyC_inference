@@ -3,7 +3,10 @@
 
 #include "CRobotConfig.h"
 #include <algorithm>
+#include <array>
+#include <cstring>
 #include <iostream>
+#include <type_traits>
 #include <spdlog/spdlog.h>
 #include <os/CFileUtils.h>
 
@@ -57,6 +60,55 @@ int CRobotConfig::jointStateSlot(const std::string& _field, int _dof) const
     const int field = static_cast<int>(std::distance(joint_state.begin(), it));
 
     return static_cast<int>(base_state.size()) + field * static_cast<int>(actuators.size()) + _dof;
+}
+
+namespace
+{
+    // Reads a numeric parameter as T, converting across the arithmetic
+    // alternatives; '_fallback' for a missing key or a non-arithmetic value.
+    template <typename T>
+    T numericParam(const std::map<std::string, CRobotConfig::Parameter>& _parameters,
+        const std::string& _key, T _fallback)
+    {
+        const auto it = _parameters.find(_key);
+        if (it == _parameters.end())
+            return _fallback;
+
+        return std::visit([_fallback](const auto& _value) -> T
+            {
+                using held_t = std::decay_t<decltype(_value)>;
+                if constexpr (std::is_arithmetic_v<held_t>)
+                    return static_cast<T>(_value);
+                else
+                    return _fallback;
+            }, it->second);
+    }
+}
+
+float CRobotConfig::paramFloat(const std::string& _key, float _fallback) const
+{
+    return numericParam<float>(parameters, _key, _fallback);
+}
+
+CyC_INT CRobotConfig::paramInt(const std::string& _key, CyC_INT _fallback) const
+{
+    return numericParam<CyC_INT>(parameters, _key, _fallback);
+}
+
+bool CRobotConfig::paramBool(const std::string& _key, bool _fallback) const
+{
+    return numericParam<bool>(parameters, _key, _fallback);
+}
+
+std::string CRobotConfig::paramStr(const std::string& _key, const std::string& _fallback) const
+{
+    const auto it = parameters.find(_key);
+    if (it == parameters.end())
+        return _fallback;
+
+    const std::string* str = std::get_if<std::string>(&it->second);
+
+    return (str != nullptr) ? *str : _fallback;
 }
 
 bool CRobotConfig::loadFromConfig(const std::string& _robot_config_file)
@@ -183,12 +235,57 @@ bool CRobotConfig::loadFromConfig(const std::string& _robot_config_file)
     if (num_inputs == 0)
         num_inputs = static_cast<int>(actuators.size());
 
+    // --- Free-form parameters ------------------------------------------------
+    // Everything else the descriptor declares at top level, kept in the type it
+    // was written with. Only scalars: the nested blocks are the layout parsed
+    // above, and the fields already read into a member would otherwise be
+    // published twice, under two names that could drift apart.
+    static const std::array<const char*, 6> reserved_keys =
+    {
+        "robot", "description", "base", "num_states", "num_inputs", "num_outputs"
+    };
+
+    parameters.clear();
+    for (int i = 0; i < root.getLength(); ++i)
+    {
+        const libconfig::Setting& setting = root[i];
+
+        const char* key = setting.getName();
+        if (key == nullptr || !setting.isScalar())
+            continue;
+
+        if (std::find_if(reserved_keys.begin(), reserved_keys.end(),
+            [key](const char* _reserved) { return std::strcmp(key, _reserved) == 0; }) != reserved_keys.end())
+            continue;
+
+        switch (setting.getType())
+        {
+        case libconfig::Setting::TypeBoolean:
+            parameters[key] = static_cast<bool>(setting);
+            break;
+        case libconfig::Setting::TypeInt:
+            parameters[key] = static_cast<CyC_INT>(static_cast<int>(setting));
+            break;
+        case libconfig::Setting::TypeInt64:
+            parameters[key] = static_cast<CyC_INT>(static_cast<long long>(setting));
+            break;
+        case libconfig::Setting::TypeFloat:
+            parameters[key] = static_cast<float>(static_cast<double>(setting));
+            break;
+        case libconfig::Setting::TypeString:
+            parameters[key] = std::string(static_cast<const char*>(setting));
+            break;
+        default:
+            break;
+        }
+    }
+
     if (!base_state.empty() || !joint_state.empty())
         num_states = static_cast<int>(base_state.size() + joint_state.size() * actuators.size());
 
-    spdlog::info("{}: loaded '{}' (actuators={}, u_dim={}, X/U/Y={}/{}/{})", typeid(*this).name(),
+    spdlog::info("{}: loaded '{}' (actuators={}, u_dim={}, X/U/Y={}/{}/{}, parameters={})", typeid(*this).name(),
         robot.empty() ? "<unnamed>" : robot, actuators.size(), control_input.size(),
-        num_states, num_inputs, num_outputs);
+        num_states, num_inputs, num_outputs, parameters.size());
 
     return true;
 }

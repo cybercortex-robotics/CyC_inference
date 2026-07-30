@@ -6,6 +6,7 @@
 
 #include <map>
 #include <string>
+#include <variant>
 #include <vector>
 #include "CyC_TYPES.h"
 #include "os/CConversions.h"
@@ -41,6 +42,12 @@ public:
         float           tau_max = 0.f;
     };
 
+    // Value of a descriptor key that this class does not model itself (see
+    // 'parameters'). The alternative held is the libconfig type the key was
+    // written with, so the variant is the (type, value) pair -- there is no
+    // separate tag to keep in sync with the value, and no re-parsing on read.
+    using Parameter = std::variant<bool, CyC_INT, float, std::string>;
+
 public:
     CRobotConfig(const std::string& _robot_config_file);
     virtual ~CRobotConfig();
@@ -57,8 +64,20 @@ public:
     // Value of a base state field read out of '_state.x_hat', or '_fallback' if
     // the descriptor does not list the field. Bridges the backend-agnostic slot
     // layout (baseStateSlot) to a concrete published state vector.
-    float   baseStateValue(
-        const CycState& _state, const std::string& _field, float _fallback = 0.f) const;
+    float   baseStateValue(const CycState& _state, const std::string& _field, float _fallback = 0.f) const;
+
+    // Free-form descriptor keys (see 'parameters'). Each getter returns
+    // '_fallback' if the key is absent, so a caller that has a sane default does
+    // not need hasParam(). The numeric getters convert between the int / float /
+    // bool alternatives, because libconfig types a literal by how it was
+    // written: 'mass = 1' is an int and 'mass = 1.0' a float, and a descriptor
+    // author cannot be expected to know which one the reader asks for. A
+    // non-numeric value (string) is not converted and yields '_fallback'.
+    bool        hasParam(const std::string& _key) const { return parameters.find(_key) != parameters.end(); };
+    float       paramFloat(const std::string& _key, float _fallback = 0.f) const;
+    CyC_INT     paramInt(const std::string& _key, CyC_INT _fallback = 0) const;
+    bool        paramBool(const std::string& _key, bool _fallback = false) const;
+    std::string paramStr(const std::string& _key, const std::string& _fallback = "") const;
 
 private:
     bool    loadFromConfig(const std::string& _robot_config_file);
@@ -91,15 +110,24 @@ public:
     // num_states is derived from the State block; num_inputs defaults to
     // actuators.size() (direct-drive) unless the descriptor overrides it
     // (multirotor / wheeled control-allocation).
-    int                     num_states  = 0;    // X  -> x_hat
-    int                     num_inputs  = 0;    // U  -> u
-    int                     num_outputs = 0;    // Y  -> y_hat
+    int num_states  = 0;    // X  -> x_hat
+    int num_inputs  = 0;    // U  -> u
+    int num_outputs = 0;    // Y  -> y_hat
 
     // name -> index into 'actuators' (missing => not an actuated DoF).
     std::map<std::string, int> name2idx;
 
+    // Every other top-level scalar in the descriptor, keyed by its name and kept
+    // in the type it was written with. This is what carries the model constants
+    // that are specific to one robot and that this class therefore has no field
+    // for -- a drone's mass / thrust_to_weight / max_tilt, a vehicle's wheelbase
+    // -- so a new robot can add a key without a change here. Nested blocks
+    // (Actuators, State, ...) are not parameters; read them through the members
+    // above. Prefer the param*() getters to indexing this map directly.
+    std::map<std::string, Parameter> parameters;
+
 private:
-    bool    m_bIsInitialized;
+    bool m_bIsInitialized;
 };
 
 #endif /* CRobotConfig_H_ */

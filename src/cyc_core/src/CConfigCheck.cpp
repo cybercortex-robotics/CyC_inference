@@ -43,10 +43,78 @@ struct ConfigRoot
 	std::vector<ConfigFilter> filters;
 };
 
+static bool read_input_sources(
+	const libconfig::Setting& filter,
+	const int& core_id,
+	const std::string& config_file,
+	ConfigFilter& filter_out
+)
+{
+	if(!filter.exists("InputSources"))
+		return true;
+
+	for(const auto &input_source: filter["InputSources"])
+	{
+		CycDatablockKey InputSourceParams;
+
+		// An InputSource without an explicit CoreID refers to a filter of the current
+		// core (same convention as CConfigParameters::readFiltersConfiguration).
+		InputSourceParams.nCoreID = static_cast<CyC_ULONG>(core_id);
+		if(input_source.exists("CoreID"))
+		{
+			const libconfig::Setting& source_core = input_source.lookup("CoreID");
+			if(source_core.getType() == libconfig::Setting::TypeInt64)
+				InputSourceParams.nCoreID = static_cast<CyC_ULONG>(static_cast<long long>(source_core));
+			else if(source_core.getType() == libconfig::Setting::TypeInt)
+				InputSourceParams.nCoreID = static_cast<CyC_ULONG>(static_cast<int>(source_core));
+			else
+			{
+				std::cout
+					<< config_file << ": [" << filter_out.name << "] InputSource with a non-integer CoreID.\n";
+				return false;
+			}
+		}
+
+		// lookupValue doesn't work with CyC_ULONG ??. So we use an int.
+		int filter_id = -1;
+		if(!input_source.lookupValue("FilterID", filter_id))
+		{
+			std::cout
+				<< config_file << ": [" << filter_out.name << "] InputSource without a valid FilterID.\n";
+			return false;
+		}
+		InputSourceParams.nFilterID = filter_id;
+
+		input_source.lookupValue("Description", InputSourceParams.sDescription);
+
+		filter_out.input_sources.push_back(InputSourceParams);
+	}
+
+	return true;
+}
+
+static void read_custom_parameters(
+	const libconfig::Setting& filter,
+	ConfigFilter& filter_out
+)
+{
+	if(!filter.exists("Parameters"))
+		return;
+
+	for(const auto &param: filter["Parameters"])
+	{
+		std::string name, value;
+		param.lookupValue("name", name);
+		param.lookupValue("value", value);
+		filter_out.custom_parameters[name] = value;
+	}
+}
+
 static bool read_filters_config(
 	const libconfig::Setting& config_filters,
-	std::vector<ConfigFilter>& filters_out, 
-	int& core_id
+	std::vector<ConfigFilter>& filters_out,
+	int& core_id,
+	const std::string& config_file
 )
 {
 	filters_out.clear();
@@ -56,9 +124,6 @@ static bool read_filters_config(
 		ConfigFilter tmp_filter;
 
 		filter.lookupValue("Active", tmp_filter.is_active);
-		/* Skip filter if it's inactive. */
-		if(!tmp_filter.is_active)
-			continue;
 
 		tmp_filter.name = filter.getName();
 		tmp_filter.key.nCoreID = core_id;
@@ -68,29 +133,15 @@ static bool read_filters_config(
 		filter.lookupValue("ReplayFromDB", tmp_filter.does_replay_from_db);
 		filter.lookupValue("IsNetworkFilter", tmp_filter.is_network_filter);
 
-		// Read the input sources
-		const libconfig::Setting& input_sources = config_filters[tmp_filter.name.c_str()]["InputSources"];
-		for(const auto &input_source: input_sources)
+		/* Inactive filters are kept in the list, so that an InputSource pointing to
+		   one of them can be reported as inactive instead of as missing. Only their
+		   own sources and parameters are of no interest. */
+		if(tmp_filter.is_active)
 		{
-			CycDatablockKey InputSourceParams;
-			// lookupValue doesn't work with CyC_ULONG ??. So we use an int.
-			int tmp;
-			input_source.lookupValue("CoreID", tmp);
-			InputSourceParams.nCoreID = tmp;
-			input_source.lookupValue("FilterID", tmp);
-			InputSourceParams.nFilterID = tmp;
+			if(!read_input_sources(filter, core_id, config_file, tmp_filter))
+				return false;
 
-			tmp_filter.input_sources.push_back(InputSourceParams);
-		}
-
-		// Read the filter parameters
-		const libconfig::Setting& params = config_filters[tmp_filter.name.c_str()]["Parameters"];
-		for(const auto &param: params)
-		{
-			std::string name, value;
-			param.lookupValue("name", name);
-			param.lookupValue("value", value);
-			tmp_filter.custom_parameters[name] = value;
+			read_custom_parameters(filter, tmp_filter);
 		}
 
 		filters_out.push_back(tmp_filter);
@@ -102,16 +153,17 @@ static bool read_filters_config(
 static bool check_filter_input_sources(
 	const std::vector<ConfigFilter> &filters,
 	const ConfigFilter &curr_filter,
-	const size_t &core_id,
+	const int &core_id,
 	const std::string &config_file
 )
 {
 	for(const auto& input: curr_filter.input_sources)
 	{
-		if(input.nCoreID != core_id)
+		/* Sources belonging to another core are declared in that core's config file. */
+		if(input.nCoreID != static_cast<CyC_ULONG>(core_id))
 			continue;
 
-		bool found = false;
+		const ConfigFilter* source = nullptr;
 		for(const auto &filter: filters)
 		{
 			/* Don't compare against itself. */
@@ -120,16 +172,24 @@ static bool check_filter_input_sources(
 
 			if(input.nFilterID == filter.key.nFilterID)
 			{
-				found = true;
+				source = &filter;
 				break;
 			}
 		}
 
-		if(!found)
+		if(source == nullptr)
 		{
-			std::cout 
-				<< config_file << ": [" << curr_filter.name << "] Could not find active InputSource with id " 
-				<< input.nFilterID << ".\n";
+			std::cout
+				<< config_file << ": [" << curr_filter.name << "] Could not find InputSource with id "
+				<< input.nFilterID << " (\"" << input.sDescription << "\").\n";
+			return false;
+		}
+
+		if(!source->is_active)
+		{
+			std::cout
+				<< config_file << ": [" << curr_filter.name << "] InputSource with id "
+				<< input.nFilterID << " (\"" << input.sDescription << "\") is not Active.\n";
 			return false;
 		}
 	}
@@ -216,6 +276,10 @@ static bool check_filter_config(
 
 	for (const auto& filter : FiltersConfiguration)
 	{
+		/* Inactive filters are only kept as possible InputSource targets. */
+		if(!filter.is_active)
+			continue;
+
 		//std::cout << "Found filter: " << filter.sName << " with id: " << filter.key.nFilterID << '\n';
 		if(!check_filter_input_sources(FiltersConfiguration, filter, config_root.core_id, base_path))
 			return false;
@@ -270,7 +334,7 @@ bool check(const std::string &configfile)
 	if(rootConfig.exists("Filters"))
 	{
 		const libconfig::Setting& Filters = rootConfig["Filters"];
-		if(!read_filters_config(Filters, config_root.filters, config_root.core_id))
+		if(!read_filters_config(Filters, config_root.filters, config_root.core_id, configfile))
 			return false;
 	}
 

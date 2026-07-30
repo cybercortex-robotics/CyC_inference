@@ -104,22 +104,22 @@ bool CConfigParameters::init(const std::string& confFile, bool isNetworkConfig)
             rootConfig["Core"].lookupValue("Filters", m_sFiltersPath);
 
         // Log file
-        std::string log_file = "log.txt";
+        std::string log_file = "log.log";
         if (rootConfig["Core"].exists("LogFile"))
         {
             rootConfig["Core"].lookupValue("LogFile", log_file);
 
             fs::path path = fs::path(m_sGlobalBasePath) / fs::path(log_file);
 
-            //if (!fs::exists(path))
-            //{
-            //    std::cout << "Log file '" << log_file << "' does not exist. Exiting." << std::endl;
-            //    exit(EXIT_FAILURE);
-            //}
-            //else
+            // The folder holding the log file must exist, otherwise the logger cannot be created
+            const fs::path log_dir = path.parent_path();
+            if (!log_dir.empty() && (!fs::exists(log_dir) || !fs::is_directory(log_dir)))
             {
-                log_file = path;
+                std::cerr << "Log file folder '" << log_dir.string() << "' does not exist. Create the folder before starting the datablock. Exiting." << std::endl;
+                exit(EXIT_FAILURE);
             }
+
+            log_file = path.string();
         }
         m_sLogFile = std::move(log_file);
 
