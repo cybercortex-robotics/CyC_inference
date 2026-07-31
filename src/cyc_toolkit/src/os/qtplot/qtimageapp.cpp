@@ -16,8 +16,16 @@ QTImageAppCustomView::~QTImageAppCustomView()
 
 void QTImageAppCustomView::keyPressEvent(QKeyEvent* ev)
 {
+    // A key that carries text (letters, digits, return, escape, ...) is queued as that
+    // character, which is what callers switch on. The keys that carry none -- the
+    // arrows, home/end, the function keys -- have an empty text() and would all queue
+    // as the same 0, so they are queued as their Qt key code instead. The two cannot be
+    // confused: every Qt::Key_* of a textless key is >= 0x01000000.
+    const std::string text = ev->text().toStdString();
+    const int key = text.empty() ? ev->key() : (int)text[0];
+
     m_keypress_queue_mtx.lock();
-    m_keypress_queue.push((int)(ev->text().toStdString()[0]));
+    m_keypress_queue.push(key);
     m_keypress_queue_mtx.unlock();
 }
 
