@@ -95,6 +95,8 @@ add_library(CycToolkit ${LIB_TYPE}
     src/env/COcTreeUtils.cpp
     src/env/CObjectClasses.h
     src/env/CObjectClasses.cpp
+    src/env/CObjects.h
+    src/env/CObjects.cpp
     src/env/CGeolocation.h
     src/env/CGeolocation.cpp
     src/env/CPose.h

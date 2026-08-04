@@ -242,6 +242,13 @@ struct CycMultiRobotState
     // CSimulator::load; its layout (and x_hat size) is the State block of that
     // robot's CRobotConfig, which is what decodes any slot back into a field.
     std::vector<CycState> robotsState{};
+
+    // Bodies in the scene that are not robots and that physics moved: x_hat is
+    // [x, y, z, qw, qx, qy, qz] and name is the body's name in the model. Only bodies
+    // whose pose cannot be derived from their own description appear here -- one that
+    // follows a prescribed trajectory is where its scene description says it is, which
+    // every consumer works out for itself and none of them need told.
+    std::vector<CycState> objectsState{};
 };
 
 struct CycLandmark
