@@ -202,6 +202,61 @@ cv::Scalar color::reproj_pts_2d_pos_depth  = cv::Scalar{ 255, 70, 30, 0 };
 cv::Scalar color::reproj_pts_2d_neg_depth  = cv::Scalar{ 55, 30, 240, 0 };
 cv::Scalar color::epi_lines                = cv::Scalar{ 0, 255, 255, 0 };
 
+bool color::fromName(const std::string& _name, cv::Scalar& _out)
+{
+    // Built on first use rather than at static initialization time: the members it reads are
+    // statics of this same translation unit, and a namespace scope map would be racing them.
+    static const std::unordered_map<std::string, const cv::Scalar*> palette = {
+        { "black",                      &color::black },
+        { "gray",                       &color::gray },
+        { "grey",                       &color::gray },
+        { "white",                      &color::white },
+        { "red",                        &color::red },
+        { "green",                      &color::green },
+        { "blue",                       &color::blue },
+        { "yellow",                     &color::yellow },
+        { "pink",                       &color::pink },
+        { "cyc_background",             &color::cyc_background },
+        { "x_axis",                     &color::x_axis },
+        { "y_axis",                     &color::y_axis },
+        { "z_axis",                     &color::z_axis },
+        { "undefined",                  &color::undefined },
+        { "vehicle",                    &color::vehicle },
+        { "mission_path",               &color::mission_path },
+        { "reference_path",             &color::reference_path },
+        { "current_path",               &color::current_path },
+        { "trajectories_samples",       &color::trajectories_samples },
+        { "free_space",                 &color::free_space },
+        { "obstacle",                   &color::obstacle },
+        { "obstacle_prediction",        &color::obstacle_prediction },
+        { "road_model",                 &color::road_model },
+        { "lidar",                      &color::lidar },
+        { "ultrasonics",                &color::ultrasonics },
+        { "depth",                      &color::depth },
+        { "slam_map_points",            &color::slam_map_points },
+        { "wheel_stuck",                &color::wheel_stuck },
+        { "info",                       &color::info },
+        { "solutions",                  &color::solutions },
+        { "best_solution",              &color::best_solution },
+        { "curr_pts_2d",                &color::curr_pts_2d },
+        { "prev_pts_2d",                &color::prev_pts_2d },
+        { "reprojection",               &color::reprojection },
+        { "orthogonal_projection",      &color::orthogonal_projection },
+        { "reproj_pts_2d_pos_depth",    &color::reproj_pts_2d_pos_depth },
+        { "reproj_pts_2d_neg_depth",    &color::reproj_pts_2d_neg_depth },
+        { "epi_lines",                  &color::epi_lines }
+    };
+
+    const auto it = palette.find(_name);
+    if (it == palette.end())
+    {
+        return false;
+    }
+
+    _out = *it->second;
+    return true;
+}
+
 CObjectClasses::CObjectClasses(const std::string& _object_classes_file)
 {
     m_bIsInitialized = false;

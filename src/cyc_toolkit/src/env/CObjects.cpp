@@ -2,6 +2,7 @@
 // Author: Sorin Mihai Grigorescu
 
 #include "CObjects.h"
+#include "env/CObjectClasses.h"
 
 #include <cmath>
 #ifdef _MSC_VER
@@ -281,6 +282,26 @@ bool readObject(libconfig::Setting const& config, std::size_t index, Object& out
     {
         spdlog::error("Objects: object #{} has unknown shape kind '{}'", index, kind);
         return false;
+    }
+
+    // A colour is named, not spelled out in channels, so that a scene file and the rest of
+    // the toolkit cannot end up drawing the same thing in two different shades of the same
+    // idea. An unknown name is worth a warning but not a rejected object: it costs the
+    // object its colour, nothing else.
+    std::string colorName;
+    if (config.lookupValue("color", colorName))
+    {
+        if (color::fromName(colorName, out.color))
+        {
+            // Most of the palette leaves alpha at 0, which reads as fully transparent to a
+            // renderer that honours it -- an object that is there but cannot be seen.
+            out.color[3] = 255.;
+        }
+        else
+        {
+            spdlog::warn("Objects: object #{} has unknown color '{}'; see the 'color' class "
+                         "in CObjectClasses.h for the names", index, colorName);
+        }
     }
 
     // Absence is how the file says "infinite": libconfig's float grammar has no spelling of

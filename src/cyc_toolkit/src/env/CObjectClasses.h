@@ -56,6 +56,16 @@ public:
     static cv::Scalar reproj_pts_2d_pos_depth;
     static cv::Scalar reproj_pts_2d_neg_depth;
     static cv::Scalar epi_lines;
+
+    // Looks a color up by the name of the member holding it ("red", "obstacle", ...), which
+    // is how a configuration file names one. Returns false, leaving _out untouched, for a
+    // name that is not in the palette above, so the caller can complain about it and keep
+    // whatever default it had.
+    //
+    // The alpha channel is whatever the member carries -- most of them leave it at 0, which
+    // the drawing code they were written for ignores. A consumer that does honor alpha has
+    // to say so itself rather than read transparency into a palette entry.
+    static bool fromName(const std::string& _name, cv::Scalar& _out);
 };
 
 class CObjectClasses

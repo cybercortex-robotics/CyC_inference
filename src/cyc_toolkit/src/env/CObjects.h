@@ -94,6 +94,16 @@ struct Object
     double kp = 0.;
     double kd = 0.;
 
+    // How the object is drawn, in the toolkit's usual BGRA order and 0..255 range. Named in
+    // the scene file by a member of the 'color' palette in CObjectClasses.h ("red", "gray",
+    // ...) and resolved at load, so nothing downstream has to know the palette. Alpha is
+    // always opaque: the palette leaves it at 0 for most entries, which would make an object
+    // invisible in a renderer that honors it.
+    //
+    // The default is a colour nothing in the robot models uses, so that what is scenery and
+    // what is robot stays obvious when the file names none.
+    cv::Scalar color = cv::Scalar{ 25., 115., 217., 255. };
+
     Behavior behavior;
 
     bool hasFiniteMass() const { return mass.has_value(); }
