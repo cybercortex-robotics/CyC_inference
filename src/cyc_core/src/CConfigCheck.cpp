@@ -163,6 +163,11 @@ static bool check_filter_input_sources(
 		if(input.nCoreID != static_cast<CyC_ULONG>(core_id))
 			continue;
 
+		/* Several blocks may declare the same ID as alternative implementations of
+		   one filter (e.g. a real and a simulated camera), with only one of them
+		   active. The core loads active filters only, so resolve to the active
+		   block; an inactive one is kept just to diagnose the case where every
+		   block with that ID is disabled. */
 		const ConfigFilter* source = nullptr;
 		for(const auto &filter: filters)
 		{
@@ -172,8 +177,14 @@ static bool check_filter_input_sources(
 
 			if(input.nFilterID == filter.key.nFilterID)
 			{
-				source = &filter;
-				break;
+				if(filter.is_active)
+				{
+					source = &filter;
+					break;
+				}
+
+				if(source == nullptr)
+					source = &filter;
 			}
 		}
 
@@ -267,12 +278,45 @@ static bool check_filter_parameters(
 	return true;
 }
 
+/* Several blocks may declare the same ID as alternative implementations of one
+   filter (e.g. a real and a simulated camera), which is allowed. The core loads
+   active filters only and an InputSource resolves an ID to a single filter, so
+   at most one block per ID may be Active. */
+static bool check_unique_active_filter_ids(
+	const std::vector<ConfigFilter> &filters,
+	const std::string &config_file
+)
+{
+	std::map<CyC_INT, const ConfigFilter*> active_filters;
+
+	for(const auto &filter: filters)
+	{
+		if(!filter.is_active)
+			continue;
+
+		const auto insertion = active_filters.emplace(filter.key.nFilterID, &filter);
+		if(!insertion.second)
+		{
+			std::cout
+				<< config_file << ": [" << filter.name << "] Filter ID " << filter.key.nFilterID
+				<< " is already used by the active filter [" << insertion.first->second->name
+				<< "]. Only one filter with a given ID can be Active.\n";
+			return false;
+		}
+	}
+
+	return true;
+}
+
 static bool check_filter_config(
-	ConfigRoot& config_root, 
+	ConfigRoot& config_root,
 	std::string base_path
 )
 {
 	std::vector<ConfigFilter>& FiltersConfiguration = config_root.filters;
+
+	if(!check_unique_active_filter_ids(FiltersConfiguration, base_path))
+		return false;
 
 	for (const auto& filter : FiltersConfiguration)
 	{
