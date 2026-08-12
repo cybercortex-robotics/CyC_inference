@@ -574,8 +574,11 @@ struct CycVoxel
         return _os << _vx.id << ":\t" << _vx.pt3d.x() << "\t" << _vx.pt3d.y() << "\t" << _vx.pt3d.z() << "\t(err: " << _vx.error << ")";
     }
 
-    Eigen::Vector4f pt3d;
     CyC_INT		    id;
+    Eigen::Vector4f pt3d;
+    float           angle;
+    float           distance;
+    float           quality;
     float           error;
 };
 typedef std::vector<CycVoxel> CycVoxels;
@@ -583,8 +586,8 @@ typedef std::vector<CycVoxel> CycVoxels;
 // --- Ultrasonics ---
 struct CycUltrasonic
 {
-    float   range;
     CPose   pose;
+    float   range;
 	float   max_range;
 };
 typedef std::vector<CycUltrasonic> CycUltrasonics;
@@ -618,15 +621,6 @@ struct CycGps
     CyC_INT         fix_type = 0;   // GPS fix type (0 = no fix)
     CyC_TIME_UNIT   timestamp;
 };
-
-// TBD: use CycVoxel instead
-struct CycLidarPoint
-{
-    float angle;
-    float distance;
-    float quality;
-};
-typedef std::vector<CycLidarPoint> CycLidarPoints;
 
 /*
  * Perception types
@@ -779,18 +773,28 @@ typedef std::vector<CycLane> CycLanesModel;
 /*
  * Navigation types
  */
+enum CyC_TRACKING_STATE
+{
+    CyC_TRACKING_NO_IMAGES       = 0,
+    CyC_TRACKING_NOT_INITIALIZED = 1,
+    CyC_TRACKING_OK              = 2,
+    CyC_TRACKING_RECENTLY_LOST   = 3,
+    CyC_TRACKING_LOST            = 4
+};
+
 struct CycStateNavigation
 {
-    CyC_TIME_UNIT   timestamp = -1;
-    bool            is_keyframe = false;
-    bool            is_multimap = false;
-    int             num_map_points = -1;
-    int             num_map_matches = -1;
-    int             num_keyframes = -1;
-    CPose           Body_W;                                 // Body pose of the robot/vehicle in world coordinates
-    Eigen::Vector3f Velocity_W = Eigen::Vector3f::Zero();   // Body velocity in world coordinates
-    Eigen::Vector3f Bias_Acc_I = Eigen::Vector3f::Zero();   // Acceleration bias in IMU coordinates
-    Eigen::Vector3f Bias_Gyro_I = Eigen::Vector3f::Zero();  // Gyroscope bias in IMU coordinates
+    CyC_TIME_UNIT       timestamp = -1;
+    CyC_TRACKING_STATE  tracking_state = CyC_TRACKING_NO_IMAGES;
+    bool                is_keyframe = false;
+    bool                is_multimap = false;
+    int                 num_map_points = -1;
+    int                 num_map_matches = -1;
+    int                 num_keyframes = -1;
+    CPose               Body_W;                                 // Body pose of the robot/vehicle in world coordinates
+    Eigen::Vector3f     Velocity_W = Eigen::Vector3f::Zero();   // Body velocity in world coordinates
+    Eigen::Vector3f     Bias_Acc_I = Eigen::Vector3f::Zero();   // Acceleration bias in IMU coordinates
+    Eigen::Vector3f     Bias_Gyro_I = Eigen::Vector3f::Zero();  // Gyroscope bias in IMU coordinates
 };
 
 /*
