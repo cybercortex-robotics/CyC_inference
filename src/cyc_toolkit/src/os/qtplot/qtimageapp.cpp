@@ -76,6 +76,7 @@ void CCycQTImageApp::start(const std::string title)
     m_scene = new QGraphicsScene(this);
     m_view = new QTImageAppCustomView(m_scene);
     m_view->setWindowTitle(title.c_str());
+    m_view->setWindowFlags(m_view->windowFlags() | Qt::WindowStaysOnTopHint);
 
     m_placeholder_text = new QGraphicsTextItem();
     m_placeholder_text->setPlainText("No image has yet been displayed...");
