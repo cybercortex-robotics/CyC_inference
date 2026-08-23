@@ -50,6 +50,7 @@ target_link_directories(CycCore
 target_link_libraries(CycCore
     PUBLIC
         CycToolkit
+        qtplot
         octomap
         octomath
         ${CyC_OPENCV_WORLD})
@@ -62,7 +63,6 @@ if (MSVC)
     target_link_libraries(CycCore
         PUBLIC
             pdh
-            qtplot
             libconfig++
             ws2_32
             winmm)
