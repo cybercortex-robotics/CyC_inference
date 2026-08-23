@@ -301,7 +301,7 @@ struct CycImu
 
     CyC_TIME_UNIT   timestamp;
     Eigen::Vector3f acc;    // [m/s^2]
-    Eigen::Vector3f gyro;   // [deg/s]
+    Eigen::Vector3f gyro;   // [rad/s]
     Eigen::Vector3f magnet; // [uT]
 };
 typedef std::vector<CycImu> CycImus;
