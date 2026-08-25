@@ -353,6 +353,10 @@ std::optional<std::vector<Object>> load(std::string const& filename)
     // hides the namespace for the rest of the function.
     std::vector<Object> scene;
 
+    // Counted outside the try so the check at the end can tell a file that declares no
+    // objects from one whose objects were every one of them rejected.
+    std::size_t declared = 0;
+
     try
     {
         libconfig::Config config;
@@ -365,15 +369,14 @@ std::optional<std::vector<Object>> load(std::string const& filename)
             return std::nullopt;
         }
 
-        std::size_t i = 0;
         for (auto const& objectConfig : root["objects"])
         {
-            i++;
+            declared++;
 
             Object object;
-            if (!readObject(objectConfig, i, object))
+            if (!readObject(objectConfig, declared, object))
             {
-                spdlog::error("Objects: skipping object #{} of '{}'", i, filename);
+                spdlog::error("Objects: skipping object #{} of '{}'", declared, filename);
                 continue;
             }
 
@@ -386,9 +389,15 @@ std::optional<std::vector<Object>> load(std::string const& filename)
         return std::nullopt;
     }
 
-    if (scene.empty())
+    // An empty 'objects' list is a scene that is deliberately bare: the model loads with
+    // nothing added to it, which is a scene like any other. Only a file that declared
+    // objects and lost every one of them is a failure -- that is a broken scene, not an
+    // empty one.
+    if (scene.empty() && declared > 0)
     {
-        spdlog::error("Objects: '{}' defines no usable object", filename);
+        spdlog::error(
+            "Objects: '{}' defines no usable object -- every object in it was rejected", filename);
+
         return std::nullopt;
     }
 
