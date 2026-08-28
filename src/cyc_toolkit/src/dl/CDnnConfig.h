@@ -65,6 +65,9 @@ public:
         std::vector<std::vector<CyC_INT>>   output_shape;
 
         std::vector<Transforms>             input_data_transforms;
+
+        // Prints the DNN configuration to the logger
+        void print() const;
     };
 
 public:

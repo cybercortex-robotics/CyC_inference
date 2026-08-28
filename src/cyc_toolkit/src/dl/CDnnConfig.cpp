@@ -40,6 +40,7 @@ CDnnConfig::CDnnConfig(const std::string& _dnn_config_file)
 
 		// Check if the input data and transforms shapes are consistent
 		bool bInputDataConsistent = false;
+
 		if ((m_Common.input_data.size() == m_Common.input_shape.size()) && 
 			(m_Common.input_data.size() == m_Common.input_data_transforms.size()))
 			bInputDataConsistent = true;
@@ -60,6 +61,61 @@ CDnnConfig::CDnnConfig(const std::string& _dnn_config_file)
 
 CDnnConfig::~CDnnConfig()
 {}
+
+void CDnnConfig::Common::print() const
+{
+	spdlog::info("DNN configuration:");
+
+	spdlog::info("  input_data:");
+	for (CyC_INT i = 0; i < (CyC_INT)input_data.size(); ++i)
+		spdlog::info("    [{}]: {}", i, CConversions::DataType2String(input_data[i]));
+
+	spdlog::info("  input_shape:");
+	for (CyC_INT i = 0; i < (CyC_INT)input_shape.size(); ++i)
+	{
+		std::string sShape;
+		for (CyC_INT j = 0; j < (CyC_INT)input_shape[i].size(); ++j)
+			sShape += std::to_string(input_shape[i][j]) + (j + 1 < (CyC_INT)input_shape[i].size() ? ", " : "");
+		spdlog::info("    [{}]: [{}]", i, sShape);
+	}
+
+	spdlog::info("  output_data:");
+	for (CyC_INT i = 0; i < (CyC_INT)output_data.size(); ++i)
+		spdlog::info("    [{}]: {}", i, CConversions::DataType2String(output_data[i]));
+
+	spdlog::info("  output_shape:");
+	for (CyC_INT i = 0; i < (CyC_INT)output_shape.size(); ++i)
+	{
+		std::string sShape;
+		for (CyC_INT j = 0; j < (CyC_INT)output_shape[i].size(); ++j)
+			sShape += std::to_string(output_shape[i][j]) + (j + 1 < (CyC_INT)output_shape[i].size() ? ", " : "");
+		spdlog::info("    [{}]: [{}]", i, sShape);
+	}
+
+	spdlog::info("  input_data_transforms:");
+	for (CyC_INT i = 0; i < (CyC_INT)input_data_transforms.size(); ++i)
+	{
+		spdlog::info("    [{}]:", i);
+		const Transforms& transforms = input_data_transforms[i];
+		for (CyC_INT j = 0; j < (CyC_INT)transforms.size(); ++j)
+		{
+			const Transform& trans = transforms[j];
+
+			std::string sParams;
+			for (size_t k = 0; k < trans.paramenters.size(); ++k)
+			{
+				sParams += "[";
+				for (CyC_INT q = 0; q < (CyC_INT)trans.paramenters[k].size(); ++q)
+					sParams += std::to_string(trans.paramenters[k][q]) + (q + 1 < (CyC_INT)trans.paramenters[k].size() ? ", " : "");
+				sParams += "]";
+				if (k + 1 < trans.paramenters.size())
+					sParams += ", ";
+			}
+
+			spdlog::info("      {}: type={}, params={}", trans.name, (CyC_INT)trans.type, sParams);
+		}
+	}
+}
 
 CDnnConfig::TransformType CDnnConfig::String2TransformationType(const std::string& sTransformationType)
 {
