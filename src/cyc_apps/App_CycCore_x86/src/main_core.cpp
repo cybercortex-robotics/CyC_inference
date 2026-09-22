@@ -790,12 +790,14 @@ void showCycFilterOutput(CCycCore* pCore, CCycFilterBase* pFilter, CycDatablockK
 
                 // Wait until data is present
                 bool bDataRead = false;
-                while (!bDataRead)
+                while (!bDataRead && visualization_running)
                 {
                     auto readTime = pFilter->getTimestampStop();
 
                     if (readTime > lastReadTime)
                     {
+                        lastReadTime = readTime;
+
                         CycState state;
                         if (pFilter->getData(state))
                         {
@@ -806,6 +808,8 @@ void showCycFilterOutput(CCycCore* pCore, CCycFilterBase* pFilter, CycDatablockK
                             bDataRead = true;
                         }
                     }
+
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 }
 
                 CCcrQTPlot plot(sIdentifier + ": " + pFilter->getFilterName(), pCore->getSingletonRegistry()->get<CCycQTSkeleton>().get());
@@ -842,12 +846,14 @@ void showCycFilterOutput(CCycCore* pCore, CCycFilterBase* pFilter, CycDatablockK
                 
                 // Wait until data is present
                 bool bDataRead = false;
-                while (!bDataRead)
+                while (!bDataRead && visualization_running)
                 {
                     auto readTime = pFilter->getTimestampStop();
 
                     if (readTime > lastReadTime)
                     {
+                        lastReadTime = readTime;
+
                         CycControlInput cmd;
                         if (pFilter->getData(cmd))
                         {
@@ -858,6 +864,8 @@ void showCycFilterOutput(CCycCore* pCore, CCycFilterBase* pFilter, CycDatablockK
                             bDataRead = true;
                         }
                     }
+
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 }
             
                 CCcrQTPlot plot(sIdentifier + ": " + pFilter->getFilterName(), pCore->getSingletonRegistry()->get<CCycQTSkeleton>().get());
