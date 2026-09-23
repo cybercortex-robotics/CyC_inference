@@ -597,15 +597,15 @@ struct CycGps
 {
     CycGps()
     {
-        latitude = 0.f;
-        longitude = 0.f;
-        altitude = 0.f;
+        latitude = 0.;
+        longitude = 0.;
+        altitude = 0.;
         num_satelites = -1;
         fix_type = -1;
         timestamp = -1;
     }
 
-    CycGps(float _latitude, float _longitude, float _altitude, CyC_INT _num_satelites = -1, CyC_INT _fix_type = -1, CyC_TIME_UNIT _timestamp = -1) :
+    CycGps(double _latitude, double _longitude, double _altitude, CyC_INT _num_satelites = -1, CyC_INT _fix_type = -1, CyC_TIME_UNIT _timestamp = -1) :
         latitude(_latitude),
         longitude(_longitude),
         altitude(_altitude),
@@ -614,9 +614,9 @@ struct CycGps
         timestamp(_timestamp)
     {}
 
-    float           latitude;       // latitude  [deg]
-    float           longitude;      // longitude  [deg]
-    float           altitude;       // altitude  [m]
+    double          latitude;       // latitude  [deg]
+    double          longitude;      // longitude  [deg]
+    double          altitude;       // altitude  [m]
     CyC_INT         num_satelites;  // number of satellites
     CyC_INT         fix_type = 0;   // GPS fix type (0 = no fix)
     CyC_TIME_UNIT   timestamp;

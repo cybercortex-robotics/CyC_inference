@@ -939,7 +939,7 @@ void CHddStorage::saveFilter(CCycFilterBase* _pFilter, std::ofstream& _csv_writt
 
             if (bDataRead)
             {
-                _csv_writter << std::fixed << std::setprecision(6) << 
+                _csv_writter << std::fixed << std::setprecision(9) << 
                     std::to_string(_pFilter->getTimestampStop()) << "," <<
                     std::to_string(_pFilter->getSamplingTime()) << "," <<
                     gps.latitude << "," << gps.longitude << "," <<

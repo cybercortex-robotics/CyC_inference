@@ -58,6 +58,8 @@ add_library(CycToolkit ${LIB_TYPE}
     src/sensors/CImuSensorModel.cpp
     src/sensors/CBarometerSensorModel.h
     src/sensors/CBarometerSensorModel.cpp
+    src/sensors/CGpsSensorModel.h
+    src/sensors/CGpsSensorModel.cpp
     src/vision/CImageProcessing.h
     src/vision/CImageProcessing.cpp
     src/vision/CDepthImageProcessing.h

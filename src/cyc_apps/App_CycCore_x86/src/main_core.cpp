@@ -968,9 +968,9 @@ void showCycFilterOutput(CCycCore* pCore, CCycFilterBase* pFilter, CycDatablockK
                         bool bDataRead = pFilter->getData(gps);
 
                         std::vector<float> signals_values;
-                        signals_values.push_back(gps.latitude);
-                        signals_values.push_back(gps.longitude);
-                        signals_values.push_back(gps.altitude);
+                        signals_values.push_back(static_cast<float>(gps.latitude));
+                        signals_values.push_back(static_cast<float>(gps.longitude));
+                        signals_values.push_back(static_cast<float>(gps.altitude));
 
                         plot.plot_signals(signals_values);
 
