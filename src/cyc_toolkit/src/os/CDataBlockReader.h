@@ -21,7 +21,8 @@ public:
         CycImage_,
         CycPoints,
         CycState,
-        CycImus
+        CycImus,
+        CycGps
     > DataType;
 
     struct DatablockData
@@ -56,6 +57,7 @@ public:
     bool readKeypts(const std::string& _line, const std::string& _datastream_name, DataType& _out_keypts);
     bool readState(const std::string& _line, const std::string& _datastream_name, DataType& _out_state);
     bool readImu(const std::string& _line, const std::string& _datastream_name, DataType& _out_imu);
+    bool readGps(const std::string& _line, const std::string& _datastream_name, DataType& _out_gps);
 
 private:
     bool makeDatastream(const std::string& _db_path, const CyC_INT& _filter_id, const CyC_INT& _datatype, CDataBlockReader::Datastream& _out_datastream);

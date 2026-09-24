@@ -148,6 +148,9 @@ bool CDataBlockReader::getNextRow(std::vector<DatablockData>& _out_data)
                                     case CyC_IMU:
                                         readImu(line, ds.imgs_datastream_name, data_blk.data);
                                         break;
+                                    case CyC_GPS:
+                                        readGps(line, ds.imgs_datastream_name, data_blk.data);
+                                        break;
                                     default:
                                         break;
                                 }
@@ -335,5 +338,28 @@ bool CDataBlockReader::readImu(const std::string& _line, const std::string& _dat
     }
 
     _out_imu = imu_cache;
+    return true;
+}
+
+bool CDataBlockReader::readGps(const std::string& _line, const std::string& _datastream_name, DataType& _out_gps)
+{
+    CycGps gps_data;
+
+    csv::reader::row row;
+    row.parse_line(_line, ',');
+    enum { TS_STOP, SAMPLING_TIME, LATITUDE, LONGITUDE, ALTITUDE, NUM_SATELITES, NUM };
+    if (row.size() < NUM)
+    {
+        spdlog::error("{}: Wrong number of columns. {} provided, but expected at least {}.", typeid(*this).name(), row.size(), NUM + 1);
+        return false;
+    }
+
+    gps_data.timestamp = row.get<CyC_TIME_UNIT>(TS_STOP);
+    gps_data.latitude = row.get<double>(LATITUDE);
+    gps_data.longitude = row.get<double>(LONGITUDE);
+    gps_data.altitude = row.get<double>(ALTITUDE);
+    gps_data.num_satelites = row.get<int>(NUM_SATELITES);
+
+    _out_gps = gps_data;
     return true;
 }
