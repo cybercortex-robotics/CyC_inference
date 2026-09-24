@@ -347,7 +347,7 @@ bool CDataBlockReader::readGps(const std::string& _line, const std::string& _dat
 
     csv::reader::row row;
     row.parse_line(_line, ',');
-    enum { TS_STOP, SAMPLING_TIME, LATITUDE, LONGITUDE, ALTITUDE, NUM_SATELITES, NUM };
+    enum { TS_STOP, SAMPLING_TIME, LATITUDE, LONGITUDE, ALTITUDE, NUM_SATELITES, FIX_TYPE, NUM };
     if (row.size() < NUM)
     {
         spdlog::error("{}: Wrong number of columns. {} provided, but expected at least {}.", typeid(*this).name(), row.size(), NUM + 1);
@@ -359,6 +359,7 @@ bool CDataBlockReader::readGps(const std::string& _line, const std::string& _dat
     gps_data.longitude = row.get<double>(LONGITUDE);
     gps_data.altitude = row.get<double>(ALTITUDE);
     gps_data.num_satelites = row.get<int>(NUM_SATELITES);
+    gps_data.fix_type = row.get<int>(FIX_TYPE);
 
     _out_gps = gps_data;
     return true;
