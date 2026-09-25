@@ -154,7 +154,7 @@ void write_header(CCycFilterBase* pFilter, std::ofstream& writer)
     break;
     case CyC_GPS:
     {
-        writer << "timestamp_stop,sampling_time,timestamp_gps,latitude,longitute,altitude,num_satelites,fix_type" << std::endl;
+        writer << "timestamp_stop,sampling_time,timestamp_gps,latitude,longitude,altitude,num_satellites,fix_type" << std::endl;
     }
     break;
     case CyC_STATE:
@@ -576,7 +576,7 @@ void CHddStorage::generateFilterOutputStructures(CCycFilterBase* _pFilter, std::
 
     case CyC_GPS:
     {
-        CsvWritter << "timestamp_stop,sampling_time,timestamp_gps,latitude,longitute,altitude,num_satelites,fix_type" << std::endl;
+        CsvWritter << "timestamp_stop,sampling_time,timestamp_gps,latitude,longitude,altitude,num_satellites,fix_type" << std::endl;
     }
     break;
 
@@ -945,7 +945,7 @@ void CHddStorage::saveFilter(CCycFilterBase* _pFilter, std::ofstream& _csv_writt
                     std::to_string(gps.timestamp) << "," <<
                     gps.latitude << "," << gps.longitude << "," <<
                     std::fixed << std::setprecision(1) << gps.altitude << "," <<
-                    gps.num_satelites << "," << gps.fix_type  << std::endl;
+                    gps.num_satellites << "," << gps.fix_type  << std::endl;
             }
         }
         break;
