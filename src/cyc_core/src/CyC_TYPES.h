@@ -617,7 +617,7 @@ struct CycGps
     friend auto operator<<(std::ostream& _os, CycGps const& _gps) -> std::ostream&
     {
         const auto prec = _os.precision(7);
-        _os << _gps.timestamp << ":\t" << _gps.latitude << "\t" << _gps.longitude << "\t" << _gps.altitude << "\t(sats: " << _gps.num_satelites << ", fix: " << _gps.fix_type << ")";
+        _os << _gps.timestamp << ":\t" << _gps.latitude << "\t" << _gps.longitude << "\t" << _gps.altitude << "\t(sats: " << _gps.num_satellites << ", fix: " << _gps.fix_type << ")";
         _os.precision(prec);
         return _os;
     }
