@@ -358,7 +358,7 @@ bool CDataBlockReader::readGps(const std::string& _line, const std::string& _dat
     gps_data.latitude = row.get<double>(LATITUDE);
     gps_data.longitude = row.get<double>(LONGITUDE);
     gps_data.altitude = row.get<double>(ALTITUDE);
-    gps_data.num_satelites = row.get<int>(NUM_SATELITES);
+    gps_data.num_satellites = row.get<int>(NUM_SATELITES);
     gps_data.fix_type = row.get<int>(FIX_TYPE);
 
     _out_gps = gps_data;
