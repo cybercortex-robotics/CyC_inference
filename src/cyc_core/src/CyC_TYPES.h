@@ -219,7 +219,7 @@ struct CycState
     }
 
     std::string     name;
-    CyC_TIME_UNIT   timestamp;
+    CyC_TIME_UNIT   timestamp = -1;
     Eigen::VectorXf x_hat; // State vector
 };
 
@@ -803,6 +803,10 @@ struct CycStateNavigation
     Eigen::Vector3f     Velocity_W = Eigen::Vector3f::Zero();   // Body velocity in world coordinates
     Eigen::Vector3f     Bias_Acc_I = Eigen::Vector3f::Zero();   // Acceleration bias in IMU coordinates
     Eigen::Vector3f     Bias_Gyro_I = Eigen::Vector3f::Zero();  // Gyroscope bias in IMU coordinates
+
+    // GNSS variables
+    CPose   Body_ENU;       // body pose in the local ENU frame (x east, y north, z up)
+    CycGps  EnuOrigin_LLA;  // LLA (lat/lon/alt) of the ENU origin; fix_type > 0 <=> Body_ENU is valid
 };
 
 /*

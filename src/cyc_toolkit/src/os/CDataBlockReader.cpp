@@ -279,7 +279,7 @@ bool CDataBlockReader::readState(const std::string& _line, const std::string& _d
     csv::reader::row row;
     row.parse_line(_line, ',');
 
-    enum { TS_STOP, SAMPLING_TIME, NUM };
+    enum { TS_STOP, SAMPLING_TIME, TS_STATE, NUM };
     if (row.size() <= NUM)
     {
         spdlog::error("{}: State reading: wrong number of columns. {} provided, but expected {} or more.", typeid(*this).name(), row.size(), NUM + 1);
@@ -287,6 +287,7 @@ bool CDataBlockReader::readState(const std::string& _line, const std::string& _d
     }
     else
     {
+        state.timestamp = row.get<CyC_TIME_UNIT>(TS_STATE);
         state.x_hat.resize(row.size() - NUM);
         for (size_t k = NUM; k < row.size(); ++k)
         {

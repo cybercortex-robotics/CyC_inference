@@ -163,7 +163,7 @@ void write_header(CCycFilterBase* pFilter, std::ofstream& writer)
         while (!pFilter->getData(state)) // make sure data is read in order to write the header
             std::this_thread::sleep_for(std::chrono::microseconds(1));
 
-        writer << "timestamp_stop,sampling_time";
+        writer << "timestamp_stop,sampling_time,timestamp_state";
 
         for (CyC_UINT i = 0; i < state.x_hat.size(); ++i)
             writer << ",state_variable_" << i;
@@ -587,7 +587,7 @@ void CHddStorage::generateFilterOutputStructures(CCycFilterBase* _pFilter, std::
 
         if (bDataRead)
         {
-            CsvWritter << "timestamp_stop,sampling_time";
+            CsvWritter << "timestamp_stop,sampling_time,timestamp_state";
 
             for (CyC_UINT i = 0; i < state.x_hat.size(); ++i)
                 CsvWritter << ",state_variable_" << std::to_string(i);
@@ -959,7 +959,8 @@ void CHddStorage::saveFilter(CCycFilterBase* _pFilter, std::ofstream& _csv_writt
             {
                 _csv_writter << std::fixed << std::setprecision(6) << 
                     std::to_string(_pFilter->getTimestampStop()) << "," <<
-                    std::to_string(_pFilter->getSamplingTime());
+                    std::to_string(_pFilter->getSamplingTime()) << "," <<
+                    std::to_string(state.timestamp);
 
                 for (CyC_UINT i = 0; i < state.x_hat.size(); ++i)
                     _csv_writter << "," << std::to_string(state.x_hat(i));
