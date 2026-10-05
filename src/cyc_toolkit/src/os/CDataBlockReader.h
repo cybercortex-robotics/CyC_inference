@@ -59,6 +59,8 @@ public:
     bool readImu(const std::string& _line, const std::string& _datastream_name, DataType& _out_imu);
     bool readGps(const std::string& _line, const std::string& _datastream_name, DataType& _out_gps);
 
+    static bool datastreamExists(const std::string& _db_path, const CyC_INT _filter_id);
+
 private:
     bool makeDatastream(const std::string& _db_path, const CyC_INT& _filter_id, const CyC_INT& _datatype, CDataBlockReader::Datastream& _out_datastream);
 

@@ -172,7 +172,14 @@ struct CycSetPoint
 struct CycSetPoints : public std::vector<CycSetPoint>
 {
     using std::vector<CycSetPoint>::vector;
-    CyC_INT id = -1;
+    CycSetPoints() = default;
+    explicit CycSetPoints(CyC_INT _id, CyC_TIME_UNIT _timestamp) :
+        id(_id),
+        timestamp(_timestamp)
+    {}
+
+    CyC_INT         id = -1;
+    CyC_TIME_UNIT   timestamp = -1;
 };
 
 struct CycControlInput
@@ -233,6 +240,7 @@ struct CycMeasurement
         y_hat = Eigen::VectorXf::Zero(_num_measurement_variables);
     }
 
+    CyC_TIME_UNIT   timestamp = -1;
     Eigen::VectorXf y_hat; // Measurement vector (output)
 };
 
@@ -542,13 +550,23 @@ struct CycPoint
     float           depth;
 	CyC_INT		    id;
     float           score;
-
     cv::Mat         descriptor;
     float           angle;
 
     CycDatablockKey key;  // Key of the image source filter
 };
-typedef std::vector<CycPoint> CycPoints;
+struct CycPoints : public std::vector<CycPoint>
+{
+    using std::vector<CycPoint>::vector;
+    CycPoints() = default;
+    explicit CycPoints(CyC_INT _id, CyC_TIME_UNIT _timestamp) :
+        id(_id),
+        timestamp(_timestamp)
+    {}
+
+    CyC_INT       id = -1;
+    CyC_TIME_UNIT timestamp = -1;
+};
 
 // --- Voxels (point cloud) ---
 struct CycVoxel
@@ -581,7 +599,19 @@ struct CycVoxel
     float           quality;
     float           error;
 };
-typedef std::vector<CycVoxel> CycVoxels;
+struct CycVoxels : public std::vector<CycVoxel>
+{
+    using std::vector<CycVoxel>::vector;
+    CycVoxels() = default;
+    explicit CycVoxels(CyC_INT _id, CyC_TIME_UNIT _timestamp) :
+        id(_id),
+        timestamp(_timestamp)
+    {}
+
+    CyC_INT       id = -1;
+    CyC_TIME_UNIT timestamp = -1;
+};
+
 
 // --- Ultrasonics ---
 struct CycUltrasonic
@@ -590,7 +620,18 @@ struct CycUltrasonic
     float   range;
 	float   max_range;
 };
-typedef std::vector<CycUltrasonic> CycUltrasonics;
+struct CycUltrasonics : public std::vector<CycUltrasonic>
+{
+    using std::vector<CycUltrasonic>::vector;
+    CycUltrasonics() = default;
+    explicit CycUltrasonics(CyC_INT _id, CyC_TIME_UNIT _timestamp) :
+        id(_id),
+        timestamp(_timestamp)
+    {}
+
+    CyC_INT       id = -1;
+    CyC_TIME_UNIT timestamp = -1;
+};
 
 // --- GPS ---
 struct CycGps
@@ -605,7 +646,7 @@ struct CycGps
         timestamp = -1;
     }
 
-    CycGps(double _latitude, double _longitude, double _altitude, CyC_INT _num_satellites = -1, CyC_INT _fix_type = -1, CyC_TIME_UNIT _timestamp = -1) :
+    CycGps(CyC_TIME_UNIT _timestamp, double _latitude, double _longitude, double _altitude, CyC_INT _num_satellites = -1, CyC_INT _fix_type = -1) :
         latitude(_latitude),
         longitude(_longitude),
         altitude(_altitude),
@@ -622,12 +663,12 @@ struct CycGps
         return _os;
     }
 
+    CyC_TIME_UNIT   timestamp;
     double          latitude;       // latitude  [deg]
     double          longitude;      // longitude  [deg]
     double          altitude;       // altitude  [m]
     CyC_INT         num_satellites; // number of satellites
     CyC_INT         fix_type = 0;   // GPS fix type (0 = no fix)
-    CyC_TIME_UNIT   timestamp;
 };
 
 /*
@@ -671,7 +712,18 @@ struct CycRoi2D
     // Key of the image source filter for which the ROI was computed
     CycDatablockKey key;
 };
-typedef std::vector<CycRoi2D> CycRois2D;
+struct CycRois2D : public std::vector<CycRoi2D>
+{
+    using std::vector<CycRoi2D>::vector;
+    CycRois2D() = default;
+    explicit CycRois2D(CyC_INT _id, CyC_TIME_UNIT _timestamp) :
+        id(_id),
+        timestamp(_timestamp)
+    {}
+
+    CyC_INT       id = -1;
+    CyC_TIME_UNIT timestamp = -1;
+};
 
 struct CycBBox3D
 {
@@ -705,7 +757,18 @@ struct CycBBox3D
     // Key of the image source filter for which the ROI was computed
     CycDatablockKey key;
 };
-typedef std::vector<CycBBox3D> CycBBoxes3D;
+struct CycBBoxes3D : public std::vector<CycBBox3D>
+{
+    using std::vector<CycBBox3D>::vector;
+    CycBBoxes3D() = default;
+    explicit CycBBoxes3D(CyC_INT _id, CyC_TIME_UNIT _timestamp) :
+        id(_id),
+        timestamp(_timestamp)
+    {}
+
+    CyC_INT       id = -1;
+    CyC_TIME_UNIT timestamp = -1;
+};
 
 struct CycEnvironment
 {
@@ -776,7 +839,18 @@ struct CycLane
     CyC_INT         id;
     Eigen::Vector4f model;
 };
-typedef std::vector<CycLane> CycLanesModel;
+struct CycLanesModel : public std::vector<CycLane>
+{
+    using std::vector<CycLane>::vector;
+    CycLanesModel() = default;
+    explicit CycLanesModel(CyC_INT _id, CyC_TIME_UNIT _timestamp) :
+        id(_id),
+        timestamp(_timestamp)
+    {}
+
+    CyC_INT       id = -1;
+    CyC_TIME_UNIT timestamp = -1;
+};
 
 /*
  * Navigation types
@@ -794,11 +868,15 @@ struct CycStateNavigation
 {
     CyC_TIME_UNIT       timestamp = -1;
     CyC_TRACKING_STATE  tracking_state = CyC_TRACKING_NO_IMAGES;
+    uint8_t             reset_counter = 0;  // incremented whenever Body_W jumps (map re-init, relocalization, loop closure)
+    CPose               reset_delta_W;      // latest reset: Body_W_after = reset_delta_W * Body_W_before
+
     bool                is_keyframe = false;
     bool                is_multimap = false;
     int                 num_map_points = -1;
     int                 num_map_matches = -1;
     int                 num_keyframes = -1;
+    
     CPose               Body_W;                                 // Body pose of the robot/vehicle in world coordinates
     Eigen::Vector3f     Velocity_W = Eigen::Vector3f::Zero();   // Body velocity in world coordinates
     Eigen::Vector3f     Bias_Acc_I = Eigen::Vector3f::Zero();   // Acceleration bias in IMU coordinates

@@ -105,7 +105,7 @@ bool CDataBlockReader::getNextRow(std::vector<DatablockData>& _out_data)
     // Check if the next timestamps row is available
     if(!m_SyncedCsvReader.next_row())
     {
-        spdlog::error("{}: DataBlock timestamps sync file ended.", typeid(*this).name());
+        spdlog::info("{}: DataBlock timestamps sync file ended.", typeid(*this).name());
         return false;
     }
 
@@ -364,4 +364,14 @@ bool CDataBlockReader::readGps(const std::string& _line, const std::string& _dat
 
     _out_gps = gps_data;
     return true;
+}
+
+bool CDataBlockReader::datastreamExists(const std::string& _db_path, const CyC_INT _filter_id)
+{
+    csv::reader synced_csv;
+    if (!synced_csv.open(_db_path + "/sampling_timestamps_sync.csv"))
+        return false;
+
+    const std::vector<std::string>& cols = synced_csv.get_column_names();
+    return std::find(cols.begin(), cols.end(), fmt::format("datastream_{}", _filter_id)) != cols.end();
 }
