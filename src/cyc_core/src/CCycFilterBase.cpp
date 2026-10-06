@@ -50,8 +50,15 @@ CCycFilterBase::CCycFilterBase(const ConfigFilterParameters& params) :
     // Use "." as decimal separator
     std::setlocale(LC_NUMERIC, "C");
     
-    if (!spdlog::get("default_logger"))
+    if (params.pLogger)
     {
+        // On MSVC CycCore is static and spdlog header-only, so each filter DLL has its own spdlog registry.
+        if (spdlog::default_logger() != params.pLogger)
+            spdlog::set_default_logger(params.pLogger);
+    }
+    else if (!spdlog::get("default_logger"))
+    {
+        // Standalone use (unit tests, tools): no core logger to share
         spdlog::set_default_logger(
             spdlog::basic_logger_mt(
                 "default_logger",

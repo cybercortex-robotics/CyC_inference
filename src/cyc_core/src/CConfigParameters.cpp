@@ -141,7 +141,7 @@ bool CConfigParameters::init(const std::string& confFile, bool isNetworkConfig)
                     spdlog::set_pattern("%v");
                     spdlog::info("\n== BEGIN SESSION ==");
 
-                    spdlog::set_pattern("[%H:%M:%S %z] [%^%l%$] [thread %t] %v");
+                    spdlog::set_pattern("[%H:%M:%S.%e %z] [%^%l%$] [thread %t] %v");
                     spdlog::flush_every(std::chrono::seconds(1));
                 }
             }

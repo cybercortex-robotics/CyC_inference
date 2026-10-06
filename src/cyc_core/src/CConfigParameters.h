@@ -12,6 +12,9 @@
 #include <libconfig.h++>
 #pragma warning(default : 4275)
 #include <algorithm>
+#include <memory>
+
+namespace spdlog { class logger; }
 
 using CustomParametersType = std::map<std::string, std::string>;
 
@@ -30,8 +33,10 @@ struct ConfigFilterParameters
     CycDatablockKeys        InputSources;
     CustomParametersType    CustomParameters;
     std::string             sGlobalBasePath;
-    std::string             sLogFile;
     CSingletonRegistry*     pSingletonRegistry;
+
+    std::string                     sLogFile;
+    std::shared_ptr<spdlog::logger> pLogger;    // core's logger, shared with the filter DLLs
 
     ConfigFilterParameters() :
         key(-1, -1),

@@ -185,7 +185,9 @@ bool CCycCore::mallocFilter(CCycFilterBase*& pFilter, const ConfigFilterParamete
 
     if (m_SharedFilters.find(config.nFilterType) != m_SharedFilters.end())
     {
-        pFilter = m_SharedFilters[config.nFilterType]->get_function<CCycFilterBase * (const ConfigFilterParameters)>("createFilter")(config);
+        ConfigFilterParameters config_params = config;
+        config_params.pLogger = spdlog::default_logger();
+        pFilter = m_SharedFilters[config.nFilterType]->get_function<CCycFilterBase * (const ConfigFilterParameters)>("createFilter")(config_params);
         spdlog::info("Loaded filter '{}'", pFilter->getFilterName());
     }
     else
