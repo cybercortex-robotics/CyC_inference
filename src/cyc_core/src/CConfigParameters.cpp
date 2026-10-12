@@ -136,7 +136,8 @@ bool CConfigParameters::init(const std::string& confFile, bool isNetworkConfig)
                     spdlog::set_default_logger(
                         spdlog::basic_logger_mt(
                             "default_logger",
-                            CConfigParameters::instance().getLogFile()));
+                            CConfigParameters::instance().getLogFile(), 
+                            true)); // true - deletes the logfile content at startup
 
                     spdlog::set_pattern("%v");
                     spdlog::info("\n== BEGIN SESSION ==");

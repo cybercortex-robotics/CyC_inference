@@ -134,22 +134,31 @@ bool CDataBlockReader::getNextRow(std::vector<DatablockData>& _out_data)
                             std::string line;
                             if (std::getline(ds.imgs_datastream_reader, line))
                             {
+                                // The k-th sync entry must be the k-th row: a row with another timestamp means the pairing is off
+                                if (line.rfind(std::to_string(filter_timestamp) + ',', 0) != 0)
+                                    spdlog::warn("{}: datastream_{} row '{}' does not match sync ts {}", typeid(*this).name(), ds.filter_id, line.substr(0, line.find(',')), filter_timestamp);
+
                                 switch (ds.datatype)
                                 {
                                     case CyC_IMAGE:
-                                        readImage(line, ds.imgs_datastream_name, data_blk.data);
+                                        if (!readImage(line, ds.imgs_datastream_name, data_blk.data))
+                                            data_blk.timestamp = -1;
                                         break;
                                     case CyC_POINTS:
-                                        readKeypts(line, ds.imgs_datastream_name, data_blk.data);
+                                         if (!readKeypts(line, ds.imgs_datastream_name, data_blk.data))
+                                            data_blk.timestamp = -1;
                                         break;
                                     case CyC_STATE:
-                                        readState(line, ds.imgs_datastream_name, data_blk.data);
+                                         if (!readState(line, ds.imgs_datastream_name, data_blk.data))
+                                            data_blk.timestamp = -1;
                                         break;
                                     case CyC_IMU:
-                                        readImu(line, ds.imgs_datastream_name, data_blk.data);
+                                         if (!readImu(line, ds.imgs_datastream_name, data_blk.data))
+                                            data_blk.timestamp = -1;
                                         break;
                                     case CyC_GPS:
-                                        readGps(line, ds.imgs_datastream_name, data_blk.data);
+                                         if (!readGps(line, ds.imgs_datastream_name, data_blk.data))
+                                            data_blk.timestamp = -1;
                                         break;
                                     default:
                                         break;
