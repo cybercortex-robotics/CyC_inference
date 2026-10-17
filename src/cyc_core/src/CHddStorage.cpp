@@ -171,6 +171,19 @@ void write_header(CCycFilterBase* pFilter, std::ofstream& writer)
         writer << std::endl;
     }
     break;
+    case CyC_NAV:
+    {
+        // Poses as x, y, z, roll, pitch, yaw (CPose::rotation_euler, ZYX order) [m], [rad]
+        writer << "timestamp_stop,sampling_time,timestamp_nav,tracking_state,reset_counter,is_keyframe,is_multimap,"
+            "num_map_points,num_map_matches,num_keyframes,"
+            "body_x,body_y,body_z,body_roll,body_pitch,body_yaw,"
+            "vel_x,vel_y,vel_z,"
+            "bias_acc_x,bias_acc_y,bias_acc_z,bias_gyro_x,bias_gyro_y,bias_gyro_z,"
+            "reset_x,reset_y,reset_z,reset_roll,reset_pitch,reset_yaw,"
+            "enu_x,enu_y,enu_z,enu_roll,enu_pitch,enu_yaw,"
+            "origin_timestamp,origin_latitude,origin_longitude,origin_altitude,origin_num_satellites,origin_fix_type" << std::endl;
+    }
+    break;
     case CyC_2D_ROIS:
     {
         writer << "timestamp_stop,sampling_time,frame_id" << std::endl;
@@ -966,6 +979,49 @@ void CHddStorage::saveFilter(CCycFilterBase* _pFilter, std::ofstream& _csv_writt
                     _csv_writter << "," << std::to_string(state.x_hat(i));
 
                 _csv_writter << std::endl;
+            }
+        }
+        break;
+
+        case CyC_NAV:
+        {
+            CycStateNavigation nav;
+            bool bDataRead = _pFilter->getData(nav);
+
+            if (bDataRead)
+            {
+                const auto write_vec3 = [&_csv_writter](const Eigen::Vector3f& _v)
+                {
+                    _csv_writter << "," << _v.x() << "," << _v.y() << "," << _v.z();
+                };
+
+                const auto write_pose = [&write_vec3](const CPose& _pose)
+                {
+                    write_vec3(_pose.translation_3x1());
+                    write_vec3(_pose.rotation_euler());
+                };
+
+                _csv_writter << std::fixed << std::setprecision(6) <<
+                    std::to_string(_pFilter->getTimestampStop()) << "," <<
+                    std::to_string(_pFilter->getSamplingTime()) << "," <<
+                    std::to_string(nav.timestamp) << "," <<
+                    static_cast<int>(nav.tracking_state) << "," <<
+                    static_cast<int>(nav.reset_counter) << "," <<
+                    static_cast<int>(nav.is_keyframe) << "," <<
+                    static_cast<int>(nav.is_multimap) << "," <<
+                    nav.num_map_points << "," << nav.num_map_matches << "," << nav.num_keyframes;
+
+                write_pose(nav.Body_W);
+                write_vec3(nav.Velocity_W);
+                write_vec3(nav.Bias_Acc_I);
+                write_vec3(nav.Bias_Gyro_I);
+                write_pose(nav.reset_delta_W);
+                write_pose(nav.Body_ENU);
+
+                _csv_writter << "," << std::to_string(nav.EnuOrigin_LLA.timestamp) <<
+                    std::setprecision(9) << "," << nav.EnuOrigin_LLA.latitude << "," << nav.EnuOrigin_LLA.longitude <<
+                    std::setprecision(3) << "," << nav.EnuOrigin_LLA.altitude << "," <<
+                    nav.EnuOrigin_LLA.num_satellites << "," << nav.EnuOrigin_LLA.fix_type << std::endl;
             }
         }
         break;
