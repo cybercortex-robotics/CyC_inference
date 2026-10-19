@@ -23,6 +23,7 @@
 #include "os/qtplot/qtplot.h"
 #include "os/CSingletonRegistry.h"
 
+#include <spdlog/async.h>
 #include <csignal>
 
 #ifdef WIN32
@@ -405,6 +406,9 @@ CyC_INT main(CyC_INT argc, char** argv)
             viz_pair.second.join();
         }
     }
+
+    if (auto tp = spdlog::thread_pool())
+        spdlog::info("Logger: {} lines dropped (queue full)", tp->overrun_counter());
 
     return EXIT_SUCCESS;
 }

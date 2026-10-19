@@ -6,6 +6,7 @@
 #include <regex>
 #include <os/CCsvReader.h>
 #include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/async.h>
 #include <os/CFileUtils.h>
 #include <os/CMacUtils.h>
 
@@ -134,7 +135,8 @@ bool CConfigParameters::init(const std::string& confFile, bool isNetworkConfig)
                 if (!spdlog::get("default_logger"))
                 {
                     spdlog::set_default_logger(
-                        spdlog::basic_logger_mt(
+                        //spdlog::basic_logger_mt(
+                        spdlog::basic_logger_mt<spdlog::async_factory_nonblock>(
                             "default_logger",
                             CConfigParameters::instance().getLogFile(), 
                             true)); // true - deletes the logfile content at startup
