@@ -33,11 +33,7 @@ public:
     insert(key_t key, const value_t& value, std::unordered_map<CycDatablockKey, CyC_TIME_UNIT> sync = std::unordered_map<CycDatablockKey, CyC_TIME_UNIT>())
     {
         while (m_cache_keys.size() >= m_size)
-        {
-            m_cache_data.erase(*m_cache_keys.begin());
-            m_cache_keys.erase(m_cache_keys.begin());
-            m_cache_inputs.erase(m_cache_inputs.begin());
-        }
+            erase(*m_cache_keys.begin());
 
         m_cache_data.emplace(key, value);
         m_cache_keys.emplace(key);
@@ -49,11 +45,7 @@ public:
     insert(key_t key, const value_t& value, std::unordered_map<CycDatablockKey, CyC_TIME_UNIT> sync = std::unordered_map<CycDatablockKey, CyC_TIME_UNIT>())
     {
         while (m_cache_keys.size() >= m_size)
-        {
-            m_cache_data.erase(*m_cache_keys.begin());
-            m_cache_keys.erase(m_cache_keys.begin());
-            m_cache_inputs.erase(m_cache_inputs.begin());
-        }
+            erase(*m_cache_keys.begin());
 
         // Construct empty environment
         m_cache_data[key] = CCycOcTree(0.1);
@@ -101,17 +93,13 @@ public:
     {
         m_cache_data.erase(key);
         m_cache_keys.erase(key);
+        m_cache_inputs.erase(key);
     }
 
     void resize(size_t new_size)
     {
         while (m_cache_keys.size() > new_size)
-        {
-            m_cache_data.erase(*m_cache_keys.begin());
-            m_cache_keys.erase(m_cache_keys.begin());
-            m_cache_inputs.erase(m_cache_inputs.begin());
-        }
-
+            erase(*m_cache_keys.begin());
         m_size = new_size;
     }
 
