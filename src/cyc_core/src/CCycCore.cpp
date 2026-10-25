@@ -305,7 +305,9 @@ bool CCycCore::getCycImage2CvMat(CCycFilterBase* pFilter, cv::Mat& dst, const Cy
                 {
                     // convert depth from 16UC1 to 8UC3 to be able to concatenate
                     cv::Mat imgR8UC1, imgR8UC3;
-                    imgR.convertTo(imgR8UC1, CV_8UC1, fDepthScaleFactor);
+                    // 16U depth is in mm, fDepthScaleFactor expects metres
+                    const float fScale = (imgR.type() == CV_16UC1) ? fDepthScaleFactor * 0.001f : fDepthScaleFactor;
+                    imgR.convertTo(imgR8UC1, CV_8UC1, fScale);
                     cv::cvtColor(imgR8UC1, imgR8UC3, cv::COLOR_GRAY2RGB);
                     cv::vconcat(imgL, imgR8UC3, strip);
                 }

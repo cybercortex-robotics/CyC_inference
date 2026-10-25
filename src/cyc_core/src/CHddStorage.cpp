@@ -1320,7 +1320,9 @@ bool CHddStorage::saveCycImage(
             sFilePathImgRight = "samples/" + std::to_string(i) + "/right/" + std::to_string(_timestamp_stop) + ".png";
 
             const cv::Mat img_right(_images[i].nRows, _images[i].nCols, _images[i].nType2, _images[i].pData2);
-            const cv::Mat img_right_out = CDepthImageProcessing::depth2image(img_right);
+
+            // 16-bit depth (mm) is written as a 16-bit PNG as is; float depth keeps the 24-bit RGB encoding
+            const cv::Mat img_right_out = (img_right.type() == CV_16UC1) ? img_right : CDepthImageProcessing::depth2image(img_right);
 
             bReturn &= cv::imwrite(_full_path + "/" + sFilePathImgRight, img_right_out);
         }
