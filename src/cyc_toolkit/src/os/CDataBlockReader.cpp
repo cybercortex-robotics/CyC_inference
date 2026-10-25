@@ -228,7 +228,7 @@ bool CDataBlockReader::readImage(const std::string& _line, const std::string& _d
     else
     {
         img_path = m_DatabasePath + "/" + _datastream_name + "/" + row.get<std::string>(IMAGE_PATH_RIGHT);
-        cv::Mat img_right = cv::imread(img_path, cv::IMREAD_ANYCOLOR);
+        cv::Mat img_right = cv::imread(img_path, cv::IMREAD_ANYCOLOR | cv::IMREAD_ANYDEPTH);
         _out_img = CycImage_(img_left, img_right, ts_image);
     }
 
