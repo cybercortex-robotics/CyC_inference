@@ -331,17 +331,8 @@ CyC_INT main(CyC_INT argc, char** argv)
             //const ROVIS_INT delay = (ROVIS_INT)(33 / window_names_map.size());
             const CyC_INT delay = 5; // prevent slow memory leak caused by the queue being emptied slower than being filled
 
-            if (cv::waitKey(delay) > 0)
-            {
-                visualization_running_map[filterID] = false;
-                if (visualization_thread_map[filterID].joinable())
-                {
-                    visualization_thread_map[filterID].join();
-                }
-
-                cv::destroyWindow(window_names_map[filterID]);
-                window_names_map.erase(filterID);
-            }
+            // No cv::waitKey here: on Linux its GTK loop shares the GLib main context with the QtPlot thread and can deadlock it
+            std::this_thread::sleep_for(std::chrono::milliseconds(delay));
         }
         else
         {
