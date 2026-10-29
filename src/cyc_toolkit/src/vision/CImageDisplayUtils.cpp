@@ -1068,13 +1068,6 @@ void CImageDisplayUtils::draw_navigation(cv::Mat& _out_dst,
     draw_navigation_grid(_out_dst, _grid_size);
     cv::Point2f pt_or = cv::Point(_out_dst.cols / 2.f, _out_dst.rows / 2.f);
 
-    // Used for relative coordinates drawing
-    CPose rel_pose(_slam_data.Body_W.translation_3x1().x(),
-        _slam_data.Body_W.translation_3x1().y(),
-        _slam_data.Body_W.translation_3x1().z(),
-        0.f, 0.f, 0.f);
-    rel_pose = rel_pose.inverse();
-
     // Draw current slam data
     if (_draw_curr_frame)
     {
@@ -1089,47 +1082,36 @@ void CImageDisplayUtils::draw_navigation(cv::Mat& _out_dst,
 
     if (_show_keyframes)
     {
-        Eigen::Vector2f prev_cam_position;
+        // Relative: the current body's translation is subtracted (the grid stays world-aligned, the current body at its origin)
+        const Eigen::Vector2f curr_position_W(_slam_data.Body_W.translation_3x1().x(), _slam_data.Body_W.translation_3x1().y());
+        const Eigen::Vector2f curr_position = _absolute_coord ? curr_position_W : Eigen::Vector2f::Zero();
+
+        Eigen::Vector2f prev_kf_position;
         bool first = true;
         for (auto it = m_pNavigationDispCache->keys().begin(); it != m_pNavigationDispCache->keys().end(); ++it)
         {
-            const CycStateNavigation* state = &m_pNavigationDispCache->at<CycStateNavigation>(*it);
-            
-            cv::Scalar color = color::red;
-            const CPose prev_body_W = state->Body_W;
+            const CPose& kf_body_W = m_pNavigationDispCache->at<CycStateNavigation>(*it).Body_W;
+            Eigen::Vector2f kf_position(kf_body_W.translation_3x1().x(), kf_body_W.translation_3x1().y());
+            if (!_absolute_coord)
+                kf_position -= curr_position_W;
 
-            Eigen::Vector2f cam_position;
-            if (_absolute_coord)
-                cam_position = Eigen::Vector2f(prev_body_W.translation_3x1().x(), prev_body_W.translation_3x1().y());
-            else
-                cam_position = Eigen::Vector2f(prev_body_W.translation_3x1().x() - state->Body_W.translation_3x1().x(),
-                    prev_body_W.translation_3x1().y() - state->Body_W.translation_3x1().y());
-
-            color = color::green;
-
-            if (first)
-            {
-                Eigen::Vector2f curr_cam_pose = Eigen::Vector2f::Zero();
-                if (_absolute_coord)
-                    curr_cam_pose = Eigen::Vector2f(state->Body_W.translation_3x1().x(), state->Body_W.translation_3x1().y());
-
+            if (!first)
                 cv::line(_out_dst,
-                    cv::Point2f(pt_or.x + cam_position.x() * _bew_scale, pt_or.y - cam_position.y() * _bew_scale),
-                    cv::Point2f(pt_or.x + curr_cam_pose.x() * _bew_scale, pt_or.y - curr_cam_pose.y() * _bew_scale),
+                    cv::Point2f(pt_or.x + prev_kf_position.x() * _bew_scale, pt_or.y - prev_kf_position.y() * _bew_scale),
+                    cv::Point2f(pt_or.x + kf_position.x() * _bew_scale, pt_or.y - kf_position.y() * _bew_scale),
                     color::current_path, 1);
-            }
-            else
-            {
-                cv::line(_out_dst,
-                    cv::Point2f(pt_or.x + prev_cam_position.x() * _bew_scale, pt_or.y - prev_cam_position.y() * _bew_scale),
-                    cv::Point2f(pt_or.x + cam_position.x() * _bew_scale, pt_or.y - cam_position.y() * _bew_scale),
-                    color::current_path, 1);
-            }
-            CImageDisplayUtils::draw_pose(_out_dst, cam_position.x(), cam_position.y(), prev_body_W.rotation_euler().z(), _bew_scale, color, 2);
+            CImageDisplayUtils::draw_pose(_out_dst, kf_position.x(), kf_position.y(), kf_body_W.rotation_euler().z(), _bew_scale, color::green, 2);
 
             first = false;
-            prev_cam_position = cam_position;
+            prev_kf_position = kf_position;
         }
+
+        // Newest keyframe to the current pose
+        if (!first)
+            cv::line(_out_dst,
+                cv::Point2f(pt_or.x + prev_kf_position.x() * _bew_scale, pt_or.y - prev_kf_position.y() * _bew_scale),
+                cv::Point2f(pt_or.x + curr_position.x() * _bew_scale, pt_or.y - curr_position.y() * _bew_scale),
+                color::current_path, 1);
     }
 
     // *** Additional info ***
