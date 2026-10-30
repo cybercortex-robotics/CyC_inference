@@ -1045,6 +1045,50 @@ void CImageDisplayUtils::draw_navigation_frame(cv::Mat& _out_dst, const CPinhole
         cv::putText(_out_dst, "Single Map", cv::Point(15, _out_dst.rows - CyC_INT(nTextOffsetY / 1.5)), cv::FONT_HERSHEY_PLAIN, font_scale, color::red, font_thickness);
 }
 
+float CImageDisplayUtils::auto_bew_scale(const cv::Size& _img_size,
+    const CycStateNavigation& _slam_data,
+    const float& _max_scale,
+    const bool& _absolute_coord,
+    const float& _top_reserved_px)
+{
+    const Eigen::Vector2f curr_position_W(_slam_data.Body_W.translation_3x1().x(), _slam_data.Body_W.translation_3x1().y());
+    const Eigen::Vector2f origin_W = _absolute_coord ? Eigen::Vector2f::Zero() : curr_position_W;
+
+    // Bounding box around the grid origin [m]
+    Eigen::Vector2f bb_min = curr_position_W - origin_W;
+    Eigen::Vector2f bb_max = bb_min;
+    if (m_pNavigationDispCache != nullptr)
+    {
+        for (const auto& key : m_pNavigationDispCache->keys())
+        {
+            const CPose& kf_body_W = m_pNavigationDispCache->at<CycStateNavigation>(key).Body_W;
+            const Eigen::Vector2f kf_position = Eigen::Vector2f(kf_body_W.translation_3x1().x(), kf_body_W.translation_3x1().y()) - origin_W;
+            bb_min = bb_min.cwiseMin(kf_position);
+            bb_max = bb_max.cwiseMax(kf_position);
+        }
+    }
+
+    // Free pixels from the origin to each border; the margin keeps the pose arrows (~23 px) inside
+    const float margin = 30.f;
+    const float free_x = _img_size.width / 2.f - margin;
+    const float free_up = _img_size.height / 2.f - margin - _top_reserved_px;
+    const float free_down = _img_size.height / 2.f - margin;
+
+    float fit_scale = _max_scale;
+    const float extent_x = std::max(-bb_min.x(), bb_max.x());
+    if (extent_x > 0.f)
+        fit_scale = std::min(fit_scale, free_x / extent_x);
+    if (bb_max.y() > 0.f)
+        fit_scale = std::min(fit_scale, free_up / bb_max.y());
+    if (bb_min.y() < 0.f)
+        fit_scale = std::min(fit_scale, free_down / -bb_min.y());
+
+    // Snap down to a power of 2, so the zoom changes in steps instead of every frame
+    if (fit_scale < _max_scale)
+        return std::exp2(std::floor(std::log2(fit_scale)));
+    return _max_scale;
+}
+
 void CImageDisplayUtils::draw_navigation(cv::Mat& _out_dst,
     const cv::Size& _grid_size,
     const CycStateNavigation& _slam_data,
@@ -1052,7 +1096,8 @@ void CImageDisplayUtils::draw_navigation(cv::Mat& _out_dst,
     const bool& _absolute_coord,
     const bool& _draw_curr_frame,
     const bool& _show_curr_data,
-    const bool& _show_keyframes)
+    const bool& _show_keyframes,
+    const bool& _auto_bew)
 {
     if (_show_keyframes && m_pNavigationDispCache == nullptr)
         m_pNavigationDispCache = std::make_unique<CCycCache>(300);
@@ -1068,6 +1113,11 @@ void CImageDisplayUtils::draw_navigation(cv::Mat& _out_dst,
     draw_navigation_grid(_out_dst, _grid_size);
     cv::Point2f pt_or = cv::Point(_out_dst.cols / 2.f, _out_dst.rows / 2.f);
 
+    // The info box covers the top 5 + nTextOffsetY * 3.5 px (see "Additional info" below)
+    const float bew_scale = (_auto_bew && _show_keyframes) ?
+        auto_bew_scale(_out_dst.size(), _slam_data, _bew_scale, _absolute_coord, _show_curr_data ? 5.f + nTextOffsetY * 3.5f : 0.f) :
+        _bew_scale;
+
     // Draw current slam data
     if (_draw_curr_frame)
     {
@@ -1075,9 +1125,9 @@ void CImageDisplayUtils::draw_navigation(cv::Mat& _out_dst,
         if (_absolute_coord)
             CImageDisplayUtils::draw_pose(_out_dst, _slam_data.Body_W.translation_3x1().x(),
                 _slam_data.Body_W.translation_3x1().y(),
-                _slam_data.Body_W.rotation_euler().z(), _bew_scale, color::blue, 4);
+                _slam_data.Body_W.rotation_euler().z(), bew_scale, color::blue, 4);
         else
-            CImageDisplayUtils::draw_pose(_out_dst, 0.f, 0.f, _slam_data.Body_W.rotation_euler().z(), _bew_scale, color::blue, 4);
+            CImageDisplayUtils::draw_pose(_out_dst, 0.f, 0.f, _slam_data.Body_W.rotation_euler().z(), bew_scale, color::blue, 4);
     }
 
     if (_show_keyframes)
@@ -1097,10 +1147,10 @@ void CImageDisplayUtils::draw_navigation(cv::Mat& _out_dst,
 
             if (!first)
                 cv::line(_out_dst,
-                    cv::Point2f(pt_or.x + prev_kf_position.x() * _bew_scale, pt_or.y - prev_kf_position.y() * _bew_scale),
-                    cv::Point2f(pt_or.x + kf_position.x() * _bew_scale, pt_or.y - kf_position.y() * _bew_scale),
+                    cv::Point2f(pt_or.x + prev_kf_position.x() * bew_scale, pt_or.y - prev_kf_position.y() * bew_scale),
+                    cv::Point2f(pt_or.x + kf_position.x() * bew_scale, pt_or.y - kf_position.y() * bew_scale),
                     color::current_path, 1);
-            CImageDisplayUtils::draw_pose(_out_dst, kf_position.x(), kf_position.y(), kf_body_W.rotation_euler().z(), _bew_scale, color::green, 2);
+            CImageDisplayUtils::draw_pose(_out_dst, kf_position.x(), kf_position.y(), kf_body_W.rotation_euler().z(), bew_scale, color::green, 2);
 
             first = false;
             prev_kf_position = kf_position;
@@ -1109,8 +1159,8 @@ void CImageDisplayUtils::draw_navigation(cv::Mat& _out_dst,
         // Newest keyframe to the current pose
         if (!first)
             cv::line(_out_dst,
-                cv::Point2f(pt_or.x + prev_kf_position.x() * _bew_scale, pt_or.y - prev_kf_position.y() * _bew_scale),
-                cv::Point2f(pt_or.x + curr_position.x() * _bew_scale, pt_or.y - curr_position.y() * _bew_scale),
+                cv::Point2f(pt_or.x + prev_kf_position.x() * bew_scale, pt_or.y - prev_kf_position.y() * bew_scale),
+                cv::Point2f(pt_or.x + curr_position.x() * bew_scale, pt_or.y - curr_position.y() * bew_scale),
                 color::current_path, 1);
     }
 
@@ -1152,6 +1202,21 @@ void CImageDisplayUtils::draw_navigation(cv::Mat& _out_dst,
         cv::putText(_out_dst, "Y", ptY, cv::FONT_HERSHEY_PLAIN, font_scale, color::y_axis, font_thickness);
     }
     
+    // Skip keyframes too close to the last cached one, so the path does not stack arrows on top of each other
     if (_show_keyframes && _slam_data.is_keyframe)
-        m_pNavigationDispCache->insert(_slam_data.timestamp, _slam_data);
+    {
+        const float min_kf_dist = 0.25f; // [m]
+
+        bool far_enough = true;
+        if (!m_pNavigationDispCache->empty())
+        {
+            const CPose& last_body_W = m_pNavigationDispCache->back<CycStateNavigation>().Body_W;
+            const Eigen::Vector2f delta(_slam_data.Body_W.translation_3x1().x() - last_body_W.translation_3x1().x(),
+                _slam_data.Body_W.translation_3x1().y() - last_body_W.translation_3x1().y());
+            far_enough = delta.norm() >= min_kf_dist;
+        }
+
+        if (far_enough)
+            m_pNavigationDispCache->insert(_slam_data.timestamp, _slam_data);
+    }
 }

@@ -234,9 +234,17 @@ public:
         const bool& _absolute_coord = false,
         const bool& _draw_curr_frame = true,
         const bool& _show_curr_data = true,
-        const bool& _show_keyframes = false);
+        const bool& _show_keyframes = false,
+        const bool& _auto_bew = false);
 
 private:
+    // Largest scale [px/m], at most _max_scale, that fits the cached keyframes and the current pose into an image of _img_size; snapped down to a power of 2
+    static float auto_bew_scale(const cv::Size& _img_size,
+        const CycStateNavigation& _slam_data,
+        const float& _max_scale,
+        const bool& _absolute_coord,
+        const float& _top_reserved_px);
+
     static std::unique_ptr<CCycCache>   m_pNavigationDispCache;
     static std::vector<Eigen::Vector3f> m_NavigationTrajectory;
 };
