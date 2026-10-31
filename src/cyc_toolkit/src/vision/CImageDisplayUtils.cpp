@@ -98,6 +98,9 @@ void CImageDisplayUtils::drawPoseCamView(const CPose& pose,
 
 void CImageDisplayUtils::drawObjects(cv::Mat& dst, const CycRois2D& objects, std::unordered_map<CyC_INT, std::string>& obj_classes_map, CycDatablockKey key)
 {
+	if (objects.empty())
+		return;
+
 	double alpha = 0.3;
     float scaling = 2.f;
     cv::resize(dst, dst, cv::Size(dst.cols * scaling, dst.rows * scaling));
@@ -277,13 +280,12 @@ void CImageDisplayUtils::drawPoints(cv::Mat& dst, const CycPoints& pts, CyC_INT&
     char str[128];
     static std::unordered_map<std::size_t, cv::Scalar> track_colors;
 
+    if (pts.empty())
+        return;
+
     float scaling = 2.f;
     cv::resize(dst, dst, cv::Size(dst.cols * scaling, dst.rows * scaling));
 
-    // If the unordered map has been initialized with an empty key
-    if (pts.empty())
-        return;
-    
     for (CycPoint pt : pts)
     {
         const int& track_id = pt.id;
