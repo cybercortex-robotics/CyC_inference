@@ -2,9 +2,9 @@
 # Author: Sorin Mihai Grigorescu
 
 # Check for Raspberry Pi platform
-if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "armv7l")
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv7l")
 	set(RASPBERRY_PI TRUE)
-endif(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "armv7l")
+endif(CMAKE_SYSTEM_PROCESSOR MATCHES "armv7l")
 
 find_package(Qt5 COMPONENTS Core Gui Widgets PrintSupport REQUIRED)
 
