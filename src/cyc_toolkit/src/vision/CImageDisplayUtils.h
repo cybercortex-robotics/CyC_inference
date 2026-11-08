@@ -237,13 +237,25 @@ public:
         const bool& _show_keyframes = false,
         const bool& _auto_bew = false);
 
+    // Largest scale [px/m], at most _max_scale, that fits the bounding box [_bb_min, _bb_max] [m] (relative to the grid origin)
+    // into the navigation image drawn for _grid_size; snapped down to a power of 2.
+    // If _show_curr_data, the top area covered by the info box is kept free.
+    static float fit_bew_scale(const cv::Size& _grid_size,
+        const Eigen::Vector2f& _bb_min,
+        const Eigen::Vector2f& _bb_max,
+        const float& _max_scale,
+        const bool& _show_curr_data = true);
+
 private:
-    // Largest scale [px/m], at most _max_scale, that fits the cached keyframes and the current pose into an image of _img_size; snapped down to a power of 2
-    static float auto_bew_scale(const cv::Size& _img_size,
+    // Upscaling factor from _grid_size to the size of the navigation image
+    static CyC_INT navigation_disp_scale(const cv::Size& _grid_size);
+
+    // fit_bew_scale() applied to the cached keyframes and the current pose
+    static float auto_bew_scale(const cv::Size& _grid_size,
         const CycStateNavigation& _slam_data,
         const float& _max_scale,
         const bool& _absolute_coord,
-        const float& _top_reserved_px);
+        const bool& _show_curr_data);
 
     static std::unique_ptr<CCycCache>   m_pNavigationDispCache;
     static std::vector<Eigen::Vector3f> m_NavigationTrajectory;

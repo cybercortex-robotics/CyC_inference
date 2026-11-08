@@ -984,11 +984,14 @@ void CImageDisplayUtils::draw_pose(cv::Mat& _out_dst, const float& _x, const flo
         _color, _line_thickness);
 }
 
+CyC_INT CImageDisplayUtils::navigation_disp_scale(const cv::Size& _grid_size)
+{
+    return (_grid_size.width <= 400 || _grid_size.height <= 300) ? 5 : 2;
+}
+
 void CImageDisplayUtils::draw_navigation_grid(cv::Mat& _out_dst, const cv::Size& _grid_size)
 {
-    CyC_INT disp_scale = 2;
-    if (_grid_size.width <= 400 || _grid_size.height <= 300)
-        disp_scale = 5;
+    const CyC_INT disp_scale = navigation_disp_scale(_grid_size);
 
     _out_dst = cv::Mat(cv::Size(_grid_size.width * disp_scale, _grid_size.height * disp_scale), CV_8UC3, cv::Scalar(150, 150, 150));
 
@@ -1047,11 +1050,46 @@ void CImageDisplayUtils::draw_navigation_frame(cv::Mat& _out_dst, const CPinhole
         cv::putText(_out_dst, "Single Map", cv::Point(15, _out_dst.rows - CyC_INT(nTextOffsetY / 1.5)), cv::FONT_HERSHEY_PLAIN, font_scale, color::red, font_thickness);
 }
 
-float CImageDisplayUtils::auto_bew_scale(const cv::Size& _img_size,
+float CImageDisplayUtils::fit_bew_scale(const cv::Size& _grid_size,
+    const Eigen::Vector2f& _bb_min,
+    const Eigen::Vector2f& _bb_max,
+    const float& _max_scale,
+    const bool& _show_curr_data)
+{
+    // Size of the image created by draw_navigation_grid()
+    const CyC_INT disp_scale = navigation_disp_scale(_grid_size);
+    const cv::Size img_size(_grid_size.width * disp_scale, _grid_size.height * disp_scale);
+
+    // The info box drawn by draw_navigation() covers the top 5 + nTextOffsetY * 3.5 px
+    const CyC_INT nTextOffsetY = _grid_size.height / 10;
+    const float top_reserved_px = _show_curr_data ? 5.f + nTextOffsetY * 3.5f : 0.f;
+
+    // Free pixels from the origin to each border; the margin keeps the pose arrows (~23 px) inside
+    const float margin = 30.f;
+    const float free_x = img_size.width / 2.f - margin;
+    const float free_up = img_size.height / 2.f - margin - top_reserved_px;
+    const float free_down = img_size.height / 2.f - margin;
+
+    float fit_scale = _max_scale;
+    const float extent_x = std::max(-_bb_min.x(), _bb_max.x());
+    if (extent_x > 0.f)
+        fit_scale = std::min(fit_scale, free_x / extent_x);
+    if (_bb_max.y() > 0.f)
+        fit_scale = std::min(fit_scale, free_up / _bb_max.y());
+    if (_bb_min.y() < 0.f)
+        fit_scale = std::min(fit_scale, free_down / -_bb_min.y());
+
+    // Snap down to a power of 2, so the zoom changes in steps instead of every frame
+    if (fit_scale < _max_scale)
+        return std::exp2(std::floor(std::log2(fit_scale)));
+    return _max_scale;
+}
+
+float CImageDisplayUtils::auto_bew_scale(const cv::Size& _grid_size,
     const CycStateNavigation& _slam_data,
     const float& _max_scale,
     const bool& _absolute_coord,
-    const float& _top_reserved_px)
+    const bool& _show_curr_data)
 {
     const Eigen::Vector2f curr_position_W(_slam_data.Body_W.translation_3x1().x(), _slam_data.Body_W.translation_3x1().y());
     const Eigen::Vector2f origin_W = _absolute_coord ? Eigen::Vector2f::Zero() : curr_position_W;
@@ -1070,25 +1108,7 @@ float CImageDisplayUtils::auto_bew_scale(const cv::Size& _img_size,
         }
     }
 
-    // Free pixels from the origin to each border; the margin keeps the pose arrows (~23 px) inside
-    const float margin = 30.f;
-    const float free_x = _img_size.width / 2.f - margin;
-    const float free_up = _img_size.height / 2.f - margin - _top_reserved_px;
-    const float free_down = _img_size.height / 2.f - margin;
-
-    float fit_scale = _max_scale;
-    const float extent_x = std::max(-bb_min.x(), bb_max.x());
-    if (extent_x > 0.f)
-        fit_scale = std::min(fit_scale, free_x / extent_x);
-    if (bb_max.y() > 0.f)
-        fit_scale = std::min(fit_scale, free_up / bb_max.y());
-    if (bb_min.y() < 0.f)
-        fit_scale = std::min(fit_scale, free_down / -bb_min.y());
-
-    // Snap down to a power of 2, so the zoom changes in steps instead of every frame
-    if (fit_scale < _max_scale)
-        return std::exp2(std::floor(std::log2(fit_scale)));
-    return _max_scale;
+    return fit_bew_scale(_grid_size, bb_min, bb_max, _max_scale, _show_curr_data);
 }
 
 void CImageDisplayUtils::draw_navigation(cv::Mat& _out_dst,
@@ -1115,9 +1135,9 @@ void CImageDisplayUtils::draw_navigation(cv::Mat& _out_dst,
     draw_navigation_grid(_out_dst, _grid_size);
     cv::Point2f pt_or = cv::Point(_out_dst.cols / 2.f, _out_dst.rows / 2.f);
 
-    // The info box covers the top 5 + nTextOffsetY * 3.5 px (see "Additional info" below)
+    // fit_bew_scale() keeps the info box area free (see "Additional info" below)
     const float bew_scale = (_auto_bew && _show_keyframes) ?
-        auto_bew_scale(_out_dst.size(), _slam_data, _bew_scale, _absolute_coord, _show_curr_data ? 5.f + nTextOffsetY * 3.5f : 0.f) :
+        auto_bew_scale(_grid_size, _slam_data, _bew_scale, _absolute_coord, _show_curr_data) :
         _bew_scale;
 
     // Draw current slam data
