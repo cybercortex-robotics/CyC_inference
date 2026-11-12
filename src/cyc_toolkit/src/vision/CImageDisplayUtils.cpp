@@ -1147,9 +1147,9 @@ void CImageDisplayUtils::draw_navigation(cv::Mat& _out_dst,
         if (_absolute_coord)
             CImageDisplayUtils::draw_pose(_out_dst, _slam_data.Body_W.translation_3x1().x(),
                 _slam_data.Body_W.translation_3x1().y(),
-                _slam_data.Body_W.rotation_euler().z(), bew_scale, color::blue, 4);
+                _slam_data.Body_W.rotation_euler().z(), bew_scale, color::white, 4);
         else
-            CImageDisplayUtils::draw_pose(_out_dst, 0.f, 0.f, _slam_data.Body_W.rotation_euler().z(), bew_scale, color::blue, 4);
+            CImageDisplayUtils::draw_pose(_out_dst, 0.f, 0.f, _slam_data.Body_W.rotation_euler().z(), bew_scale, color::white, 4);
     }
 
     if (_show_keyframes)
