@@ -44,7 +44,6 @@ public:
     static cv::Scalar ultrasonics;
     static cv::Scalar depth;
     static cv::Scalar slam_map_points;
-    static cv::Scalar wheel_stuck;
 
     static cv::Scalar info;
     static cv::Scalar solutions;
@@ -94,9 +93,9 @@ public:
     CObjectClasses(const std::string& _object_classes_file);
     virtual ~CObjectClasses();
 
-    bool isInitialized()                                { return m_bIsInitialized; };
-    CyC_UINT getNumClasses()                            { return m_nNumClasses; };
-    std::unordered_map<CyC_INT, std::string> getLandmarks()   { return m_ObjectClassesMap; };
+    bool isInitialized()                                    { return m_bIsInitialized; };
+    CyC_UINT getNumClasses()                                { return m_nNumClasses; };
+    std::unordered_map<CyC_INT, std::string> getLandmarks() { return m_ObjectClassesMap; };
 
     static cv::Scalar getColor(const CyC_INT& _object_class);
 

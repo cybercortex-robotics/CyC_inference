@@ -166,14 +166,14 @@ cv::Scalar color::gray      = cv::Scalar{ 120, 120, 120, 0 };
 cv::Scalar color::white     = cv::Scalar{ 255, 255, 255, 0 };
 cv::Scalar color::red       = cv::Scalar{ 50, 50, 255, 0 };
 cv::Scalar color::green     = cv::Scalar{ 60, 250, 50, 0 };
-cv::Scalar color::blue      = cv::Scalar{ 255, 243, 153, 0 };
+cv::Scalar color::blue      = cv::Scalar{ 235, 180, 80, 0 };
 cv::Scalar color::yellow    = cv::Scalar{ 50, 255, 255, 0 };
 cv::Scalar color::pink      = cv::Scalar{ 255, 200, 255, 0 };
 cv::Scalar color::cyc_background = cv::Scalar{ 35, 35, 35, 0 };
 
-cv::Scalar color::x_axis = color::green;
-cv::Scalar color::y_axis = color::blue;
-cv::Scalar color::z_axis = color::red;
+cv::Scalar color::x_axis    = color::green;
+cv::Scalar color::y_axis    = color::blue;
+cv::Scalar color::z_axis    = color::red;
 
 cv::Scalar color::undefined                = cv::Scalar{ 50, 50, 50, 0 };
 cv::Scalar color::vehicle                  = cv::Scalar{ 255, 255, 255, 0 };
@@ -188,8 +188,7 @@ cv::Scalar color::road_model               = cv::Scalar{ 0, 255, 0, 0 };
 cv::Scalar color::lidar                    = cv::Scalar{ 150, 153, 216, 0 };
 cv::Scalar color::ultrasonics              = cv::Scalar{ 0, 0, 216, 0 };
 cv::Scalar color::depth                    = cv::Scalar{ 234, 217, 153, 0 };
-cv::Scalar color::slam_map_points          = cv::Scalar{ 0, 153, 0, 0 };
-cv::Scalar color::wheel_stuck              = cv::Scalar{ 0, 0, 102, 0 };
+cv::Scalar color::slam_map_points          = color::blue;
 
 cv::Scalar color::info                     = cv::Scalar{ 220, 200, 100, 0 };
 cv::Scalar color::solutions                = cv::Scalar{ 20, 200, 230, 0 };
@@ -234,7 +233,6 @@ bool color::fromName(const std::string& _name, cv::Scalar& _out)
         { "ultrasonics",                &color::ultrasonics },
         { "depth",                      &color::depth },
         { "slam_map_points",            &color::slam_map_points },
-        { "wheel_stuck",                &color::wheel_stuck },
         { "info",                       &color::info },
         { "solutions",                  &color::solutions },
         { "best_solution",              &color::best_solution },
