@@ -121,7 +121,7 @@ void CImageDisplayUtils::drawObjects(cv::Mat& dst, const CycRois2D& objects, std
                 continue;
 
             // Assign color based on class
-            const auto& color = color::colormap[(obj.cls < sizeof(color::colormap)) ? obj.cls : 0];
+            const auto& color = color::colormap[(obj.cls < sizeof(color::colormap) / sizeof(color::colormap[0])) ? obj.cls : 0];
             cv::Rect objRect(obj.origin.x(), obj.origin.y(), obj.width, obj.height);
             cv::Mat roi = dst(objRect);
             cv::Mat coloredRegion(roi.size(), CV_8UC3, color);

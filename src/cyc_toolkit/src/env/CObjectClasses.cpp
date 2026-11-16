@@ -303,7 +303,7 @@ cv::Scalar CObjectClasses::getColor(const CyC_INT& _object_class)
 	cv::Scalar color = 0;
 	if (_object_class >= 0)
 	{
-		color = color::colormap[(_object_class < sizeof(color::colormap)) ? _object_class : 0];
+		color = color::colormap[(_object_class < sizeof(color::colormap) / sizeof(color::colormap[0])) ? _object_class : 0];
 	}
 	else
 	{
