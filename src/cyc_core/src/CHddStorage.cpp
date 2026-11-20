@@ -49,6 +49,13 @@ CHddStorage::CHddStorage(CCycCore* _core, const std::string& _read_path, const s
 
 CHddStorage::~CHddStorage()
 {
+    // A joinable std::thread terminates the process when destroyed: join the replay and the synced saving threads
+    stopReplay();
+
+    m_save_running = false;
+    if (m_save_thread.joinable())
+        m_save_thread.join();
+
     for (std::thread &store_thread : m_vSavingThreads)
         if (store_thread.joinable())
             store_thread.join();
@@ -312,13 +319,20 @@ bool CHddStorage::saveDatablockAsync()
     return true;
 }
 
+void CHddStorage::stopReplay()
+{
+    m_read_running = false;
+    if (m_read_thread.joinable())
+        m_read_thread.join();
+
+    while (m_read_pending > 0)
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+}
+
 bool CHddStorage::readDatablockSynced()
 {
-    if (m_read_thread.joinable())
-    {
-        m_read_running = false;
-        m_read_thread.join();
-    }
+    stopReplay();
+    m_read_finished = false;
 
     if (!fs::exists(m_sReadDBStoragePath))
     {
@@ -465,7 +479,9 @@ bool CHddStorage::readDatablockSynced()
                     {
                         CCycFilterBase* pFilter = available_read_filters[column2filter_map[i]];
                         const std::string& db_root_path = db_root_paths[column2filter_map[i]];
-                        m_read_thread_pool.enqueue([i, pFilter, db_root_path](const std::string& line) {
+                        ++m_read_pending;
+                        m_read_thread_pool.enqueue([this, pFilter, db_root_path](const std::string& line) {
+                            struct pending_guard { std::atomic<int>& n; ~pending_guard() { --n; } } guard{ m_read_pending };
                             pFilter->loadFromDatastream(line, db_root_path);
                         }, std::move(line));
                     }
@@ -475,6 +491,16 @@ bool CHddStorage::readDatablockSynced()
                 std::this_thread::sleep_for(std::chrono::milliseconds(current_synced_timestamp - last_synced_timestamp));
                 //std::this_thread::sleep_for(std::chrono::microseconds(current_synced_timestamp - last_synced_timestamp));
                 last_synced_timestamp = current_synced_timestamp;
+            }
+
+            // End of the datablock (not a stop from outside): finished once the filters have loaded the last samples
+            if (m_read_running)
+            {
+                while (m_read_pending > 0)
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+                spdlog::info("CHddStorage::readDatablockSynced(): Replay of {} finished.", m_sReadDBStoragePath);
+                m_read_finished = true;
             }
         },
 

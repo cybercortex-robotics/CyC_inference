@@ -115,13 +115,16 @@ bool CCycDatablock::clearDatablock()
 		delete entry;
     }
 
-	// Clear the Datablock deque
+	// Clear the Datablock deque, and the map of the deleted entries (clearDatablock() may be called again, by the destructor)
 	m_DatablockDeque.clear();
+	m_DatablockMap.clear();
 
     // Delete the plotting object
 #ifdef ENABLE_CVPLOT
     delete m_pDatablockPlot;
     delete m_pComputePlot;
+    m_pDatablockPlot = nullptr;
+    m_pComputePlot = nullptr;
 #endif
 #ifdef ENABLE_QTPLOT
     if (m_pDatablockPlotQT)

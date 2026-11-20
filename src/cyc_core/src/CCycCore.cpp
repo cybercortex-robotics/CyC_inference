@@ -18,6 +18,10 @@ CCycCore::CCycCore() :
 
 CCycCore::~CCycCore()
 {
+    // Stop, disable and delete the filters while their plugin libraries are loaded: m_SharedFilters is declared after
+    // m_Datablock, so it is destroyed first, and its dlclose() would unmap the code the filters' threads still run
+    m_Datablock.clearDatablock();
+
     // force logger to flush
     spdlog::default_logger()->flush();
     m_bCoreRunning = false;

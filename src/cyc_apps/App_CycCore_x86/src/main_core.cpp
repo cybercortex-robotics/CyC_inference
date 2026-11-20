@@ -29,6 +29,9 @@
 #ifdef WIN32
 // for timeBeginPeriod
 #include <timeapi.h>
+#include <io.h>
+#else
+#include <unistd.h>
 #endif // WIN32
 
 #undef min
@@ -99,6 +102,33 @@ std::atomic<bool> appRunning = true;
 
 void handle_sigint(int sig) {
     appRunning = false;
+}
+
+// The keyboard is read only from a terminal: with stdin redirected (batch runs) kbhit() and getchar() are not usable
+bool stdin_is_terminal()
+{
+#ifdef WIN32
+    return _isatty(_fileno(stdin)) != 0;
+#else
+    return isatty(STDIN_FILENO) != 0;
+#endif // WIN32
+}
+
+// Latest output timestamp over all filters: it stops changing once the filters have processed all their data
+CyC_TIME_UNIT latest_filter_timestamp(CCycCore& core)
+{
+    std::vector<ConfigFilterParameters> filters;
+    CConfigParameters::instance().getFiltersConfigParameters(filters);
+
+    CyC_TIME_UNIT latest = 0;
+    for (const auto& params : filters)
+    {
+        CCycFilterBase* pFilter = nullptr;
+        if (core.readFilter(params.key, pFilter) && pFilter != nullptr && pFilter->getTimestampStop() > latest)
+            latest = pFilter->getTimestampStop();
+    }
+
+    return latest;
 }
 
 }
@@ -276,12 +306,23 @@ CyC_INT main(CyC_INT argc, char** argv)
             std::cout << "Datablock cannot be saved. Check log for errors." << std::endl;
     }
 
+    const bool bInteractive = stdin_is_terminal();
+
     console::setup();
-    console::enable_raw_mode();
+    if (bInteractive)
+        console::enable_raw_mode();
 
     char ch = 0;
     CCycFilterBase* pTextualFilter = nullptr;
     std::stringstream cmd_stream;
+
+    // End of the replay: the core exits once the filters have been idle for kReplayIdle (at most kReplayDrainMax
+    // after the last sample, for filters that keep publishing without new data)
+    constexpr auto kReplayIdle = std::chrono::seconds(2);
+    constexpr auto kReplayDrainMax = std::chrono::seconds(5);
+    bool bReplayFinished = false;
+    std::chrono::steady_clock::time_point tReplayFinished, tLastActivity;
+    CyC_TIME_UNIT lastFilterTimestamp = 0;
 
     // Enable visualization
     if (bVizEnabled)
@@ -349,7 +390,7 @@ CyC_INT main(CyC_INT argc, char** argv)
             }
         }
 
-        if (console::kbhit())
+        if (bInteractive && console::kbhit())
         {
             ch = console::gc();
 
@@ -379,10 +420,43 @@ CyC_INT main(CyC_INT argc, char** argv)
             break;
             }
         }
+
+        // Exit at the end of the replay, once the filters have processed the last samples
+        if (storage.isReplayFinished())
+        {
+            const auto now = std::chrono::steady_clock::now();
+            const CyC_TIME_UNIT filterTimestamp = latest_filter_timestamp(CycCore);
+
+            if (!bReplayFinished)
+            {
+                bReplayFinished = true;
+                tReplayFinished = tLastActivity = now;
+                lastFilterTimestamp = filterTimestamp;
+                spdlog::info("CyberCortex.AI Core: Replay finished, waiting for the filters to process the last samples.");
+            }
+            else if (filterTimestamp != lastFilterTimestamp)
+            {
+                lastFilterTimestamp = filterTimestamp;
+                tLastActivity = now;
+            }
+
+            if (now - tLastActivity >= kReplayIdle)
+            {
+                spdlog::info("CyberCortex.AI Core: Filters idle after the replay. Exiting.");
+                break;
+            }
+            if (now - tReplayFinished >= kReplayDrainMax)
+            {
+                spdlog::warn("CyberCortex.AI Core: Filters still active {} s after the replay. Exiting.",
+                    std::chrono::duration_cast<std::chrono::seconds>(kReplayDrainMax).count());
+                break;
+            }
+        }
     }
 
 
-    console::disable_raw_mode();
+    if (bInteractive)
+        console::disable_raw_mode();
     console::restore();
 
     for (auto& viz_pair : visualization_running_map)

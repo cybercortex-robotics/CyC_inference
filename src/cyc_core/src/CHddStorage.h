@@ -22,6 +22,13 @@ public:
     bool readDatablockSynced();
     bool saveDatablockSynced();
 
+    // True once the replay has sent the last sample of the datablock to its filters (and they have loaded it).
+    // Stays false when there is no replay, or when the replay was stopped before its end.
+    bool isReplayFinished() const { return m_read_finished; }
+
+    // Stops the replay thread and waits for the samples it has already queued
+    void stopReplay();
+
     static void checkCcrDBIntegrity(const std::string& _db_folder);
 
 private:
@@ -58,6 +65,8 @@ private:
 
     std::thread     m_read_thread;
     CyC_ATOMIC_BOOL m_read_running;
+    CyC_ATOMIC_BOOL m_read_finished{false};
+    std::atomic<int> m_read_pending{0};     // samples queued in m_read_thread_pool, not yet loaded by their filter
     ThreadPool      m_read_thread_pool;
 
     std::unordered_map<CycDatablockKey, csv::writer>    m_extra_writers;
