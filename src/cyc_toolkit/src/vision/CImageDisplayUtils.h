@@ -239,7 +239,7 @@ public:
 
     // Largest scale [px/m], at most _max_scale, that fits the bounding box [_bb_min, _bb_max] [m] (relative to the grid origin)
     // into the navigation image drawn for _grid_size; snapped down to a power of 2.
-    // If _show_curr_data, the top area covered by the info box is kept free.
+    // If _show_curr_data, the top and bottom areas covered by the info boxes are kept free.
     static float fit_bew_scale(const cv::Size& _grid_size,
         const Eigen::Vector2f& _bb_min,
         const Eigen::Vector2f& _bb_max,

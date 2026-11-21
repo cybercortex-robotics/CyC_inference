@@ -984,6 +984,10 @@ void CImageDisplayUtils::draw_pose(cv::Mat& _out_dst, const float& _x, const flo
         _color, _line_thickness);
 }
 
+// Heights of the info boxes drawn by draw_navigation() at the top and bottom of the image, in text lines (nTextOffsetY)
+static constexpr float kNavInfoTopLines = 3.5f;
+static constexpr float kNavInfoBottomLines = 4.5f;
+
 CyC_INT CImageDisplayUtils::navigation_disp_scale(const cv::Size& _grid_size)
 {
     return (_grid_size.width <= 400 || _grid_size.height <= 300) ? 5 : 2;
@@ -1060,15 +1064,16 @@ float CImageDisplayUtils::fit_bew_scale(const cv::Size& _grid_size,
     const CyC_INT disp_scale = navigation_disp_scale(_grid_size);
     const cv::Size img_size(_grid_size.width * disp_scale, _grid_size.height * disp_scale);
 
-    // The info box drawn by draw_navigation() covers the top 5 + nTextOffsetY * 3.5 px
+    // The info boxes drawn by draw_navigation() cover the top and bottom 5 + nTextOffsetY * kNavInfo{Top,Bottom}Lines px
     const CyC_INT nTextOffsetY = _grid_size.height / 10;
-    const float top_reserved_px = _show_curr_data ? 5.f + nTextOffsetY * 3.5f : 0.f;
+    const float top_reserved_px = _show_curr_data ? 5.f + nTextOffsetY * kNavInfoTopLines : 0.f;
+    const float bottom_reserved_px = _show_curr_data ? 5.f + nTextOffsetY * kNavInfoBottomLines : 0.f;
 
     // Free pixels from the origin to each border; the margin keeps the pose arrows (~23 px) inside
     const float margin = 30.f;
     const float free_x = img_size.width / 2.f - margin;
     const float free_up = img_size.height / 2.f - margin - top_reserved_px;
-    const float free_down = img_size.height / 2.f - margin;
+    const float free_down = img_size.height / 2.f - margin - bottom_reserved_px;
 
     float fit_scale = _max_scale;
     const float extent_x = std::max(-_bb_min.x(), _bb_max.x());
@@ -1189,7 +1194,7 @@ void CImageDisplayUtils::draw_navigation(cv::Mat& _out_dst,
     // *** Additional info ***
     if (_show_curr_data)
     {
-        cv::Mat disp_rect_info = _out_dst(cv::Rect(5, 5, _out_dst.cols - 20, CyC_INT(nTextOffsetY * 3.5)));
+        cv::Mat disp_rect_info = _out_dst(cv::Rect(5, 5, _out_dst.cols - 20, CyC_INT(nTextOffsetY * kNavInfoTopLines)));
         cv::Mat black_rect = cv::Mat::zeros(disp_rect_info.rows, disp_rect_info.cols, CV_8UC3);
         cv::addWeighted(black_rect, alpha, disp_rect_info, beta, gamma, disp_rect_info);
 
@@ -1209,14 +1214,52 @@ void CImageDisplayUtils::draw_navigation(cv::Mat& _out_dst,
         cv::putText(_out_dst, str, cv::Point(5, nTextOffsetY * 2), cv::FONT_HERSHEY_PLAIN, font_scale, color::info, font_thickness);
 
         // Keypoints information
-        snprintf(str, sizeof(str) - 1, "Map matches: %d; Map points: %d; KeyFrames: %d",
-            _slam_data.num_map_matches, _slam_data.num_map_points, _slam_data.num_keyframes);
+        snprintf(str, sizeof(str) - 1, "Map matches: %d; Map points: %d; KeyFrames: %d; %s",
+            _slam_data.num_map_matches, _slam_data.num_map_points, _slam_data.num_keyframes,
+            _slam_data.is_multimap ? "Multimap" : "Single Map");
         cv::putText(_out_dst, str, cv::Point(5, nTextOffsetY * 3), cv::FONT_HERSHEY_PLAIN, font_scale, color::info, font_thickness);
 
-        // Draw axes convention
-        cv::Point ptOrg = cv::Point(50, _out_dst.rows - 50);
-        cv::Point ptX = cv::Point(100, _out_dst.rows - 50);
-        cv::Point ptY = cv::Point(50, _out_dst.rows - 100);
+        // *** Bottom info box: tracking, map resets and GNSS ***
+        const CyC_INT bottom_box_h = CyC_INT(nTextOffsetY * kNavInfoBottomLines);
+        const CyC_INT bottom_box_y = _out_dst.rows - 5 - bottom_box_h;
+        cv::Mat disp_rect_bottom = _out_dst(cv::Rect(5, bottom_box_y, _out_dst.cols - 20, bottom_box_h));
+        cv::Mat black_rect_bottom = cv::Mat::zeros(disp_rect_bottom.rows, disp_rect_bottom.cols, CV_8UC3);
+        cv::addWeighted(black_rect_bottom, alpha, disp_rect_bottom, beta, gamma, disp_rect_bottom);
+
+        // Text baselines, laid out as in the top box
+        auto bottom_line_y = [&](const CyC_INT& _line) { return bottom_box_y - 5 + nTextOffsetY * _line; };
+
+        // Tracking state
+        const char* tracking_str = "UNKNOWN";
+        cv::Scalar tracking_color = color::red;
+        switch (_slam_data.tracking_state)
+        {
+            case CyC_TRACKING_NO_IMAGES:       tracking_str = "NO IMAGES";       tracking_color = color::red;    break;
+            case CyC_TRACKING_NOT_INITIALIZED: tracking_str = "NOT INITIALIZED"; tracking_color = color::red;    break;
+            case CyC_TRACKING_OK:              tracking_str = "OK";              tracking_color = color::green;  break;
+            case CyC_TRACKING_RECENTLY_LOST:   tracking_str = "RECENTLY LOST";   tracking_color = color::yellow; break;
+            case CyC_TRACKING_LOST:            tracking_str = "LOST";            tracking_color = color::red;    break;
+        }
+        snprintf(str, sizeof(str) - 1, "Tracking: %s", tracking_str);
+        cv::putText(_out_dst, str, cv::Point(5, bottom_line_y(1)), cv::FONT_HERSHEY_PLAIN, font_scale, tracking_color, font_thickness);
+
+        // Reset counter and latest reset jump
+        snprintf(str, sizeof(str) - 1, "Resets: %d; Reset delta [W]", static_cast<int>(_slam_data.reset_counter));
+        CImageDisplayUtils::printT(_out_dst, str, _slam_data.reset_delta_W.transform(), bottom_line_y(2), color::info, font_scale, font_thickness, "euler");
+
+        // GNSS: body pose in ENU and LLA of the ENU origin (fix_type > 0 <=> Body_ENU is valid)
+        CImageDisplayUtils::printT(_out_dst, "Body [ENU]", _slam_data.Body_ENU.transform(), bottom_line_y(3), color::info, font_scale, font_thickness, "euler");
+
+        snprintf(str, sizeof(str) - 1, "EnuOrigin [LLA]: [%.7f; %.7f; %.2f]  fix: %d",
+            _slam_data.EnuOrigin_LLA.latitude, _slam_data.EnuOrigin_LLA.longitude, _slam_data.EnuOrigin_LLA.altitude,
+            static_cast<int>(_slam_data.EnuOrigin_LLA.fix_type));
+        cv::putText(_out_dst, str, cv::Point(5, bottom_line_y(4)), cv::FONT_HERSHEY_PLAIN, font_scale, color::info, font_thickness);
+
+        // Draw axes convention, above the bottom info box
+        const CyC_INT axes_y = bottom_box_y - 15;
+        cv::Point ptOrg = cv::Point(50, axes_y);
+        cv::Point ptX = cv::Point(100, axes_y);
+        cv::Point ptY = cv::Point(50, axes_y - 50);
         cv::arrowedLine(_out_dst, ptOrg, ptX, color::x_axis, 2);
         cv::arrowedLine(_out_dst, ptOrg, ptY, color::y_axis, 2);
         cv::circle(_out_dst, ptOrg, 8, color::z_axis, -1);
