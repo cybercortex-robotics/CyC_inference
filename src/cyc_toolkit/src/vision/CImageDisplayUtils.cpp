@@ -1201,11 +1201,20 @@ void CImageDisplayUtils::draw_navigation(cv::Mat& _out_dst,
         ////cv::resize(_out_dst, _out_dst, cv::Size(_out_dst.cols * 2, _out_dst.rows * 2));
 
         // Print computed body pose
-        CImageDisplayUtils::printT(_out_dst, "Body [W]", _slam_data.Body_W.transform(), nTextOffsetY, color::info, font_scale, font_thickness, "euler");
-
-        // Print velocity
-        snprintf(str, sizeof(str) - 1, "V [%.2f; %.2f; %.2f]", _slam_data.Velocity_W.x(), _slam_data.Velocity_W.y(), _slam_data.Velocity_W.z());
-        cv::putText(_out_dst, str, cv::Point(_out_dst.cols - nTextOffsetY * 11.5, nTextOffsetY), cv::FONT_HERSHEY_PLAIN, font_scale, color::info, font_thickness);
+        const Eigen::Matrix4f T = _slam_data.Body_W.transform();
+        const Eigen::Vector3f euler = CPose::R2euler(T.block(0, 0, 3, 3));
+        snprintf(str, sizeof(str) - 1, "Body [W]: R [%.2f; %.2f; %.2f]  t [%.2f; %.2f; %.2f] V [%.2f; %.2f; %.2f]",
+            euler.x() * RAD2DEG,
+            euler.y() * RAD2DEG,
+            euler.z() * RAD2DEG,
+            T.col(3).x(),
+            T.col(3).y(),
+            T.col(3).z(),
+            _slam_data.Velocity_W.x(),
+            _slam_data.Velocity_W.y(),
+            _slam_data.Velocity_W.z()
+        );
+        cv::putText(_out_dst, str, cv::Point(5, nTextOffsetY), cv::FONT_HERSHEY_PLAIN, font_scale, color::info, font_thickness);
 
         // Print bias
         snprintf(str, sizeof(str) - 1, "Bias [I]: acc [%.2f; %.2f; %.2f]  gyro [%.2f; %.2f; %.2f]",
