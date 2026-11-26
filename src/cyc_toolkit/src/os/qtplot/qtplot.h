@@ -33,8 +33,8 @@ struct CCcrQTPlotSegmentTemp
     std::vector<std::string> sigs;
     std::string unit;
 
-    CCcrQTPlotSegmentTemp(const std::string& name, const std::vector<std::string>& sigsl, const std::string& unit):
-        name(name), sigs(sigs), unit(unit)
+    CCcrQTPlotSegmentTemp(const std::string& _name, const std::vector<std::string>& _sigs, const std::string& _unit):
+        name(_name), sigs(_sigs), unit(_unit)
     {}
 };
 
@@ -59,8 +59,9 @@ private:
 
     CCcrQTPlotApp* m_plotapp = nullptr;
 
-    std::shared_ptr<CCycQTSkeleton> m_CcrQTSkeleton = nullptr;
-    //CCycQTSkeleton* m_QtSkeleton = nullptr;
+    // Not owned: the singleton registry owns the skeleton. A shared_ptr built from this raw pointer would have its own
+    // control block and delete the skeleton (stopping the Qt thread) when the plot is destroyed.
+    CCycQTSkeleton* m_CcrQTSkeleton = nullptr;
 };
 
 class CCycQTSkeleton : public CSingletonBase

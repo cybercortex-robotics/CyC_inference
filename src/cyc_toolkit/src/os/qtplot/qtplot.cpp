@@ -223,7 +223,7 @@ bool CCcrQTPlot::stop()
 
     emit m_plotapp->should_stop();
 
-    m_CcrQTSkeleton.get()->deallocate_plotapp(m_plotapp);
+    m_CcrQTSkeleton->deallocate_plotapp(m_plotapp);
     m_plotapp = nullptr;
     return true;
 }
